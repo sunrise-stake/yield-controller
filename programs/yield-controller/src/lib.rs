@@ -8,7 +8,7 @@ mod utils;
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
-pub mod yield_controller {
+pub mod treasury_controller {
     use super::*;
 
     pub fn register_state(ctx: Context<RegisterState>, state: GenericStateInput) -> Result<()> {
@@ -44,16 +44,23 @@ pub mod yield_controller {
          * and that the holding token account has the state account set as the delegate
          * and that the mint is the expected mint
          * the amount should be assumed to be correct in terms of decimals?
-         */
 
-        let purchase_amount = (amount as f64 * state_account.purchase_proportion as f64) as u64;
-        let burn_amount = amount - purchase_amount;
+        let mint_decimals = mint_account.decimals;
+
+        let purchase_amount =
+            (amount as f64 * state_account.purchase_proportion as f64) as u64 / 10f64.powi(mint_decimals);
+        */
+
+        // for now, we'll just assume the total amount is passed in as an argument
+        let transfer_amount = (amount as f64 * state_account.purchase_proportion as f64) as u64;
+
+        let burn_amount = amount - transfer_amount;
 
         let seeds = [STATE, state_account.market.as_ref()];
 
-        if purchase_amount > 0 {
+        if transfer_amount > 0 {
             transfer(
-                purchase_amount,
+                transfer_amount,
                 state_account,
                 holding_token_account,
                 treasury_token_account,

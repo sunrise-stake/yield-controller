@@ -76,6 +76,5 @@ pub struct AllocateYield<'info> {
     pub treasury_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
     pub holding_token_account: Account<'info, TokenAccount>,
-    #[account(mut)]
-    pub token_program: AccountInfo<'info, Token>,
+    pub token_program: Program<'info, Token>,
 }
