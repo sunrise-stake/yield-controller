@@ -79,6 +79,23 @@ describe("yield-controller", () => {
     expect(state.purchaseProportion).equal(0.5);
     expect(state.bump).equal(bump);
   });
+  it("Can update controller price", async () => {
+    const price = new BN(1_000);
+
+    try {
+      client = await TreasuryControllerClient.updatePrice(
+        client.stateAddress,
+        authority.publicKey,
+        price
+      );
+    } catch (e) {
+      console.log(e);
+    }
+
+    const state = await program.account.state.fetch(stateAddress);
+
+    expect(state.price.toNumber()).equal(price.toNumber());
+  });
   it("Can update controller state", async () => {
     const newAuthority = Keypair.generate();
     const newTreasury = Keypair.generate();
@@ -92,8 +109,8 @@ describe("yield-controller", () => {
     );
 
     try {
-      client = await TreasuryControllerClient.update(
-        client.stateAddress,
+      client = await TreasuryControllerClient.updateController(
+        stateAddress,
         newAuthority.publicKey,
         newTreasury.publicKey,
         mint,
@@ -107,7 +124,7 @@ describe("yield-controller", () => {
       console.log(e);
     }
 
-    const state = await program.account.state.fetch(client.stateAddress);
+    const state = await program.account.state.fetch(stateAddress);
 
     expect(state.updateAuthority.toBase58()).equal(
       newAuthority.publicKey.toBase58()

@@ -1,5 +1,5 @@
-export { GenericStateInput } from "./GenericStateInput"
+export { GenericStateInput } from "./GenericStateInput";
 export type {
   GenericStateInputFields,
   GenericStateInputJSON,
-} from "./GenericStateInput"
+} from "./GenericStateInput";

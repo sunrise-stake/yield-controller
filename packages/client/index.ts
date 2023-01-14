@@ -12,10 +12,7 @@ import {
   createAssociatedTokenAccountIdempotentInstruction,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import {
-  TreasuryController,
-  IDL,
-} from "../types/treasury_controller";
+import { TreasuryController, IDL } from "../types/treasury_controller";
 import { Connection } from "@solana/web3.js";
 
 export const PROGRAM_ID = new PublicKey(
@@ -50,7 +47,7 @@ export class TreasuryControllerClient {
   readonly program: Program<TreasuryController>;
   stateAddress: PublicKey | undefined;
 
-  constructor(readonly provider: AnchorProvider, payer?: PublicKey) {
+  constructor(readonly provider: AnchorProvider) {
     this.program = new Program<TreasuryController>(IDL, PROGRAM_ID, provider);
   }
 
@@ -69,15 +66,14 @@ export class TreasuryControllerClient {
     this.stateAddress = stateAddress;
   }
 
-  /*
-pub struct GenericStateInput {
-    pub market: Pubkey,
-    pub update_authority: Pubkey,
-    pub treasury: Pubkey,
-    pub purchase_threshold: u64,
-    pub purchase_proportion: f32,
-}
-  */
+  public static async getStateAddress(mint: PublicKey): Promise<anchor.web3.PublicKey> {
+    const [state, _bump] = await PublicKey.findProgramAddress(
+      [Buffer.from("state"), mint.toBuffer()],
+      PROGRAM_ID
+    );
+
+    return state
+  }
 
   public static async register(
     updateAuthority: PublicKey,
@@ -90,10 +86,8 @@ pub struct GenericStateInput {
     purchaseThreshold: BN
   ): Promise<TreasuryControllerClient> {
     // find state address
-    const [state, _bump] = await PublicKey.findProgramAddress(
-      [Buffer.from("state"), mint.toBuffer()],
-      PROGRAM_ID
-    );
+    const state = await this.getStateAddress(mint)
+    
     let client = new TreasuryControllerClient(setUpAnchor());
 
     const accounts = {
@@ -125,7 +119,7 @@ pub struct GenericStateInput {
     return client;
   }
 
-  public static async update(
+  public static async updateController(
     state: PublicKey,
     updateAuthority: PublicKey,
     treasury: PublicKey,
@@ -181,6 +175,25 @@ pub struct GenericStateInput {
       holdingAccount,
       holdingTokenAccount,
     });
+
+    return client;
+  }
+
+  public static async updatePrice(
+    state: PublicKey,
+    payer: PublicKey,
+    price: BN
+  ): Promise<TreasuryControllerClient> {
+    const client = new TreasuryControllerClient(setUpAnchor());
+
+    await client.program.methods
+      .updatePrice(price)
+      .accounts({
+        payer,
+        state,
+      })
+      .rpc()
+      .then(confirm(client.provider.connection));
 
     return client;
   }

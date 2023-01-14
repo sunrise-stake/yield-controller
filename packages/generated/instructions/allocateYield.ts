@@ -1,25 +1,29 @@
-import { TransactionInstruction, PublicKey, AccountMeta } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
-import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
-import { PROGRAM_ID } from "../programId"
+import {
+  TransactionInstruction,
+  PublicKey,
+  AccountMeta,
+} from "@solana/web3.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as borsh from "@project-serum/borsh"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { PROGRAM_ID } from "../programId";
 
 export interface AllocateYieldArgs {
-  amount: BN
+  amount: BN;
 }
 
 export interface AllocateYieldAccounts {
-  payer: PublicKey
-  state: PublicKey
-  mint: PublicKey
-  treasury: PublicKey
-  holdingAccount: PublicKey
-  holdingTokenAccount: PublicKey
-  tokenProgram: PublicKey
-  systemProgram: PublicKey
+  payer: PublicKey;
+  state: PublicKey;
+  mint: PublicKey;
+  treasury: PublicKey;
+  holdingAccount: PublicKey;
+  holdingTokenAccount: PublicKey;
+  tokenProgram: PublicKey;
+  systemProgram: PublicKey;
 }
 
-export const layout = borsh.struct([borsh.u64("amount")])
+export const layout = borsh.struct([borsh.u64("amount")]);
 
 export function allocateYield(
   args: AllocateYieldArgs,
@@ -34,16 +38,16 @@ export function allocateYield(
     { pubkey: accounts.holdingTokenAccount, isSigner: false, isWritable: true },
     { pubkey: accounts.tokenProgram, isSigner: false, isWritable: false },
     { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
-  ]
-  const identifier = Buffer.from([225, 224, 81, 124, 246, 226, 35, 240])
-  const buffer = Buffer.alloc(1000)
+  ];
+  const identifier = Buffer.from([225, 224, 81, 124, 246, 226, 35, 240]);
+  const buffer = Buffer.alloc(1000);
   const len = layout.encode(
     {
       amount: args.amount,
     },
     buffer
-  )
-  const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len)
-  const ix = new TransactionInstruction({ keys, programId: PROGRAM_ID, data })
-  return ix
+  );
+  const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len);
+  const ix = new TransactionInstruction({ keys, programId: PROGRAM_ID, data });
+  return ix;
 }

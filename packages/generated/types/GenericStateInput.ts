@@ -1,49 +1,49 @@
-import { PublicKey } from "@solana/web3.js" // eslint-disable-line @typescript-eslint/no-unused-vars
-import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as borsh from "@project-serum/borsh"
+import { PublicKey } from "@solana/web3.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as borsh from "@project-serum/borsh";
 
 export interface GenericStateInputFields {
-  mint: PublicKey
-  updateAuthority: PublicKey
-  treasury: PublicKey
-  holdingAccount: PublicKey
-  holdingTokenAccount: PublicKey
-  price: BN
-  purchaseThreshold: BN
-  purchaseProportion: number
+  mint: PublicKey;
+  updateAuthority: PublicKey;
+  treasury: PublicKey;
+  holdingAccount: PublicKey;
+  holdingTokenAccount: PublicKey;
+  price: BN;
+  purchaseThreshold: BN;
+  purchaseProportion: number;
 }
 
 export interface GenericStateInputJSON {
-  mint: string
-  updateAuthority: string
-  treasury: string
-  holdingAccount: string
-  holdingTokenAccount: string
-  price: string
-  purchaseThreshold: string
-  purchaseProportion: number
+  mint: string;
+  updateAuthority: string;
+  treasury: string;
+  holdingAccount: string;
+  holdingTokenAccount: string;
+  price: string;
+  purchaseThreshold: string;
+  purchaseProportion: number;
 }
 
 export class GenericStateInput {
-  readonly mint: PublicKey
-  readonly updateAuthority: PublicKey
-  readonly treasury: PublicKey
-  readonly holdingAccount: PublicKey
-  readonly holdingTokenAccount: PublicKey
-  readonly price: BN
-  readonly purchaseThreshold: BN
-  readonly purchaseProportion: number
+  readonly mint: PublicKey;
+  readonly updateAuthority: PublicKey;
+  readonly treasury: PublicKey;
+  readonly holdingAccount: PublicKey;
+  readonly holdingTokenAccount: PublicKey;
+  readonly price: BN;
+  readonly purchaseThreshold: BN;
+  readonly purchaseProportion: number;
 
   constructor(fields: GenericStateInputFields) {
-    this.mint = fields.mint
-    this.updateAuthority = fields.updateAuthority
-    this.treasury = fields.treasury
-    this.holdingAccount = fields.holdingAccount
-    this.holdingTokenAccount = fields.holdingTokenAccount
-    this.price = fields.price
-    this.purchaseThreshold = fields.purchaseThreshold
-    this.purchaseProportion = fields.purchaseProportion
+    this.mint = fields.mint;
+    this.updateAuthority = fields.updateAuthority;
+    this.treasury = fields.treasury;
+    this.holdingAccount = fields.holdingAccount;
+    this.holdingTokenAccount = fields.holdingTokenAccount;
+    this.price = fields.price;
+    this.purchaseThreshold = fields.purchaseThreshold;
+    this.purchaseProportion = fields.purchaseProportion;
   }
 
   static layout(property?: string) {
@@ -59,7 +59,7 @@ export class GenericStateInput {
         borsh.f32("purchaseProportion"),
       ],
       property
-    )
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,7 +73,7 @@ export class GenericStateInput {
       price: obj.price,
       purchaseThreshold: obj.purchaseThreshold,
       purchaseProportion: obj.purchaseProportion,
-    })
+    });
   }
 
   static toEncodable(fields: GenericStateInputFields) {
@@ -86,7 +86,7 @@ export class GenericStateInput {
       price: fields.price,
       purchaseThreshold: fields.purchaseThreshold,
       purchaseProportion: fields.purchaseProportion,
-    }
+    };
   }
 
   toJSON(): GenericStateInputJSON {
@@ -99,7 +99,7 @@ export class GenericStateInput {
       price: this.price.toString(),
       purchaseThreshold: this.purchaseThreshold.toString(),
       purchaseProportion: this.purchaseProportion,
-    }
+    };
   }
 
   static fromJSON(obj: GenericStateInputJSON): GenericStateInput {
@@ -112,10 +112,10 @@ export class GenericStateInput {
       price: new BN(obj.price),
       purchaseThreshold: new BN(obj.purchaseThreshold),
       purchaseProportion: obj.purchaseProportion,
-    })
+    });
   }
 
   toEncodable() {
-    return GenericStateInput.toEncodable(this)
+    return GenericStateInput.toEncodable(this);
   }
 }

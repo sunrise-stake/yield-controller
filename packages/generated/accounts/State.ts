@@ -1,41 +1,41 @@
-import { PublicKey, Connection } from "@solana/web3.js"
-import BN from "bn.js" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript-eslint/no-unused-vars
-import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
-import { PROGRAM_ID } from "../programId"
+import { PublicKey, Connection } from "@solana/web3.js";
+import BN from "bn.js"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as borsh from "@project-serum/borsh"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import * as types from "../types"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { PROGRAM_ID } from "../programId";
 
 export interface StateFields {
-  updateAuthority: PublicKey
-  treasury: PublicKey
-  mint: PublicKey
-  price: BN
-  purchaseThreshold: BN
-  purchaseProportion: number
-  bump: number
+  updateAuthority: PublicKey;
+  treasury: PublicKey;
+  mint: PublicKey;
+  price: BN;
+  purchaseThreshold: BN;
+  purchaseProportion: number;
+  bump: number;
 }
 
 export interface StateJSON {
-  updateAuthority: string
-  treasury: string
-  mint: string
-  price: string
-  purchaseThreshold: string
-  purchaseProportion: number
-  bump: number
+  updateAuthority: string;
+  treasury: string;
+  mint: string;
+  price: string;
+  purchaseThreshold: string;
+  purchaseProportion: number;
+  bump: number;
 }
 
 export class State {
-  readonly updateAuthority: PublicKey
-  readonly treasury: PublicKey
-  readonly mint: PublicKey
-  readonly price: BN
-  readonly purchaseThreshold: BN
-  readonly purchaseProportion: number
-  readonly bump: number
+  readonly updateAuthority: PublicKey;
+  readonly treasury: PublicKey;
+  readonly mint: PublicKey;
+  readonly price: BN;
+  readonly purchaseThreshold: BN;
+  readonly purchaseProportion: number;
+  readonly bump: number;
 
   static readonly discriminator = Buffer.from([
     216, 146, 107, 94, 104, 75, 182, 177,
-  ])
+  ]);
 
   static readonly layout = borsh.struct([
     borsh.publicKey("updateAuthority"),
@@ -45,55 +45,55 @@ export class State {
     borsh.u64("purchaseThreshold"),
     borsh.f32("purchaseProportion"),
     borsh.u8("bump"),
-  ])
+  ]);
 
   constructor(fields: StateFields) {
-    this.updateAuthority = fields.updateAuthority
-    this.treasury = fields.treasury
-    this.mint = fields.mint
-    this.price = fields.price
-    this.purchaseThreshold = fields.purchaseThreshold
-    this.purchaseProportion = fields.purchaseProportion
-    this.bump = fields.bump
+    this.updateAuthority = fields.updateAuthority;
+    this.treasury = fields.treasury;
+    this.mint = fields.mint;
+    this.price = fields.price;
+    this.purchaseThreshold = fields.purchaseThreshold;
+    this.purchaseProportion = fields.purchaseProportion;
+    this.bump = fields.bump;
   }
 
   static async fetch(c: Connection, address: PublicKey): Promise<State | null> {
-    const info = await c.getAccountInfo(address)
+    const info = await c.getAccountInfo(address);
 
     if (info === null) {
-      return null
+      return null;
     }
     if (!info.owner.equals(PROGRAM_ID)) {
-      throw new Error("account doesn't belong to this program")
+      throw new Error("account doesn't belong to this program");
     }
 
-    return this.decode(info.data)
+    return this.decode(info.data);
   }
 
   static async fetchMultiple(
     c: Connection,
     addresses: PublicKey[]
   ): Promise<Array<State | null>> {
-    const infos = await c.getMultipleAccountsInfo(addresses)
+    const infos = await c.getMultipleAccountsInfo(addresses);
 
     return infos.map((info) => {
       if (info === null) {
-        return null
+        return null;
       }
       if (!info.owner.equals(PROGRAM_ID)) {
-        throw new Error("account doesn't belong to this program")
+        throw new Error("account doesn't belong to this program");
       }
 
-      return this.decode(info.data)
-    })
+      return this.decode(info.data);
+    });
   }
 
   static decode(data: Buffer): State {
     if (!data.slice(0, 8).equals(State.discriminator)) {
-      throw new Error("invalid account discriminator")
+      throw new Error("invalid account discriminator");
     }
 
-    const dec = State.layout.decode(data.slice(8))
+    const dec = State.layout.decode(data.slice(8));
 
     return new State({
       updateAuthority: dec.updateAuthority,
@@ -103,7 +103,7 @@ export class State {
       purchaseThreshold: dec.purchaseThreshold,
       purchaseProportion: dec.purchaseProportion,
       bump: dec.bump,
-    })
+    });
   }
 
   toJSON(): StateJSON {
@@ -115,7 +115,7 @@ export class State {
       purchaseThreshold: this.purchaseThreshold.toString(),
       purchaseProportion: this.purchaseProportion,
       bump: this.bump,
-    }
+    };
   }
 
   static fromJSON(obj: StateJSON): State {
@@ -127,6 +127,6 @@ export class State {
       purchaseThreshold: new BN(obj.purchaseThreshold),
       purchaseProportion: obj.purchaseProportion,
       bump: obj.bump,
-    })
+    });
   }
 }
