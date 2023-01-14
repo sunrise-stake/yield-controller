@@ -15,7 +15,7 @@ import {
 import {
   TreasuryController,
   IDL,
-} from "../../target/types/treasury_controller";
+} from "../types/treasury_controller";
 import { Connection } from "@solana/web3.js";
 
 export const PROGRAM_ID = new PublicKey(

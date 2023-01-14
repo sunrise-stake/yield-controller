@@ -59,6 +59,27 @@ export type TreasuryController = {
       ]
     },
     {
+      "name": "updatePrice",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "price",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "allocateYield",
       "accounts": [
         {
@@ -266,6 +287,27 @@ export const IDL: TreasuryController = {
           "type": {
             "defined": "GenericStateInput"
           }
+        }
+      ]
+    },
+    {
+      "name": "updatePrice",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "price",
+          "type": "u64"
         }
       ]
     },

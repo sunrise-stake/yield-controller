@@ -66,6 +66,20 @@ pub struct UpdateState<'info> {
 
 #[derive(Accounts)]
 #[instruction(amount: u64)]
+pub struct UpdatePrice<'info> {
+    #[account(
+        mut,
+        seeds = [STATE, state.mint.key().as_ref()],
+        bump = state.bump,
+        constraint = state.update_authority == payer.key()
+    )]
+    pub state: Account<'info, State>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(amount: u64)]
 pub struct AllocateYield<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,

@@ -37,6 +37,12 @@ pub mod treasury_controller {
         Ok(())
     }
 
+    pub fn update_price(ctx:Context<UpdatePrice>, price: u64) -> Result<()> {
+        let state_account = &mut ctx.accounts.state;
+        state_account.price = price;
+        Ok(())
+    }
+
     pub fn allocate_yield(ctx: Context<AllocateYield>, amount: u64) -> Result<()> {
         let mint_account = &ctx.accounts.mint;
         let state_account = &ctx.accounts.state;

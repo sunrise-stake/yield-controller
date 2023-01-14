@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { TreasuryController } from "../../target/types/treasury_controller";
+import { TreasuryController } from "../types/treasury_controller";
 import BN from "bn.js";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { PROGRAM_ID, TreasuryControllerClient } from "../client";
