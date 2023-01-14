@@ -5,19 +5,23 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 /* This argument will be used for both registering and updating the state account */
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct GenericStateInput {
-    pub market: Pubkey,
+    pub mint: Pubkey,
+    // pub market: Pubkey,
     pub update_authority: Pubkey,
     pub treasury: Pubkey,
+    pub holding_account: Pubkey,
+    pub holding_token_account: Pubkey,
+    pub price: u64, /* TODO: replace with oracle */
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
 }
 
 #[account]
 pub struct State {
-    pub market: Pubkey,
     pub update_authority: Pubkey,
     pub treasury: Pubkey,
     pub mint: Pubkey,
+    pub price: u64,
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
     pub bump: u8,
@@ -35,7 +39,7 @@ pub struct RegisterState<'info> {
     #[account(
         init,
         space = State::SPACE,
-        seeds = [STATE, state_in.market.key().as_ref()],
+        seeds = [STATE, state_in.mint.key().as_ref()],
         payer = payer,
         bump
     )]
@@ -49,13 +53,13 @@ pub struct RegisterState<'info> {
 pub struct UpdateState<'info> {
     #[account(
         mut,
-        constraint = state.update_authority == payer.key(),
     )]
     pub payer: Signer<'info>,
     #[account(
         mut,
-        seeds = [STATE, state_in.market.key().as_ref()],
+        seeds = [STATE, state_in.mint.key().as_ref()],
         bump = state.bump,
+        constraint = state.update_authority == payer.key()
     )]
     pub state: Account<'info, State>,
 }
@@ -67,14 +71,19 @@ pub struct AllocateYield<'info> {
     pub payer: Signer<'info>,
     #[account(
         mut,
-        seeds = [STATE, state.market.key().as_ref()],
+        seeds = [STATE, state.mint.key().as_ref()],
         bump = state.bump,
     )]
     pub state: Account<'info, State>,
     pub mint: Account<'info, Mint>,
+    /// CHECK: checked in program
     #[account(mut)]
-    pub treasury_token_account: Account<'info, TokenAccount>,
+    pub treasury: AccountInfo<'info>,
+    /// CHECK: checked in program
+    #[account(mut)]
+    pub holding_account: AccountInfo<'info>,
     #[account(mut)]
     pub holding_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }

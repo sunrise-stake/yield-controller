@@ -5,7 +5,7 @@ types = "packages/app/src/lib/client/types"
 seeds = false
 skip-lint = false
 [programs.localnet]
-treasury_controller = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+treasury_controller = "8Wbd1YbvX44jJHmBrythtrMWJiJH5u7NqT1EYspSYx78"
 
 [registry]
 url = "https://api.apr.dev"
@@ -15,4 +15,4 @@ cluster = "Localnet"
 wallet = "packages/tests/fixtures/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/*.ts"

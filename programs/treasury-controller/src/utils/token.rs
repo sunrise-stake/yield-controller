@@ -1,6 +1,8 @@
 use crate::utils::state::State;
 use anchor_lang::prelude::*;
+use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::{token, token::Mint, token::TokenAccount};
+//use crate::utils::errors::ErrorCode;
 
 pub fn burn<'a>(
     amount: u64,
@@ -20,7 +22,26 @@ pub fn burn<'a>(
     token::burn(cpi_ctx.with_signer(&[seeds]), amount)
 }
 
-pub fn transfer<'a>(
+pub fn transfer_native<'a>(
+    source: &AccountInfo<'a>,
+    dest: &AccountInfo<'a>,
+    system: &AccountInfo<'a>,
+    amount: u64,
+) -> Result<()> {
+    let cpi_context = CpiContext::new(
+        system.clone(),
+        Transfer {
+            from: source.clone(),
+            to: dest.clone(),
+        },
+    );
+    transfer(cpi_context, amount)?;
+
+    Ok(())
+}
+
+/*
+pub fn _transfer_token<'a>(
     amount: u64,
     authority: &Account<'a, State>,
     source: &Account<'a, TokenAccount>,
@@ -38,3 +59,4 @@ pub fn transfer<'a>(
     let cpi_ctx = CpiContext::new(cpi_program, accounts);
     token::transfer(cpi_ctx.with_signer(&[seeds]), amount)
 }
+*/

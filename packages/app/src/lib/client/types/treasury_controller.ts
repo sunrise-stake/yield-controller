@@ -77,7 +77,12 @@ export type TreasuryController = {
           "isSigner": false
         },
         {
-          "name": "treasuryTokenAccount",
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "holdingAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -88,6 +93,11 @@ export type TreasuryController = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -107,10 +117,6 @@ export type TreasuryController = {
         "kind": "struct",
         "fields": [
           {
-            "name": "market",
-            "type": "publicKey"
-          },
-          {
             "name": "updateAuthority",
             "type": "publicKey"
           },
@@ -121,6 +127,10 @@ export type TreasuryController = {
           {
             "name": "mint",
             "type": "publicKey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
           },
           {
             "name": "purchaseThreshold",
@@ -145,7 +155,7 @@ export type TreasuryController = {
         "kind": "struct",
         "fields": [
           {
-            "name": "market",
+            "name": "mint",
             "type": "publicKey"
           },
           {
@@ -155,6 +165,18 @@ export type TreasuryController = {
           {
             "name": "treasury",
             "type": "publicKey"
+          },
+          {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
           },
           {
             "name": "purchaseThreshold",
@@ -171,8 +193,18 @@ export type TreasuryController = {
   "errors": [
     {
       "code": 6000,
-      "name": "CalculationFailure",
-      "msg": "An error occurred when calculating an MSol value"
+      "name": "InsufficientFundsForTransaction",
+      "msg": "insufficient funds for transaction"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidTreasury",
+      "msg": "invalid treasury account"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidMint",
+      "msg": "invalid mint"
     }
   ]
 };
@@ -256,7 +288,12 @@ export const IDL: TreasuryController = {
           "isSigner": false
         },
         {
-          "name": "treasuryTokenAccount",
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "holdingAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -267,6 +304,11 @@ export const IDL: TreasuryController = {
         },
         {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -286,10 +328,6 @@ export const IDL: TreasuryController = {
         "kind": "struct",
         "fields": [
           {
-            "name": "market",
-            "type": "publicKey"
-          },
-          {
             "name": "updateAuthority",
             "type": "publicKey"
           },
@@ -300,6 +338,10 @@ export const IDL: TreasuryController = {
           {
             "name": "mint",
             "type": "publicKey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
           },
           {
             "name": "purchaseThreshold",
@@ -324,7 +366,7 @@ export const IDL: TreasuryController = {
         "kind": "struct",
         "fields": [
           {
-            "name": "market",
+            "name": "mint",
             "type": "publicKey"
           },
           {
@@ -334,6 +376,18 @@ export const IDL: TreasuryController = {
           {
             "name": "treasury",
             "type": "publicKey"
+          },
+          {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
           },
           {
             "name": "purchaseThreshold",
@@ -350,8 +404,18 @@ export const IDL: TreasuryController = {
   "errors": [
     {
       "code": 6000,
-      "name": "CalculationFailure",
-      "msg": "An error occurred when calculating an MSol value"
+      "name": "InsufficientFundsForTransaction",
+      "msg": "insufficient funds for transaction"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidTreasury",
+      "msg": "invalid treasury account"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidMint",
+      "msg": "invalid mint"
     }
   ]
 };
