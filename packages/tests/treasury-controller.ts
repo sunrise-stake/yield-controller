@@ -8,6 +8,9 @@ import {
   Account,
   createMint,
   getOrCreateAssociatedTokenAccount,
+  mintToChecked,
+  approveChecked,
+  getAccount,
 } from "@solana/spl-token";
 import { expect } from "chai";
 import testAuthority from "./fixtures/id.json";
@@ -36,7 +39,7 @@ describe("yield-controller", () => {
 
   beforeEach(async () => {
     await program.provider.connection
-      .requestAirdrop(authority.publicKey, 10 * LAMPORTS_PER_SOL)
+      .requestAirdrop(authority.publicKey, 100 * LAMPORTS_PER_SOL)
       .then((sig) => program.provider.connection.confirmTransaction(sig));
 
     holdingTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -95,6 +98,106 @@ describe("yield-controller", () => {
     const state = await program.account.state.fetch(stateAddress);
 
     expect(state.price.toNumber()).equal(price.toNumber());
+  });
+  it("Can allocate yield", async () => {
+    // state account is PDA target for sunrise
+    await program.provider.connection
+      .requestAirdrop(stateAddress, 100 * LAMPORTS_PER_SOL)
+      .then((sig) => program.provider.connection.confirmTransaction(sig));
+
+    await program.provider.connection
+      .requestAirdrop(treasury.publicKey, 100 * LAMPORTS_PER_SOL)
+      .then((sig) => program.provider.connection.confirmTransaction(sig));
+
+    // check that stateAddress now has 10 SOL
+    const stateBalanceBefore = await program.provider.connection.getBalance(
+      stateAddress
+    );
+    // treasury token account is created and delegate is set to the state account
+    const holdingTokenAccount = await getOrCreateAssociatedTokenAccount(
+      program.provider.connection,
+      authority,
+      mint,
+      holdingAccount.publicKey,
+      true
+    );
+
+    // mint some tokens to the treasury token account and delegate to the state account
+    await mintToChecked(
+      program.provider.connection,
+      authority,
+      mint,
+      holdingTokenAccount.address,
+      authority.publicKey,
+      1000 * 10 ** 9,
+      9
+    );
+
+    // set holding account delegate to state account
+    await approveChecked(
+      program.provider.connection,
+      authority,
+      mint,
+      holdingTokenAccount.address,
+      stateAddress,
+      holdingAccount,
+      1000 * 10 ** 9,
+      9
+    );
+
+    const holdingAccountBalanceBefore =
+      await program.provider.connection.getBalance(holdingAccount.publicKey);
+
+    // get token account info
+    const holdingTokenAccountInfo = await getAccount(
+      program.provider.connection,
+      holdingTokenAccount.address
+    );
+    expect(holdingTokenAccountInfo.delegate.toBase58()).equal(
+      stateAddress.toBase58()
+    );
+
+    // check DAO token account balance
+    const holdingTokenAccountBalanceBefore =
+      await program.provider.connection.getTokenAccountBalance(
+        holdingTokenAccount.address
+      );
+
+    // turn the crank
+    try {
+      client = await TreasuryControllerClient.allocateYield(
+        authority.publicKey,
+        stateAddress,
+        treasury.publicKey,
+        mint,
+        holdingAccount.publicKey,
+        holdingTokenAccount.address,
+        new BN(10 * 10 ** 9),
+        new BN(10 * 10 ** 9)
+      );
+    } catch (e) {
+      console.log(e);
+    }
+
+    const treasuryBalanceAfter = await program.provider.connection.getBalance(
+      stateAddress
+    );
+
+    const holdingTokenAccountBalanceAfter =
+      await program.provider.connection.getTokenAccountBalance(
+        holdingTokenAccount.address
+      );
+
+    const holdingAccountBalanceAfter =
+      await program.provider.connection.getBalance(holdingAccount.publicKey);
+
+    expect(treasuryBalanceAfter).equal(stateBalanceBefore - 10 * 10 ** 9);
+    expect(holdingAccountBalanceAfter).equal(
+      holdingAccountBalanceBefore + 5 * 10 ** 9
+    );
+    expect(holdingTokenAccountBalanceAfter.value.uiAmount).equal(
+      holdingTokenAccountBalanceBefore.value.uiAmount - 10
+    );
   });
   it("Can update controller state", async () => {
     const newAuthority = Keypair.generate();

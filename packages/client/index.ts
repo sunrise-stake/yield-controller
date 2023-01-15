@@ -66,13 +66,15 @@ export class TreasuryControllerClient {
     this.stateAddress = stateAddress;
   }
 
-  public static async getStateAddress(mint: PublicKey): Promise<anchor.web3.PublicKey> {
+  public static async getStateAddress(
+    mint: PublicKey
+  ): Promise<anchor.web3.PublicKey> {
     const [state, _bump] = await PublicKey.findProgramAddress(
       [Buffer.from("state"), mint.toBuffer()],
       PROGRAM_ID
     );
 
-    return state
+    return state;
   }
 
   public static async register(
@@ -86,8 +88,8 @@ export class TreasuryControllerClient {
     purchaseThreshold: BN
   ): Promise<TreasuryControllerClient> {
     // find state address
-    const state = await this.getStateAddress(mint)
-    
+    const state = await this.getStateAddress(mint);
+
     let client = new TreasuryControllerClient(setUpAnchor());
 
     const accounts = {
@@ -164,17 +166,23 @@ export class TreasuryControllerClient {
     mint: PublicKey,
     holdingAccount: PublicKey,
     holdingTokenAccount: PublicKey,
-    amount: BN
+    solAmount: BN,
+    tokenAmount: BN
   ): Promise<TreasuryControllerClient> {
     const client = new TreasuryControllerClient(setUpAnchor());
 
-    await client.program.methods.allocateYield(amount).accounts({
-      payer,
-      treasury,
-      mint,
-      holdingAccount,
-      holdingTokenAccount,
-    });
+    await client.program.methods
+      .allocateYield({ solAmount, tokenAmount })
+      .accounts({
+        payer,
+        state,
+        treasury,
+        mint,
+        holdingAccount,
+        holdingTokenAccount,
+      })
+      .rpc()
+      .then(confirm(client.provider.connection));
 
     return client;
   }

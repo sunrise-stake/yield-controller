@@ -1,42 +1,40 @@
+use crate::utils::errors::ErrorCode;
+use crate::utils::seeds::STATE;
 use crate::utils::state::State;
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::{token, token::Mint, token::TokenAccount};
-//use crate::utils::errors::ErrorCode;
 
 pub fn burn<'a>(
     amount: u64,
+    state_account: &Account<'a, State>,
     mint: &Account<'a, Mint>,
-    authority: &Account<'a, State>,
     token_account: &Account<'a, TokenAccount>,
-    seeds: &[&[u8]],
     token_program: &AccountInfo<'a>,
 ) -> Result<()> {
+    let seeds = [STATE, state_account.mint.as_ref(), &[state_account.bump]];
+
     let cpi_program = token_program.clone();
     let accounts = token::Burn {
         mint: mint.to_account_info(),
-        authority: authority.to_account_info(),
+        authority: state_account.to_account_info(),
         from: token_account.to_account_info(),
     };
     let cpi_ctx = CpiContext::new(cpi_program, accounts);
-    token::burn(cpi_ctx.with_signer(&[seeds]), amount)
+
+    token::burn(cpi_ctx.with_signer(&[&seeds]), amount)
 }
 
 pub fn transfer_native<'a>(
     source: &AccountInfo<'a>,
     dest: &AccountInfo<'a>,
-    system: &AccountInfo<'a>,
     amount: u64,
 ) -> Result<()> {
-    let cpi_context = CpiContext::new(
-        system.clone(),
-        Transfer {
-            from: source.clone(),
-            to: dest.clone(),
-        },
-    );
-    transfer(cpi_context, amount)?;
+    if **source.try_borrow_lamports()? < amount {
+        return Err(ErrorCode::InsufficientFundsForTransaction.into());
+    }
 
+    **source.try_borrow_mut_lamports()? -= amount;
+    **dest.try_borrow_mut_lamports()? += amount;
     Ok(())
 }
 

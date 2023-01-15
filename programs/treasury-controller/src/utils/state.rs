@@ -16,6 +16,12 @@ pub struct GenericStateInput {
     pub purchase_proportion: f32,
 }
 
+#[derive(AnchorSerialize, AnchorDeserialize)]
+pub struct AllocateYieldInput {
+    pub sol_amount: u64,
+    pub token_amount: u64,
+}
+
 #[account]
 pub struct State {
     pub update_authority: Pubkey,
@@ -51,9 +57,7 @@ pub struct RegisterState<'info> {
 #[derive(Accounts)]
 #[instruction(state_in: GenericStateInput)]
 pub struct UpdateState<'info> {
-    #[account(
-        mut,
-    )]
+    #[account(mut)]
     pub payer: Signer<'info>,
     #[account(
         mut,
@@ -89,6 +93,7 @@ pub struct AllocateYield<'info> {
         bump = state.bump,
     )]
     pub state: Account<'info, State>,
+    #[account(mut)]
     pub mint: Account<'info, Mint>,
     /// CHECK: checked in program
     #[account(mut)]
