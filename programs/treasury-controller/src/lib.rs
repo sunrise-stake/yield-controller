@@ -56,6 +56,10 @@ pub mod treasury_controller {
             return Err(ErrorCode::InvalidMint.into());
         }
 
+        if args.token_amount < state_account.purchase_threshold {
+            return Err(ErrorCode::PurchaseThresholdExceeded.into());
+        }
+
         // for now, we'll just assume the total amount is passed in as an argument
         let treasury_amount =
             (args.sol_amount as f64 * state_account.purchase_proportion as f64) as u64;

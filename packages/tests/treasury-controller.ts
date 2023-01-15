@@ -66,7 +66,7 @@ describe("yield-controller", () => {
         holdingTokenAccount.address,
         new BN(1),
         0.5,
-        new BN(10)
+        new BN(1)
       );
     } catch (e) {
       console.log(e);
@@ -78,7 +78,7 @@ describe("yield-controller", () => {
     );
     expect(state.treasury.toBase58()).equal(treasury.publicKey.toBase58());
     expect(state.mint.toBase58()).equal(mint.toBase58());
-    expect(state.purchaseThreshold.toNumber()).equal(10);
+    expect(state.purchaseThreshold.toNumber()).equal(1);
     expect(state.purchaseProportion).equal(0.5);
     expect(state.bump).equal(bump);
   });

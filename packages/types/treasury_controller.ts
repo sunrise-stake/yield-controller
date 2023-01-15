@@ -1,499 +1,509 @@
 export type TreasuryController = {
-  version: "0.1.0";
-  name: "treasury_controller";
-  instructions: [
+  "version": "0.1.0",
+  "name": "treasury_controller",
+  "instructions": [
     {
-      name: "registerState";
-      accounts: [
+      "name": "registerState",
+      "accounts": [
         {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "state";
-          isMut: true;
-          isSigner: false;
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "mint";
-          isMut: false;
-          isSigner: false;
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
         },
         {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
         }
-      ];
-      args: [
+      ],
+      "args": [
         {
-          name: "state";
-          type: {
-            defined: "GenericStateInput";
-          };
-        }
-      ];
-    },
-    {
-      name: "updateState";
-      accounts: [
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "state";
-          isMut: true;
-          isSigner: false;
-        }
-      ];
-      args: [
-        {
-          name: "state";
-          type: {
-            defined: "GenericStateInput";
-          };
-        }
-      ];
-    },
-    {
-      name: "updatePrice";
-      accounts: [
-        {
-          name: "state";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
-        }
-      ];
-      args: [
-        {
-          name: "price";
-          type: "u64";
-        }
-      ];
-    },
-    {
-      name: "allocateYield";
-      accounts: [
-        {
-          name: "payer";
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: "state";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "mint";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "treasury";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "holdingAccount";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "holdingTokenAccount";
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: "tokenProgram";
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: "systemProgram";
-          isMut: false;
-          isSigner: false;
-        }
-      ];
-      args: [
-        {
-          name: "args";
-          type: {
-            defined: "AllocateYieldInput";
-          };
-        }
-      ];
-    }
-  ];
-  accounts: [
-    {
-      name: "state";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "updateAuthority";
-            type: "publicKey";
-          },
-          {
-            name: "treasury";
-            type: "publicKey";
-          },
-          {
-            name: "mint";
-            type: "publicKey";
-          },
-          {
-            name: "price";
-            type: "u64";
-          },
-          {
-            name: "purchaseThreshold";
-            type: "u64";
-          },
-          {
-            name: "purchaseProportion";
-            type: "f32";
-          },
-          {
-            name: "bump";
-            type: "u8";
+          "name": "state",
+          "type": {
+            "defined": "GenericStateInput"
           }
-        ];
-      };
-    }
-  ];
-  types: [
+        }
+      ]
+    },
     {
-      name: "GenericStateInput";
-      type: {
-        kind: "struct";
-        fields: [
-          {
-            name: "mint";
-            type: "publicKey";
-          },
-          {
-            name: "updateAuthority";
-            type: "publicKey";
-          },
-          {
-            name: "treasury";
-            type: "publicKey";
-          },
-          {
-            name: "holdingAccount";
-            type: "publicKey";
-          },
-          {
-            name: "holdingTokenAccount";
-            type: "publicKey";
-          },
-          {
-            name: "price";
-            type: "u64";
-          },
-          {
-            name: "purchaseThreshold";
-            type: "u64";
-          },
-          {
-            name: "purchaseProportion";
-            type: "f32";
+      "name": "updateState",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "state",
+          "type": {
+            "defined": "GenericStateInput"
           }
-        ];
-      };
+        }
+      ]
     },
     {
-      name: "AllocateYieldInput";
-      type: {
-        kind: "struct";
-        fields: [
+      "name": "updatePrice",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "price",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "allocateYield",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "holdingAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "holdingTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": "AllocateYieldInput"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "state",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "solAmount";
-            type: "u64";
+            "name": "updateAuthority",
+            "type": "publicKey"
           },
           {
-            name: "tokenAmount";
-            type: "u64";
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "purchaseThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "purchaseProportion",
+            "type": "f32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
-        ];
-      };
+        ]
+      }
     }
-  ];
-  errors: [
+  ],
+  "types": [
     {
-      code: 6000;
-      name: "InsufficientFundsForTransaction";
-      msg: "insufficient funds for transaction";
+      "name": "GenericStateInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "updateAuthority",
+            "type": "publicKey"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "price",
+            "type": "u64"
+          },
+          {
+            "name": "purchaseThreshold",
+            "type": "u64"
+          },
+          {
+            "name": "purchaseProportion",
+            "type": "f32"
+          }
+        ]
+      }
     },
     {
-      code: 6001;
-      name: "InvalidTreasury";
-      msg: "invalid treasury account";
+      "name": "AllocateYieldInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "solAmount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InsufficientFundsForTransaction",
+      "msg": "insufficient funds for transaction"
     },
     {
-      code: 6002;
-      name: "InvalidMint";
-      msg: "invalid mint";
+      "code": 6001,
+      "name": "InvalidTreasury",
+      "msg": "invalid treasury account"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidMint",
+      "msg": "invalid mint"
+    },
+    {
+      "code": 6003,
+      "name": "PurchaseThresholdExceeded",
+      "msg": "purchase threshold exceeded"
     }
-  ];
+  ]
 };
 
 export const IDL: TreasuryController = {
-  version: "0.1.0",
-  name: "treasury_controller",
-  instructions: [
+  "version": "0.1.0",
+  "name": "treasury_controller",
+  "instructions": [
     {
-      name: "registerState",
-      accounts: [
+      "name": "registerState",
+      "accounts": [
         {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "state",
-          isMut: true,
-          isSigner: false,
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "mint",
-          isMut: false,
-          isSigner: false,
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "state",
-          type: {
-            defined: "GenericStateInput",
-          },
-        },
-      ],
+          "name": "state",
+          "type": {
+            "defined": "GenericStateInput"
+          }
+        }
+      ]
     },
     {
-      name: "updateState",
-      accounts: [
+      "name": "updateState",
+      "accounts": [
         {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "state",
-          isMut: true,
-          isSigner: false,
-        },
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "state",
-          type: {
-            defined: "GenericStateInput",
-          },
-        },
-      ],
+          "name": "state",
+          "type": {
+            "defined": "GenericStateInput"
+          }
+        }
+      ]
     },
     {
-      name: "updatePrice",
-      accounts: [
+      "name": "updatePrice",
+      "accounts": [
         {
-          name: "state",
-          isMut: true,
-          isSigner: false,
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
-        },
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "price",
-          type: "u64",
-        },
-      ],
+          "name": "price",
+          "type": "u64"
+        }
+      ]
     },
     {
-      name: "allocateYield",
-      accounts: [
+      "name": "allocateYield",
+      "accounts": [
         {
-          name: "payer",
-          isMut: true,
-          isSigner: true,
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
         },
         {
-          name: "state",
-          isMut: true,
-          isSigner: false,
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "mint",
-          isMut: true,
-          isSigner: false,
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "treasury",
-          isMut: true,
-          isSigner: false,
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "holdingAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "holdingAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "holdingTokenAccount",
-          isMut: true,
-          isSigner: false,
+          "name": "holdingTokenAccount",
+          "isMut": true,
+          "isSigner": false
         },
         {
-          name: "tokenProgram",
-          isMut: false,
-          isSigner: false,
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
         },
         {
-          name: "systemProgram",
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
-      args: [
+      "args": [
         {
-          name: "args",
-          type: {
-            defined: "AllocateYieldInput",
-          },
-        },
-      ],
-    },
+          "name": "args",
+          "type": {
+            "defined": "AllocateYieldInput"
+          }
+        }
+      ]
+    }
   ],
-  accounts: [
+  "accounts": [
     {
-      name: "state",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "state",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "updateAuthority",
-            type: "publicKey",
+            "name": "updateAuthority",
+            "type": "publicKey"
           },
           {
-            name: "treasury",
-            type: "publicKey",
+            "name": "treasury",
+            "type": "publicKey"
           },
           {
-            name: "mint",
-            type: "publicKey",
+            "name": "mint",
+            "type": "publicKey"
           },
           {
-            name: "price",
-            type: "u64",
+            "name": "price",
+            "type": "u64"
           },
           {
-            name: "purchaseThreshold",
-            type: "u64",
+            "name": "purchaseThreshold",
+            "type": "u64"
           },
           {
-            name: "purchaseProportion",
-            type: "f32",
+            "name": "purchaseProportion",
+            "type": "f32"
           },
           {
-            name: "bump",
-            type: "u8",
-          },
-        ],
-      },
-    },
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
   ],
-  types: [
+  "types": [
     {
-      name: "GenericStateInput",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "GenericStateInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "mint",
-            type: "publicKey",
+            "name": "mint",
+            "type": "publicKey"
           },
           {
-            name: "updateAuthority",
-            type: "publicKey",
+            "name": "updateAuthority",
+            "type": "publicKey"
           },
           {
-            name: "treasury",
-            type: "publicKey",
+            "name": "treasury",
+            "type": "publicKey"
           },
           {
-            name: "holdingAccount",
-            type: "publicKey",
+            "name": "holdingAccount",
+            "type": "publicKey"
           },
           {
-            name: "holdingTokenAccount",
-            type: "publicKey",
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
           },
           {
-            name: "price",
-            type: "u64",
+            "name": "price",
+            "type": "u64"
           },
           {
-            name: "purchaseThreshold",
-            type: "u64",
+            "name": "purchaseThreshold",
+            "type": "u64"
           },
           {
-            name: "purchaseProportion",
-            type: "f32",
-          },
-        ],
-      },
+            "name": "purchaseProportion",
+            "type": "f32"
+          }
+        ]
+      }
     },
     {
-      name: "AllocateYieldInput",
-      type: {
-        kind: "struct",
-        fields: [
+      "name": "AllocateYieldInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: "solAmount",
-            type: "u64",
+            "name": "solAmount",
+            "type": "u64"
           },
           {
-            name: "tokenAmount",
-            type: "u64",
-          },
-        ],
-      },
-    },
+            "name": "tokenAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
   ],
-  errors: [
+  "errors": [
     {
-      code: 6000,
-      name: "InsufficientFundsForTransaction",
-      msg: "insufficient funds for transaction",
+      "code": 6000,
+      "name": "InsufficientFundsForTransaction",
+      "msg": "insufficient funds for transaction"
     },
     {
-      code: 6001,
-      name: "InvalidTreasury",
-      msg: "invalid treasury account",
+      "code": 6001,
+      "name": "InvalidTreasury",
+      "msg": "invalid treasury account"
     },
     {
-      code: 6002,
-      name: "InvalidMint",
-      msg: "invalid mint",
+      "code": 6002,
+      "name": "InvalidMint",
+      "msg": "invalid mint"
     },
-  ],
+    {
+      "code": 6003,
+      "name": "PurchaseThresholdExceeded",
+      "msg": "purchase threshold exceeded"
+    }
+  ]
 };

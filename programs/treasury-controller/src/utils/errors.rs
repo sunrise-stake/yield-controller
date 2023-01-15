@@ -10,4 +10,7 @@ pub enum ErrorCode {
 
     #[msg("invalid mint")]
     InvalidMint,
+
+    #[msg("purchase threshold exceeded")]
+    PurchaseThresholdExceeded,
 }
