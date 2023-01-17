@@ -5,7 +5,7 @@ use crate::utils::token::*;
 use anchor_lang::prelude::*;
 mod utils;
 
-declare_id!("8Wbd1YbvX44jJHmBrythtrMWJiJH5u7NqT1EYspSYx78");
+declare_id!("stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B");
 
 #[program]
 pub mod treasury_controller {
