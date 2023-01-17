@@ -1,19 +1,8 @@
-import {
-  Accounts,
-  AnchorProvider,
-  Program,
-  utils,
-} from "@project-serum/anchor";
+import { AnchorProvider, Program } from "@project-serum/anchor";
 import * as anchor from "@project-serum/anchor";
-import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
+import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountIdempotentInstruction,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
 import { TreasuryController, IDL } from "../types/treasury_controller";
-import { Connection } from "@solana/web3.js";
 
 export const PROGRAM_ID = new PublicKey(
   "8Wbd1YbvX44jJHmBrythtrMWJiJH5u7NqT1EYspSYx78"
@@ -69,7 +58,7 @@ export class TreasuryControllerClient {
   public static async getStateAddress(
     mint: PublicKey
   ): Promise<anchor.web3.PublicKey> {
-    const [state, _bump] = await PublicKey.findProgramAddress(
+    const [state] = PublicKey.findProgramAddressSync(
       [Buffer.from("state"), mint.toBuffer()],
       PROGRAM_ID
     );
@@ -90,7 +79,7 @@ export class TreasuryControllerClient {
     // find state address
     const state = await this.getStateAddress(mint);
 
-    let client = new TreasuryControllerClient(setUpAnchor());
+    const client = new TreasuryControllerClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.wallet.publicKey,

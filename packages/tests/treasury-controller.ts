@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { TreasuryController } from "../types/treasury_controller";
 import BN from "bn.js";
-import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { PROGRAM_ID, TreasuryControllerClient } from "../client";
 import {
   Account,
@@ -17,11 +17,11 @@ import testAuthority from "./fixtures/id.json";
 const program = anchor.workspace
   .TreasuryController as Program<TreasuryController>;
 
-describe("yield-controller", () => {
+describe("treasury-controller", () => {
   let client: TreasuryControllerClient;
-  let authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
-  let treasury = Keypair.generate();
-  let holdingAccount = Keypair.generate();
+  const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
+  const treasury = Keypair.generate();
+  const holdingAccount = Keypair.generate();
   let holdingTokenAccount: Account;
   let mint: anchor.web3.PublicKey;
   let stateAddress: anchor.web3.PublicKey;
@@ -40,7 +40,7 @@ describe("yield-controller", () => {
   beforeEach(async () => {
     await program.provider.connection
       .requestAirdrop(authority.publicKey, 100 * LAMPORTS_PER_SOL)
-      .then((sig) => program.provider.connection.confirmTransaction(sig));
+      .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
     holdingTokenAccount = await getOrCreateAssociatedTokenAccount(
       program.provider.connection,
@@ -57,21 +57,22 @@ describe("yield-controller", () => {
   });
 
   it("It can register a new controller state", async () => {
-    try {
-      client = await TreasuryControllerClient.register(
-        authority.publicKey,
-        treasury.publicKey,
-        mint,
-        holdingAccount.publicKey,
-        holdingTokenAccount.address,
-        new BN(1),
-        0.5,
-        new BN(1)
-      );
-    } catch (e) {
-      console.log(e);
-    }
-    const state = await program.account.state.fetch(client.stateAddress);
+    client = await TreasuryControllerClient.register(
+      authority.publicKey,
+      treasury.publicKey,
+      mint,
+      holdingAccount.publicKey,
+      holdingTokenAccount.address,
+      new BN(1),
+      0.5,
+      new BN(1)
+    );
+
+    expect(client.stateAddress).not.to.be.null;
+
+    const stateAddress = client.stateAddress as PublicKey;
+
+    const state = await program.account.state.fetch(stateAddress);
 
     expect(state.updateAuthority.toBase58()).equal(
       client.provider.publicKey.toBase58()
@@ -85,15 +86,11 @@ describe("yield-controller", () => {
   it("Can update controller price", async () => {
     const price = new BN(1_000);
 
-    try {
-      client = await TreasuryControllerClient.updatePrice(
-        client.stateAddress,
-        authority.publicKey,
-        price
-      );
-    } catch (e) {
-      console.log(e);
-    }
+    client = await TreasuryControllerClient.updatePrice(
+      stateAddress,
+      authority.publicKey,
+      price
+    );
 
     const state = await program.account.state.fetch(stateAddress);
 
@@ -103,11 +100,11 @@ describe("yield-controller", () => {
     // state account is PDA target for sunrise
     await program.provider.connection
       .requestAirdrop(stateAddress, 100 * LAMPORTS_PER_SOL)
-      .then((sig) => program.provider.connection.confirmTransaction(sig));
+      .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
     await program.provider.connection
       .requestAirdrop(treasury.publicKey, 100 * LAMPORTS_PER_SOL)
-      .then((sig) => program.provider.connection.confirmTransaction(sig));
+      .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
     // check that stateAddress now has 10 SOL
     const stateBalanceBefore = await program.provider.connection.getBalance(
@@ -153,7 +150,8 @@ describe("yield-controller", () => {
       program.provider.connection,
       holdingTokenAccount.address
     );
-    expect(holdingTokenAccountInfo.delegate.toBase58()).equal(
+
+    expect(holdingTokenAccountInfo?.delegate?.toBase58()).equal(
       stateAddress.toBase58()
     );
 
@@ -162,22 +160,20 @@ describe("yield-controller", () => {
       await program.provider.connection.getTokenAccountBalance(
         holdingTokenAccount.address
       );
+    const balanceBeforeNumber: number = holdingTokenAccountBalanceBefore.value
+      .uiAmount as number;
 
     // turn the crank
-    try {
-      client = await TreasuryControllerClient.allocateYield(
-        authority.publicKey,
-        stateAddress,
-        treasury.publicKey,
-        mint,
-        holdingAccount.publicKey,
-        holdingTokenAccount.address,
-        new BN(10 * 10 ** 9),
-        new BN(10 * 10 ** 9)
-      );
-    } catch (e) {
-      console.log(e);
-    }
+    client = await TreasuryControllerClient.allocateYield(
+      authority.publicKey,
+      stateAddress,
+      treasury.publicKey,
+      mint,
+      holdingAccount.publicKey,
+      holdingTokenAccount.address,
+      new BN(10 * 10 ** 9),
+      new BN(10 * 10 ** 9)
+    );
 
     const treasuryBalanceAfter = await program.provider.connection.getBalance(
       stateAddress
@@ -196,7 +192,7 @@ describe("yield-controller", () => {
       holdingAccountBalanceBefore + 5 * 10 ** 9
     );
     expect(holdingTokenAccountBalanceAfter.value.uiAmount).equal(
-      holdingTokenAccountBalanceBefore.value.uiAmount - 10
+      balanceBeforeNumber - 10
     );
   });
   it("Can update controller state", async () => {
