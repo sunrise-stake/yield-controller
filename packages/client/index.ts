@@ -97,7 +97,7 @@ export class TreasuryControllerClient {
         holdingTokenAccount,
         price,
         purchaseProportion,
-        purchaseThreshold,
+        purchaseThreshold
       })
       .accounts(accounts)
       .rpc()
@@ -119,7 +119,7 @@ export class TreasuryControllerClient {
     holdingTokenAccount: PublicKey,
     price: BN,
     purchaseProportion: number,
-    purchaseThreshold: BN
+    purchaseThreshold: BN,
   ): Promise<TreasuryControllerClient> {
     const client = new TreasuryControllerClient(setUpAnchor());
 

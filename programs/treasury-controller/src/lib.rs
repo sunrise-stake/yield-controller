@@ -42,7 +42,7 @@ pub mod treasury_controller {
 
     pub fn allocate_yield(ctx: Context<AllocateYield>, args: AllocateYieldInput) -> Result<()> {
         let mint_account = &ctx.accounts.mint;
-        let state_account = &ctx.accounts.state;
+        let state_account = &mut ctx.accounts.state;
         let treasury = &mut ctx.accounts.treasury;
         let token_program = &ctx.accounts.token_program;
         let holding_account = &mut ctx.accounts.holding_account;
@@ -66,8 +66,10 @@ pub mod treasury_controller {
 
         let holding_account_amount = args.sol_amount - treasury_amount;
 
+        let burn_amount = args.token_amount / state_account.price;
+
         burn(
-            args.token_amount,
+            burn_amount,
             state_account,
             mint_account,
             holding_token_account,
@@ -80,7 +82,9 @@ pub mod treasury_controller {
             holding_account,
             holding_account_amount,
         )?;
-        // transfer to holding account as well?
+
+        // update total sol spent
+        state_account.total_spent += holding_account_amount;
 
         Ok(())
     }

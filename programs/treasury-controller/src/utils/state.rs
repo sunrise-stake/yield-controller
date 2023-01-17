@@ -30,6 +30,7 @@ pub struct State {
     pub price: u64,
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
+    pub total_spent: u64,
     pub bump: u8,
 }
 
