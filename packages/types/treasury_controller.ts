@@ -164,6 +164,10 @@ export type TreasuryController = {
             "type": "f32"
           },
           {
+            "name": "totalSpent",
+            "type": "u64"
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -417,6 +421,10 @@ export const IDL: TreasuryController = {
           {
             "name": "purchaseProportion",
             "type": "f32"
+          },
+          {
+            "name": "totalSpent",
+            "type": "u64"
           },
           {
             "name": "bump",

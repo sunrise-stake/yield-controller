@@ -83,19 +83,6 @@ describe("treasury-controller", () => {
     expect(state.purchaseProportion).equal(0.5);
     expect(state.bump).equal(bump);
   });
-  it("Can update controller price", async () => {
-    const price = new BN(1_000);
-
-    client = await TreasuryControllerClient.updatePrice(
-      stateAddress,
-      authority.publicKey,
-      price
-    );
-
-    const state = await program.account.state.fetch(stateAddress);
-
-    expect(state.price.toNumber()).equal(price.toNumber());
-  });
   it("Can allocate yield", async () => {
     // state account is PDA target for sunrise
     await program.provider.connection
@@ -194,6 +181,21 @@ describe("treasury-controller", () => {
     expect(holdingTokenAccountBalanceAfter.value.uiAmount).equal(
       balanceBeforeNumber - 10
     );
+
+    const state = await program.account.state.fetch(stateAddress);
+    expect(state.totalSpent.toNumber()).equal(5 * 10 ** 9);
+  });
+  it("Can update controller price", async () => {
+    const price = new BN(1_000);
+
+    client = await TreasuryControllerClient.updatePrice(
+      stateAddress,
+      authority.publicKey,
+      price
+    );
+
+    const state = await program.account.state.fetch(stateAddress);
+    expect(state.price.toNumber()).equal(price.toNumber());
   });
   it("Can update controller state", async () => {
     const newAuthority = Keypair.generate();
