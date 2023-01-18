@@ -16,3 +16,4 @@ wallet = "packages/tests/fixtures/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/*.ts"
+register_state = "yarn run ts-node packages/scripts/registerState.ts"
