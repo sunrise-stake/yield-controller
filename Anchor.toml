@@ -4,15 +4,15 @@ types = "packages/types"
 [features]
 seeds = false
 skip-lint = false
-[programs.devnet]
-treasury_controller = "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
+[programs.localnet]
+treasury_controller = "Dr2Pv78fgcVFZUWMptPMN4BEksFG2LYFEN1jkvtEKL7g"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
-wallet = "packages/tests/fixtures/devnet.json"
+cluster = "Localnet"
+wallet = "packages/tests/fixtures/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/*.ts"

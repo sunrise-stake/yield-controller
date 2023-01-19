@@ -5,7 +5,7 @@ use crate::utils::token::*;
 use anchor_lang::prelude::*;
 mod utils;
 
-declare_id!("stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B");
+declare_id!("Dr2Pv78fgcVFZUWMptPMN4BEksFG2LYFEN1jkvtEKL7g");
 
 #[program]
 pub mod treasury_controller {
@@ -19,6 +19,8 @@ pub mod treasury_controller {
         state_account.purchase_threshold = state.purchase_threshold;
         state_account.purchase_proportion = state.purchase_proportion;
         state_account.price = state.price;
+        state_account.holding_account = state.holding_account;
+        state_account.holding_token_account = state.holding_token_account;
         state_account.bump = *ctx.bumps.get("state").unwrap();
         Ok(())
     }
@@ -30,6 +32,8 @@ pub mod treasury_controller {
         state_account.treasury = state.treasury;
         state_account.purchase_threshold = state.purchase_threshold;
         state_account.purchase_proportion = state.purchase_proportion;
+        state_account.holding_account = state.holding_account;
+        state_account.holding_token_account = state.holding_token_account;
         state_account.price = state.price;
         Ok(())
     }

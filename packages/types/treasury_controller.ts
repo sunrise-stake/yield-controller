@@ -164,6 +164,14 @@ export type TreasuryController = {
             "type": "f32"
           },
           {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
             "name": "totalSpent",
             "type": "u64"
           },
@@ -421,6 +429,14 @@ export const IDL: TreasuryController = {
           {
             "name": "purchaseProportion",
             "type": "f32"
+          },
+          {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
           },
           {
             "name": "totalSpent",
