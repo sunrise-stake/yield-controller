@@ -27,15 +27,22 @@ const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
 
+// used for devnet testing
+const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
+const stateAddress = new PublicKey(
+  process.env.STATE_ADDRESS ?? defaultStateAddress
+);
+
 (async () => {
   // get token account account for holding account
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     mint,
-    authorityKey,
+    holdingAccount,
     true
   );
 
-  const client = await TreasuryControllerClient.register(
+  const client = await TreasuryControllerClient.updateController(
+    stateAddress,
     authorityKey,
     treasuryKey,
     mint,
@@ -46,5 +53,5 @@ const holdingAccount = new PublicKey(
     new anchor.BN(PURCHASE_THRESHOLD)
   );
 
-  console.log("newly registerd state:", client.stateAddress);
+  console.log("updated state:", client.stateAddress);
 })().catch(console.error);
