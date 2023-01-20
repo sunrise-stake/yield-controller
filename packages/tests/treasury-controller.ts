@@ -17,6 +17,28 @@ import testAuthority from "./fixtures/id.json";
 const program = anchor.workspace
   .TreasuryController as Program<TreasuryController>;
 
+export const expectAmount = (
+  actualAmount: number | BN,
+  expectedAmount: number | BN,
+  tolerance = 0
+) => {
+  const actualAmountBN = new BN(actualAmount);
+  const minExpected = new BN(expectedAmount).subn(tolerance);
+  const maxExpected = new BN(expectedAmount).addn(tolerance);
+
+  console.log(
+    "Expecting",
+    actualAmountBN.toString(),
+    "to be at least",
+    new BN(minExpected).toString(),
+    "and at most",
+    new BN(maxExpected).toString()
+  );
+
+  expect(actualAmountBN.gte(minExpected)).to.be.true;
+  expect(actualAmountBN.lte(maxExpected)).to.be.true;
+};
+
 describe("treasury-controller", () => {
   let client: TreasuryControllerClient;
   const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
@@ -27,13 +49,18 @@ describe("treasury-controller", () => {
   let stateAddress: anchor.web3.PublicKey;
   let bump: number;
 
+  const price = 0.05;
+  const tokenDecimals = 5; // choose something other than 9 to ensure the maths are correct
+  const tokensToMint = 1_000_000;
+  const STATE_RENT = 2317680; // The amount kept in the state account for rent
+
   before(async () => {
     mint = await createMint(
       program.provider.connection,
       authority,
       authority.publicKey,
       null,
-      9
+      tokenDecimals
     );
   });
 
@@ -50,7 +77,7 @@ describe("treasury-controller", () => {
       true
     );
 
-    [stateAddress, bump] = await anchor.web3.PublicKey.findProgramAddress(
+    [stateAddress, bump] = anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from("state"), mint.toBuffer()],
       PROGRAM_ID
     );
@@ -63,9 +90,9 @@ describe("treasury-controller", () => {
       mint,
       holdingAccount.publicKey,
       holdingTokenAccount.address,
-      new BN(1),
-      0.5,
-      new BN(1)
+      price,
+      0.9, // 90% goes to buying tokens
+      new BN(LAMPORTS_PER_SOL) // Only purchase once we have accrued at least 1 sol
     );
 
     expect(client.stateAddress).not.to.be.null;
@@ -79,25 +106,19 @@ describe("treasury-controller", () => {
     );
     expect(state.treasury.toBase58()).equal(treasury.publicKey.toBase58());
     expect(state.mint.toBase58()).equal(mint.toBase58());
-    expect(state.purchaseThreshold.toNumber()).equal(1);
-    expect(state.purchaseProportion).equal(0.5);
+    expect(state.purchaseThreshold.toNumber()).equal(LAMPORTS_PER_SOL);
+    // TODO move away from floating point maths
+    expectAmount(state.purchaseProportion, 0.9, 0.00000001);
     expect(state.bump).equal(bump);
   });
   it("Can allocate yield", async () => {
     // state account is PDA target for sunrise
+    // give the state account 100 SOL
     await program.provider.connection
       .requestAirdrop(stateAddress, 100 * LAMPORTS_PER_SOL)
       .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
-    await program.provider.connection
-      .requestAirdrop(treasury.publicKey, 100 * LAMPORTS_PER_SOL)
-      .then(async (sig) => program.provider.connection.confirmTransaction(sig));
-
-    // check that stateAddress now has 10 SOL
-    const stateBalanceBefore = await program.provider.connection.getBalance(
-      stateAddress
-    );
-    // treasury token account is created and delegate is set to the state account
+    // holding token account is created and delegate is set to the state account
     const holdingTokenAccount = await getOrCreateAssociatedTokenAccount(
       program.provider.connection,
       authority,
@@ -107,14 +128,15 @@ describe("treasury-controller", () => {
     );
 
     // mint some tokens to the treasury token account and delegate to the state account
+    // mint 1000000 tokens
     await mintToChecked(
       program.provider.connection,
       authority,
       mint,
       holdingTokenAccount.address,
       authority.publicKey,
-      1000 * 10 ** 9,
-      9
+      tokensToMint * 10 ** tokenDecimals,
+      tokenDecimals
     );
 
     // set holding account delegate to state account
@@ -125,12 +147,9 @@ describe("treasury-controller", () => {
       holdingTokenAccount.address,
       stateAddress,
       holdingAccount,
-      1000 * 10 ** 9,
-      9
+      tokensToMint * 10 ** tokenDecimals,
+      tokenDecimals
     );
-
-    const holdingAccountBalanceBefore =
-      await program.provider.connection.getBalance(holdingAccount.publicKey);
 
     // get token account info
     const holdingTokenAccountInfo = await getAccount(
@@ -142,28 +161,18 @@ describe("treasury-controller", () => {
       stateAddress.toBase58()
     );
 
-    // check DAO token account balance
-    const holdingTokenAccountBalanceBefore =
-      await program.provider.connection.getTokenAccountBalance(
-        holdingTokenAccount.address
-      );
-    const balanceBeforeNumber: number = holdingTokenAccountBalanceBefore.value
-      .uiAmount as number;
-
     // turn the crank
+    console.log("turning the crank");
     client = await TreasuryControllerClient.allocateYield(
       authority.publicKey,
-      stateAddress,
-      treasury.publicKey,
-      mint,
-      holdingAccount.publicKey,
-      holdingTokenAccount.address,
-      new BN(10 * 10 ** 9),
-      new BN(10 * 10 ** 9)
+      stateAddress
     );
 
-    const treasuryBalanceAfter = await program.provider.connection.getBalance(
+    const stateBalanceAfter = await program.provider.connection.getBalance(
       stateAddress
+    );
+    const treasuryBalanceAfter = await program.provider.connection.getBalance(
+      treasury.publicKey
     );
 
     const holdingTokenAccountBalanceAfter =
@@ -174,28 +183,36 @@ describe("treasury-controller", () => {
     const holdingAccountBalanceAfter =
       await program.provider.connection.getBalance(holdingAccount.publicKey);
 
-    expect(treasuryBalanceAfter).equal(stateBalanceBefore - 10 * 10 ** 9);
-    expect(holdingAccountBalanceAfter).equal(
-      holdingAccountBalanceBefore + 5 * 10 ** 9
-    );
-    expect(holdingTokenAccountBalanceAfter.value.uiAmount).equal(
-      balanceBeforeNumber - 10
-    );
-
     const state = await program.account.state.fetch(stateAddress);
-    expect(state.totalSpent.toNumber()).equal(5 * 10 ** 9);
+
+    // We expect:
+    // 1. The state account to have 0 balance (less rent)
+    // 2. The treasury account to have received 100 SOL * 0.1 = 10 SOL
+    // 3. The SOL holding account to have received 100 SOL * 0.9 = 90 SOL
+    // 4. The token holding account to have (90 / 0.05 = 1800) fewer tokens
+    // 5. The state account to ahve been updated with the amount that was sent to the holding account
+
+    expectAmount(stateBalanceAfter - STATE_RENT, 0);
+    expectAmount(treasuryBalanceAfter, 10 * LAMPORTS_PER_SOL, 3000); // TODO fix floating point maths
+    expectAmount(holdingAccountBalanceAfter, 90 * LAMPORTS_PER_SOL, 3000); // TODO fix floating point maths
+    expectAmount(
+      holdingTokenAccountBalanceAfter.value.uiAmount!,
+      tokensToMint - 1800
+    );
+    expectAmount(state.totalSpent.toNumber(), holdingAccountBalanceAfter);
   });
+
   it("Can update controller price", async () => {
-    const price = new BN(1_000);
+    const newPrice = 1.23;
 
     client = await TreasuryControllerClient.updatePrice(
       stateAddress,
       authority.publicKey,
-      price
+      newPrice
     );
 
     const state = await program.account.state.fetch(stateAddress);
-    expect(state.price.toNumber()).equal(price.toNumber());
+    expect(state.price).equal(newPrice);
   });
   it("Can update controller state", async () => {
     const newAuthority = Keypair.generate();
@@ -209,21 +226,17 @@ describe("treasury-controller", () => {
       true
     );
 
-    try {
-      client = await TreasuryControllerClient.updateController(
-        stateAddress,
-        newAuthority.publicKey,
-        newTreasury.publicKey,
-        mint,
-        newHoldingAccount.publicKey,
-        newHoldingTokenAccount.address,
-        new BN(10),
-        1,
-        new BN(100)
-      );
-    } catch (e) {
-      console.log(e);
-    }
+    client = await TreasuryControllerClient.updateController(
+      stateAddress,
+      newAuthority.publicKey,
+      newTreasury.publicKey,
+      mint,
+      newHoldingAccount.publicKey,
+      newHoldingTokenAccount.address,
+      price,
+      1,
+      new BN(100)
+    );
 
     const state = await program.account.state.fetch(stateAddress);
 

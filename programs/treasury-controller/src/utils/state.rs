@@ -11,15 +11,9 @@ pub struct GenericStateInput {
     pub treasury: Pubkey,
     pub holding_account: Pubkey,
     pub holding_token_account: Pubkey,
-    pub price: u64, /* TODO: replace with oracle */
+    pub price: f64, /* TODO: replace with oracle */
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct AllocateYieldInput {
-    pub sol_amount: u64,
-    pub token_amount: u64,
 }
 
 #[account]
@@ -27,7 +21,7 @@ pub struct State {
     pub update_authority: Pubkey,
     pub treasury: Pubkey,
     pub mint: Pubkey,
-    pub price: u64,
+    pub price: f64,
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
     pub holding_account: Pubkey,
@@ -37,7 +31,7 @@ pub struct State {
 }
 
 impl State {
-    const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 8 /* Discriminator */;
+    pub const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 8 /* Discriminator */;
 }
 
 #[derive(Accounts)]
@@ -86,7 +80,6 @@ pub struct UpdatePrice<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64)]
 pub struct AllocateYield<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -94,30 +87,31 @@ pub struct AllocateYield<'info> {
         mut,
         seeds = [STATE, state.mint.key().as_ref()],
         bump = state.bump,
+        has_one = holding_account,
+        has_one = holding_token_account,
+        has_one = treasury,
+        has_one = mint
     )]
     pub state: Account<'info, State>,
-    #[account(
-        mut,
-        constraint = treasury.key() == state.treasury.key(),
-    )]
+    #[account(mut)]
     pub mint: Account<'info, Mint>,
-    /// CHECK: Assumes correct state setup
     #[account(
         mut,
         constraint = treasury.key() == state.treasury.key(),
     )]
-    pub treasury: AccountInfo<'info>,
+    pub treasury: SystemAccount<'info>,
     #[account(
         mut,
         constraint = holding_account.key() == state.holding_account.key(),
     )]
-    /// CHECK: Assumes correct state setup
-    pub holding_account: AccountInfo<'info>,
+    pub holding_account: SystemAccount<'info>,
     #[account(
         mut,
         constraint = holding_token_account.key() == state.holding_token_account.key(),
+        has_one = mint
     )]
     pub holding_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+    pub rent: Sysvar<'info, Rent>,
 }
