@@ -5,7 +5,7 @@ import BN from "bn.js";
 import { TreasuryController, IDL } from "../types/treasury_controller";
 
 export const PROGRAM_ID = new PublicKey(
-  "Dr2Pv78fgcVFZUWMptPMN4BEksFG2LYFEN1jkvtEKL7g"
+  "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
 );
 
 export const setUpAnchor = (): anchor.AnchorProvider => {
