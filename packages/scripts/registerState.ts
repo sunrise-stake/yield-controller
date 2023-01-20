@@ -1,33 +1,29 @@
-import { TreasuryControllerClient } from "../client";
+import { setUpAnchor, TreasuryControllerClient } from "../client";
 import * as anchor from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 /** Adjust these values to whatever you want them to be */
-const PRICE = 0.076;
-const PURCHASE_THRESHOLD = 100;
-const PURCHASE_PROPORTION = 0;
+const PRICE = 0.08;
+const PURCHASE_THRESHOLD = LAMPORTS_PER_SOL; // purchase if the account has at least 1 SOL
+const PURCHASE_PROPORTION = 1; // 100% of yield goes to purchasing tokens
 
-const defaultTreasuryKey = "ALhQPLkXvbLKsH5Bm9TC3CTabKFSmnXFmzjqpTXYBPpu";
+const defaultTreasuryKey = "stdeYBs3MUtQN7zqgAQaxvsYemxncJKNDMJhciHct9M";
 const treasuryKey = new PublicKey(
   process.env.TREASURY_KEY ?? defaultTreasuryKey
-);
-
-const defaultAuthority = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
-const authorityKey = new PublicKey(
-  process.env.AUTHORITY_KEY ?? defaultAuthority
 );
 
 // used in devnet
 const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
 const mint = new PublicKey(process.env.MINT ?? defaultMint);
 
-const defaultHoldingAccount = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
+const defaultHoldingAccount = "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv";
 const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
 
 (async () => {
+  const provider = setUpAnchor();
   // get token account for holding account
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     mint,
@@ -36,15 +32,16 @@ const holdingAccount = new PublicKey(
   );
 
   const client = await TreasuryControllerClient.register(
-    authorityKey,
+    provider.publicKey,
     treasuryKey,
     mint,
     holdingAccount,
     holdingAccountTokenAddress,
-    new anchor.BN(PRICE),
+    PRICE,
     PURCHASE_PROPORTION,
-    new anchor.BN(PURCHASE_THRESHOLD)
+    new anchor.BN(PURCHASE_THRESHOLD),
+    0
   );
 
-  console.log("newly registerd state:", client.stateAddress);
+  console.log("newly registered state:", client.stateAddress);
 })().catch(console.error);

@@ -21,6 +21,7 @@ pub mod treasury_controller {
         state_account.price = state.price;
         state_account.holding_account = state.holding_account;
         state_account.holding_token_account = state.holding_token_account;
+        state_account.index = state.index;
         state_account.bump = *ctx.bumps.get("state").unwrap();
         Ok(())
     }

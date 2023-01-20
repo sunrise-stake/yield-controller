@@ -174,6 +174,10 @@ export type TreasuryController = {
             "type": "u64"
           },
           {
+            "name": "index",
+            "type": "u8"
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -218,6 +222,10 @@ export type TreasuryController = {
           {
             "name": "purchaseProportion",
             "type": "f32"
+          },
+          {
+            "name": "index",
+            "type": "u8"
           }
         ]
       }
@@ -423,6 +431,10 @@ export const IDL: TreasuryController = {
             "type": "u64"
           },
           {
+            "name": "index",
+            "type": "u8"
+          },
+          {
             "name": "bump",
             "type": "u8"
           }
@@ -467,6 +479,10 @@ export const IDL: TreasuryController = {
           {
             "name": "purchaseProportion",
             "type": "f32"
+          },
+          {
+            "name": "index",
+            "type": "u8"
           }
         ]
       }

@@ -11,7 +11,12 @@ pub fn burn<'a>(
     token_account: &Account<'a, TokenAccount>,
     token_program: &AccountInfo<'a>,
 ) -> Result<()> {
-    let seeds = [STATE, state_account.mint.as_ref(), &[state_account.bump]];
+    let seeds = [
+        STATE,
+        state_account.mint.as_ref(),
+        &state_account.index.to_le_bytes(),
+        &[state_account.bump],
+    ];
 
     let cpi_program = token_program.clone();
     let accounts = token::Burn {

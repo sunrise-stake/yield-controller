@@ -1,37 +1,18 @@
 import { PublicKey } from "@solana/web3.js";
 import { TreasuryControllerClient, setUpAnchor } from "../client";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
-import BN from "bn.js";
-
-const defaultAuthority = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
-const authorityKey = new PublicKey(
-  process.env.AUTHORITY_KEY ?? defaultAuthority
-);
 
 const defaultStateAddress = "CaFanGeqN6ykNTGTE7U2StJ8n1RJY6on6FoDFeLxabia";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
 
-const defaultTreasuryKey = "ALhQPLkXvbLKsH5Bm9TC3CTabKFSmnXFmzjqpTXYBPpu";
-const treasuryKey = new PublicKey(
-  process.env.TREASURY_KEY ?? defaultTreasuryKey
-);
-
-const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
-const mint = new PublicKey(process.env.MINT ?? defaultMint);
-
-const defaultHoldingAccount = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
-const holdingAccount = new PublicKey(
-  process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
-);
-
 (async () => {
   const provider = setUpAnchor();
   const stateAccount = await TreasuryControllerClient.fetch(stateAddress);
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
-    mint,
-    holdingAccount,
+    stateAccount.mint,
+    stateAccount.holdingAccount,
     true
   );
   // get sol holding accounts balance
@@ -78,13 +59,7 @@ const holdingAccount = new PublicKey(
   }
 
   await TreasuryControllerClient.allocateYield(
-    authorityKey,
-    stateAddress,
-    treasuryKey,
-    mint,
-    holdingAccount,
-    holdingAccountTokenAddress,
-    new BN(solAccountBalance / 10), // send 10% of sol balance to holding account / treasury;
-    new BN(Number(100 * 10 ** 9)) // note that i set the delegate amount to 1000 tokens
+    provider.publicKey,
+    stateAddress
   );
 })().catch(console.error);
