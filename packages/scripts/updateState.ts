@@ -17,13 +17,13 @@ const treasuryKey = new PublicKey(
 const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
 const mint = new PublicKey(process.env.MINT ?? defaultMint);
 
-const defaultHoldingAccount = "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv";
+const defaultHoldingAccount = "dhcB568T3skiP2D9ujf4eAJEnW2gACaaA9BUCVbwbXD";
 const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
 
 // used for devnet testing
-const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
+const defaultStateAddress = "EDNq7UqUJQzU87n1k9kj1eWRKngJgYc4oVW8MHsA1Gs3";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
@@ -48,7 +48,7 @@ const stateAddress = new PublicKey(
     PRICE,
     PURCHASE_PROPORTION,
     new anchor.BN(PURCHASE_THRESHOLD),
-    1
+    0
   );
 
   console.log("updated state:", client.stateAddress);
