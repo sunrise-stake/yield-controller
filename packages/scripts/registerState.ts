@@ -4,7 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 /** Adjust these values to whatever you want them to be */
-const PRICE = 1;
+const PRICE = 0.076;
 const PURCHASE_THRESHOLD = 100;
 const PURCHASE_PROPORTION = 0;
 
@@ -28,7 +28,7 @@ const holdingAccount = new PublicKey(
 );
 
 (async () => {
-  // get token account account for holding account
+  // get token account for holding account
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     mint,
     holdingAccount,

@@ -3,6 +3,7 @@ import * as anchor from "@project-serum/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
 import { TreasuryController, IDL } from "../types/treasury_controller";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
@@ -55,9 +56,7 @@ export class TreasuryControllerClient {
     this.stateAddress = stateAddress;
   }
 
-  public static async getStateAddress(
-    mint: PublicKey
-  ): Promise<anchor.web3.PublicKey> {
+  public static getStateAddress(mint: PublicKey): PublicKey {
     const [state] = PublicKey.findProgramAddressSync(
       [Buffer.from("state"), mint.toBuffer()],
       PROGRAM_ID
@@ -77,7 +76,7 @@ export class TreasuryControllerClient {
     mint: PublicKey,
     holdingAccount: PublicKey,
     holdingTokenAccount: PublicKey,
-    price: BN,
+    price: number,
     purchaseProportion: number,
     purchaseThreshold: BN
   ): Promise<TreasuryControllerClient> {
@@ -122,7 +121,7 @@ export class TreasuryControllerClient {
     mint: PublicKey,
     holdingAccount: PublicKey,
     holdingTokenAccount: PublicKey,
-    price: BN,
+    price: number,
     purchaseProportion: number,
     purchaseThreshold: BN
   ): Promise<TreasuryControllerClient> {
@@ -155,26 +154,27 @@ export class TreasuryControllerClient {
 
   public static async allocateYield(
     payer: PublicKey,
-    state: PublicKey,
-    treasury: PublicKey,
-    mint: PublicKey,
-    holdingAccount: PublicKey,
-    holdingTokenAccount: PublicKey,
-    solAmount: BN,
-    tokenAmount: BN
+    stateAddress: PublicKey
   ): Promise<TreasuryControllerClient> {
     const client = new TreasuryControllerClient(setUpAnchor());
 
+    // TODO make non-static and fix return value
+    const state = await TreasuryControllerClient.fetch(stateAddress);
+
+    const accounts = {
+      payer,
+      state: stateAddress,
+      mint: state.mint,
+      treasury: state.treasury,
+      holdingAccount: state.holdingAccount,
+      holdingTokenAccount: state.holdingTokenAccount,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+    };
     await client.program.methods
-      .allocateYield({ solAmount, tokenAmount })
-      .accounts({
-        payer,
-        state,
-        treasury,
-        mint,
-        holdingAccount,
-        holdingTokenAccount,
-      })
+      .allocateYield()
+      .accounts(accounts)
       .rpc()
       .then(confirm(client.provider.connection));
 
@@ -184,7 +184,7 @@ export class TreasuryControllerClient {
   public static async updatePrice(
     state: PublicKey,
     payer: PublicKey,
-    price: BN
+    price: number
   ): Promise<TreasuryControllerClient> {
     const client = new TreasuryControllerClient(setUpAnchor());
 

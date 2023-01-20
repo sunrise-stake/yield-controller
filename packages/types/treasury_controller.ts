@@ -75,7 +75,7 @@ export type TreasuryController = {
       "args": [
         {
           "name": "price",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -121,16 +121,14 @@ export type TreasuryController = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": "AllocateYieldInput"
-          }
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -153,7 +151,7 @@ export type TreasuryController = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -211,7 +209,7 @@ export type TreasuryController = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -220,22 +218,6 @@ export type TreasuryController = {
           {
             "name": "purchaseProportion",
             "type": "f32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateYieldInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "solAmount",
-            "type": "u64"
-          },
-          {
-            "name": "tokenAmount",
-            "type": "u64"
           }
         ]
       }
@@ -342,7 +324,7 @@ export const IDL: TreasuryController = {
       "args": [
         {
           "name": "price",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -388,16 +370,14 @@ export const IDL: TreasuryController = {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": "AllocateYieldInput"
-          }
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -420,7 +400,7 @@ export const IDL: TreasuryController = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -478,7 +458,7 @@ export const IDL: TreasuryController = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -487,22 +467,6 @@ export const IDL: TreasuryController = {
           {
             "name": "purchaseProportion",
             "type": "f32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateYieldInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "solAmount",
-            "type": "u64"
-          },
-          {
-            "name": "tokenAmount",
-            "type": "u64"
           }
         ]
       }
