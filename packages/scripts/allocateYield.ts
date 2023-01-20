@@ -8,7 +8,7 @@ const authorityKey = new PublicKey(
   process.env.AUTHORITY_KEY ?? defaultAuthority
 );
 
-const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
+const defaultStateAddress = "CaFanGeqN6ykNTGTE7U2StJ8n1RJY6on6FoDFeLxabia";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );

@@ -2,7 +2,7 @@ import { TreasuryControllerClient } from "../client";
 import { PublicKey } from "@solana/web3.js";
 
 // used for devnet testing
-const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
+const defaultStateAddress = "CaFanGeqN6ykNTGTE7U2StJ8n1RJY6on6FoDFeLxabia";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );

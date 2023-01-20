@@ -9,7 +9,7 @@ import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
 const mint = new PublicKey(process.env.MINT ?? defaultMint);
 
-const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
+const defaultStateAddress = "CaFanGeqN6ykNTGTE7U2StJ8n1RJY6on6FoDFeLxabia";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );

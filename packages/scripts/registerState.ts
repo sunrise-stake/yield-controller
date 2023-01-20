@@ -13,7 +13,7 @@ const treasuryKey = new PublicKey(
   process.env.TREASURY_KEY ?? defaultTreasuryKey
 );
 
-const defaultAuthority = "5HnwQGT79JypiAdjdjsXEn1EMD2AsRVVubqDyWfyWXRv";
+const defaultAuthority = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
 const authorityKey = new PublicKey(
   process.env.AUTHORITY_KEY ?? defaultAuthority
 );
@@ -31,7 +31,7 @@ const holdingAccount = new PublicKey(
   // get token account account for holding account
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     mint,
-    authorityKey,
+    holdingAccount,
     true
   );
 
