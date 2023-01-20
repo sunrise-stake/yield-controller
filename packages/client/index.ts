@@ -56,9 +56,9 @@ export class TreasuryControllerClient {
     this.stateAddress = stateAddress;
   }
 
-  public static getStateAddress(mint: PublicKey): PublicKey {
+  public static getStateAddress(mint: PublicKey, index: number): PublicKey {
     const [state] = PublicKey.findProgramAddressSync(
-      [Buffer.from("state"), mint.toBuffer()],
+      [Buffer.from("state"), mint.toBuffer(), Buffer.from([index])],
       PROGRAM_ID
     );
 
@@ -78,10 +78,11 @@ export class TreasuryControllerClient {
     holdingTokenAccount: PublicKey,
     price: number,
     purchaseProportion: number,
-    purchaseThreshold: BN
+    purchaseThreshold: BN,
+    index: number
   ): Promise<TreasuryControllerClient> {
     // find state address
-    const state = await this.getStateAddress(mint);
+    const state = await this.getStateAddress(mint, index);
 
     const client = new TreasuryControllerClient(setUpAnchor());
 
@@ -102,6 +103,7 @@ export class TreasuryControllerClient {
         price,
         purchaseProportion,
         purchaseThreshold,
+        index,
       })
       .accounts(accounts)
       .rpc()
@@ -123,7 +125,8 @@ export class TreasuryControllerClient {
     holdingTokenAccount: PublicKey,
     price: number,
     purchaseProportion: number,
-    purchaseThreshold: BN
+    purchaseThreshold: BN,
+    index: number
   ): Promise<TreasuryControllerClient> {
     const client = new TreasuryControllerClient(setUpAnchor());
 
@@ -142,6 +145,7 @@ export class TreasuryControllerClient {
         price,
         purchaseProportion,
         purchaseThreshold,
+        index,
       })
       .accounts(accounts)
       .rpc()
@@ -172,6 +176,7 @@ export class TreasuryControllerClient {
       systemProgram: SystemProgram.programId,
       rent: anchor.web3.SYSVAR_RENT_PUBKEY,
     };
+    console.log(accounts);
     await client.program.methods
       .allocateYield()
       .accounts(accounts)

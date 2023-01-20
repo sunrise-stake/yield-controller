@@ -1,28 +1,23 @@
-import { TreasuryControllerClient } from "../client";
+import { setUpAnchor, TreasuryControllerClient } from "../client";
 import * as anchor from "@project-serum/anchor";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 /** Adjust these values to whatever you want them to be */
-const PRICE = 1;
-const PURCHASE_THRESHOLD = 100;
-const PURCHASE_PROPORTION = 0;
+const PRICE = 0.08;
+const PURCHASE_THRESHOLD = LAMPORTS_PER_SOL; // purchase if the account has at least 1 SOL
+const PURCHASE_PROPORTION = 1; // 100% of yield goes to purchasing tokens
 
-const defaultTreasuryKey = "ALhQPLkXvbLKsH5Bm9TC3CTabKFSmnXFmzjqpTXYBPpu";
+const defaultTreasuryKey = "stdeYBs3MUtQN7zqgAQaxvsYemxncJKNDMJhciHct9M";
 const treasuryKey = new PublicKey(
   process.env.TREASURY_KEY ?? defaultTreasuryKey
-);
-
-const defaultAuthority = "5HnwQGT79JypiAdjdjsXEn1EMD2AsRVVubqDyWfyWXRv";
-const authorityKey = new PublicKey(
-  process.env.AUTHORITY_KEY ?? defaultAuthority
 );
 
 // used in devnet
 const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
 const mint = new PublicKey(process.env.MINT ?? defaultMint);
 
-const defaultHoldingAccount = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
+const defaultHoldingAccount = "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv";
 const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
@@ -34,7 +29,9 @@ const stateAddress = new PublicKey(
 );
 
 (async () => {
-  // get token account account for holding account
+  const provider = setUpAnchor();
+
+  // get token account for holding account
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     mint,
     holdingAccount,
@@ -43,14 +40,15 @@ const stateAddress = new PublicKey(
 
   const client = await TreasuryControllerClient.updateController(
     stateAddress,
-    authorityKey,
+    provider.publicKey,
     treasuryKey,
     mint,
     holdingAccount,
     holdingAccountTokenAddress,
-    new anchor.BN(PRICE),
+    PRICE,
     PURCHASE_PROPORTION,
-    new anchor.BN(PURCHASE_THRESHOLD)
+    new anchor.BN(PURCHASE_THRESHOLD),
+    1
   );
 
   console.log("updated state:", client.stateAddress);

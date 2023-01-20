@@ -52,7 +52,7 @@ describe("treasury-controller", () => {
   const price = 0.05;
   const tokenDecimals = 5; // choose something other than 9 to ensure the maths are correct
   const tokensToMint = 1_000_000;
-  const STATE_RENT = 2317680; // The amount kept in the state account for rent
+  const STATE_RENT = 2_324_640; // The amount kept in the state account for rent
 
   before(async () => {
     mint = await createMint(
@@ -78,7 +78,7 @@ describe("treasury-controller", () => {
     );
 
     [stateAddress, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-      [Buffer.from("state"), mint.toBuffer()],
+      [Buffer.from("state"), mint.toBuffer(), Buffer.from([0])],
       PROGRAM_ID
     );
   });
@@ -92,7 +92,8 @@ describe("treasury-controller", () => {
       holdingTokenAccount.address,
       price,
       0.9, // 90% goes to buying tokens
-      new BN(LAMPORTS_PER_SOL) // Only purchase once we have accrued at least 1 sol
+      new BN(LAMPORTS_PER_SOL), // Only purchase once we have accrued at least 1 sol,
+      0
     );
 
     expect(client.stateAddress).not.to.be.null;
@@ -235,7 +236,8 @@ describe("treasury-controller", () => {
       newHoldingTokenAccount.address,
       price,
       1,
-      new BN(100)
+      new BN(100),
+      0
     );
 
     const state = await program.account.state.fetch(stateAddress);

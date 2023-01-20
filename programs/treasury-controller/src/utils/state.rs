@@ -14,6 +14,7 @@ pub struct GenericStateInput {
     pub price: f64, /* TODO: replace with oracle */
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
+    pub index: u8,
 }
 
 #[account]
@@ -27,11 +28,12 @@ pub struct State {
     pub holding_account: Pubkey,
     pub holding_token_account: Pubkey,
     pub total_spent: u64,
+    pub index: u8,
     pub bump: u8,
 }
 
 impl State {
-    pub const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 8 /* Discriminator */;
+    pub const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 1 + 8 /* Discriminator */;
 }
 
 #[derive(Accounts)]
@@ -42,7 +44,7 @@ pub struct RegisterState<'info> {
     #[account(
         init,
         space = State::SPACE,
-        seeds = [STATE, state_in.mint.key().as_ref()],
+        seeds = [STATE, state_in.mint.key().as_ref(), state_in.index.to_le_bytes().as_ref()],
         payer = payer,
         bump
     )]
@@ -58,7 +60,7 @@ pub struct UpdateState<'info> {
     pub payer: Signer<'info>,
     #[account(
         mut,
-        seeds = [STATE, state_in.mint.key().as_ref()],
+        seeds = [STATE, state_in.mint.key().as_ref(), state_in.index.to_le_bytes().as_ref()],
         bump = state.bump,
         constraint = state.update_authority == payer.key()
     )]
@@ -70,8 +72,6 @@ pub struct UpdateState<'info> {
 pub struct UpdatePrice<'info> {
     #[account(
         mut,
-        seeds = [STATE, state.mint.key().as_ref()],
-        bump = state.bump,
         constraint = state.update_authority == payer.key()
     )]
     pub state: Account<'info, State>,
@@ -85,8 +85,6 @@ pub struct AllocateYield<'info> {
     pub payer: Signer<'info>,
     #[account(
         mut,
-        seeds = [STATE, state.mint.key().as_ref()],
-        bump = state.bump,
         has_one = holding_account,
         has_one = holding_token_account,
         has_one = treasury,
