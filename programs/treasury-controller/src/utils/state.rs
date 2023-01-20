@@ -30,12 +30,14 @@ pub struct State {
     pub price: u64,
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
+    pub holding_account: Pubkey,
+    pub holding_token_account: Pubkey,
     pub total_spent: u64,
     pub bump: u8,
 }
 
 impl State {
-    const SPACE: usize = 32 + 32 + 32 + 32 + 4 + 1 + 8 /* Discriminator */;
+    const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 8 /* Discriminator */;
 }
 
 #[derive(Accounts)]
@@ -94,15 +96,27 @@ pub struct AllocateYield<'info> {
         bump = state.bump,
     )]
     pub state: Account<'info, State>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = treasury.key() == state.treasury.key(),
+    )]
     pub mint: Account<'info, Mint>,
-    /// CHECK: checked in program
-    #[account(mut)]
+    /// CHECK: Assumes correct state setup
+    #[account(
+        mut,
+        constraint = treasury.key() == state.treasury.key(),
+    )]
     pub treasury: AccountInfo<'info>,
-    /// CHECK: checked in program
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = holding_account.key() == state.holding_account.key(),
+    )]
+    /// CHECK: Assumes correct state setup
     pub holding_account: AccountInfo<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = holding_token_account.key() == state.holding_token_account.key(),
+    )]
     pub holding_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

@@ -8,7 +8,7 @@ export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
 );
 
-const setUpAnchor = (): anchor.AnchorProvider => {
+export const setUpAnchor = (): anchor.AnchorProvider => {
   // Configure the client to use the local cluster.
   const provider = AnchorProvider.env();
   anchor.setProvider(provider);
@@ -64,6 +64,11 @@ export class TreasuryControllerClient {
     );
 
     return state;
+  }
+
+  public static async fetch(stateAddress: PublicKey): Promise<any> {
+    const client = new TreasuryControllerClient(setUpAnchor());
+    return client.program.account.state.fetch(stateAddress);
   }
 
   public static async register(
