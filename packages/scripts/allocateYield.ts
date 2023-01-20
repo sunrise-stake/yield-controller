@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { TreasuryControllerClient, setUpAnchor } from "../client";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 
-const defaultStateAddress = "CaFanGeqN6ykNTGTE7U2StJ8n1RJY6on6FoDFeLxabia";
+const defaultStateAddress = "EDNq7UqUJQzU87n1k9kj1eWRKngJgYc4oVW8MHsA1Gs3";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
