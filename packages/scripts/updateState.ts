@@ -23,7 +23,7 @@ const holdingAccount = new PublicKey(
 );
 
 // used for devnet testing
-const defaultStateAddress = "EDNq7UqUJQzU87n1k9kj1eWRKngJgYc4oVW8MHsA1Gs3";
+const defaultStateAddress = "77aJfgRudbv9gFfjRQw3tuYzgnjoDgs9jorVTmK7cv73";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
@@ -48,7 +48,7 @@ const stateAddress = new PublicKey(
     PRICE,
     PURCHASE_PROPORTION,
     new anchor.BN(PURCHASE_THRESHOLD),
-    0
+    1
   );
 
   console.log("updated state:", client.stateAddress);

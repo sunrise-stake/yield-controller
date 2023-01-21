@@ -1,8 +1,8 @@
-use crate::utils::errors::ErrorCode;
-use crate::utils::seeds::STATE;
+use crate::utils::seeds::{STATE, YIELD_ACCOUNT};
 use crate::utils::state::State;
 use anchor_lang::prelude::*;
 use anchor_spl::{token, token::Mint, token::TokenAccount};
+use solana_program::system_instruction;
 
 pub fn burn<'a>(
     amount: u64,
@@ -29,17 +29,23 @@ pub fn burn<'a>(
     token::burn(cpi_ctx.with_signer(&[&seeds]), amount)
 }
 
-pub fn transfer_native<'a>(
-    source: &AccountInfo<'a>,
-    dest: &AccountInfo<'a>,
+pub fn transfer_signed<'a>(
+    state_account: &Account<'a, State>,
+    yield_account: &AccountInfo<'a>,
+    destination: &AccountInfo<'a>,
     amount: u64,
 ) -> Result<()> {
-    if **source.try_borrow_lamports()? < amount {
-        return Err(ErrorCode::InsufficientFundsForTransaction.into());
-    }
+    let ix = system_instruction::transfer(&yield_account.key(), &destination.key(), amount);
 
-    **source.try_borrow_mut_lamports()? -= amount;
-    **dest.try_borrow_mut_lamports()? += amount;
+    let bump = &[state_account.yield_account_bump][..];
+    let state = state_account.key();
+    let seeds = &[YIELD_ACCOUNT, state.as_ref(), bump][..];
+    solana_program::program::invoke_signed(
+        &ix,
+        &[yield_account.clone(), destination.clone()],
+        &[seeds],
+    )?;
+
     Ok(())
 }
 

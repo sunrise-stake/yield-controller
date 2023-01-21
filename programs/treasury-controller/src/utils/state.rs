@@ -1,4 +1,4 @@
-use crate::utils::seeds::STATE;
+use crate::utils::seeds::{STATE, YIELD_ACCOUNT};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
@@ -15,6 +15,7 @@ pub struct GenericStateInput {
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
     pub index: u8,
+    pub yield_account_bump: u8,
 }
 
 #[account]
@@ -30,10 +31,11 @@ pub struct State {
     pub total_spent: u64,
     pub index: u8,
     pub bump: u8,
+    pub yield_account_bump: u8,
 }
 
 impl State {
-    pub const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 1 + 8 /* Discriminator */;
+    pub const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 4 + 1 + 1 + 1 + 8 /* Discriminator */;
 }
 
 #[derive(Accounts)]
@@ -91,6 +93,12 @@ pub struct AllocateYield<'info> {
         has_one = mint
     )]
     pub state: Account<'info, State>,
+    #[account(
+        mut,
+        seeds = [YIELD_ACCOUNT, state.key().as_ref()],
+        bump = state.yield_account_bump,
+    )]
+    pub yield_account: SystemAccount<'info>,
     #[account(mut)]
     pub mint: Account<'info, Mint>,
     #[account(
@@ -111,5 +119,4 @@ pub struct AllocateYield<'info> {
     pub holding_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
 }

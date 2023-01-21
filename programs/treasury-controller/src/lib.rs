@@ -22,6 +22,7 @@ pub mod treasury_controller {
         state_account.holding_account = state.holding_account;
         state_account.holding_token_account = state.holding_token_account;
         state_account.index = state.index;
+        state_account.yield_account_bump = state.yield_account_bump;
         state_account.bump = *ctx.bumps.get("state").unwrap();
         Ok(())
     }
@@ -36,6 +37,7 @@ pub mod treasury_controller {
         state_account.holding_account = state.holding_account;
         state_account.holding_token_account = state.holding_token_account;
         state_account.price = state.price;
+        state_account.yield_account_bump = state.yield_account_bump;
         Ok(())
     }
 
@@ -53,6 +55,8 @@ pub mod treasury_controller {
         let holding_account = &mut ctx.accounts.holding_account;
         let holding_token_account = &mut ctx.accounts.holding_token_account;
 
+        let yield_account = &ctx.accounts.yield_account;
+
         if state_account.treasury != treasury.key() {
             return Err(ErrorCode::InvalidTreasury.into());
         }
@@ -61,12 +65,7 @@ pub mod treasury_controller {
             return Err(ErrorCode::InvalidMint.into());
         }
 
-        let available_amount = state_account.to_account_info().try_lamports()?
-            - ctx.accounts.rent.minimum_balance(State::SPACE);
-
-        if available_amount < state_account.purchase_threshold {
-            return Err(ErrorCode::PurchaseThresholdExceeded.into());
-        }
+        let available_amount = yield_account.to_account_info().try_lamports()?;
 
         // for now, we'll just assume the total amount is passed in as an argument
         // "Purchase_proportion" of the amount will go to purchasing
@@ -97,8 +96,14 @@ pub mod treasury_controller {
             "Amount used for token purchase: {}",
             amount_used_for_token_purchase
         );
+
+        require_gte!(
+            available_amount,
+            state_account.purchase_threshold,
+            ErrorCode::PurchaseThresholdExceeded
+        );
+
         msg!("Buying and burning {} tokens", token_amount_to_buy_and_burn);
-        msg!("Sending {} to treasury", amount_sent_to_treasury);
 
         burn(
             token_amount_to_buy_and_burn,
@@ -108,15 +113,24 @@ pub mod treasury_controller {
             token_program,
         )?;
 
-        transfer_native(
-            &state_account.to_account_info(),
-            treasury,
-            amount_sent_to_treasury,
-        )?;
-        transfer_native(
-            &state_account.to_account_info(),
+        msg!(
+            "Sending {} to holding account",
+            amount_used_for_token_purchase
+        );
+        transfer_signed(
+            state_account,
+            &yield_account.to_account_info(),
             holding_account,
             amount_used_for_token_purchase,
+        )?;
+
+        msg!("Sending {} to treasury", amount_sent_to_treasury);
+
+        transfer_signed(
+            state_account,
+            &yield_account.to_account_info(),
+            treasury,
+            amount_sent_to_treasury,
         )?;
 
         // update total sol spent
