@@ -45,14 +45,15 @@ describe("treasury-controller", () => {
   const treasury = Keypair.generate();
   const holdingAccount = Keypair.generate();
   let holdingTokenAccount: Account;
-  let mint: anchor.web3.PublicKey;
-  let stateAddress: anchor.web3.PublicKey;
+  let mint: PublicKey;
+  let stateAddress: PublicKey;
   let bump: number;
+
+  let yieldAccount: PublicKey;
 
   const price = 0.05;
   const tokenDecimals = 5; // choose something other than 9 to ensure the maths are correct
   const tokensToMint = 1_000_000;
-  const STATE_RENT = 2_324_640; // The amount kept in the state account for rent
 
   before(async () => {
     mint = await createMint(
@@ -77,8 +78,13 @@ describe("treasury-controller", () => {
       true
     );
 
-    [stateAddress, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+    [stateAddress, bump] = PublicKey.findProgramAddressSync(
       [Buffer.from("state"), mint.toBuffer(), Buffer.from([0])],
+      PROGRAM_ID
+    );
+
+    [yieldAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("yield_account"), stateAddress.toBuffer()],
       PROGRAM_ID
     );
   });
@@ -112,11 +118,12 @@ describe("treasury-controller", () => {
     expectAmount(state.purchaseProportion, 0.9, 0.00000001);
     expect(state.bump).equal(bump);
   });
+
   it("Can allocate yield", async () => {
-    // state account is PDA target for sunrise
-    // give the state account 100 SOL
+    // yield account is PDA target for sunrise
+    // give the yield account 100 SOL
     await program.provider.connection
-      .requestAirdrop(stateAddress, 100 * LAMPORTS_PER_SOL)
+      .requestAirdrop(yieldAccount, 100 * LAMPORTS_PER_SOL)
       .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
     // holding token account is created and delegate is set to the state account
@@ -169,9 +176,8 @@ describe("treasury-controller", () => {
       stateAddress
     );
 
-    const stateBalanceAfter = await program.provider.connection.getBalance(
-      stateAddress
-    );
+    const yieldAccountBalanceAfter =
+      await program.provider.connection.getBalance(yieldAccount);
     const treasuryBalanceAfter = await program.provider.connection.getBalance(
       treasury.publicKey
     );
@@ -187,13 +193,13 @@ describe("treasury-controller", () => {
     const state = await program.account.state.fetch(stateAddress);
 
     // We expect:
-    // 1. The state account to have 0 balance (less rent)
+    // 1. The yield account to have 0 balance
     // 2. The treasury account to have received 100 SOL * 0.1 = 10 SOL
     // 3. The SOL holding account to have received 100 SOL * 0.9 = 90 SOL
     // 4. The token holding account to have (90 / 0.05 = 1800) fewer tokens
     // 5. The state account to ahve been updated with the amount that was sent to the holding account
 
-    expectAmount(stateBalanceAfter - STATE_RENT, 0);
+    expectAmount(yieldAccountBalanceAfter, 0);
     expectAmount(treasuryBalanceAfter, 10 * LAMPORTS_PER_SOL, 3000); // TODO fix floating point maths
     expectAmount(holdingAccountBalanceAfter, 90 * LAMPORTS_PER_SOL, 3000); // TODO fix floating point maths
     expectAmount(

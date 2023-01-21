@@ -65,6 +65,15 @@ export class TreasuryControllerClient {
     return state;
   }
 
+  public static calculateYieldAccount(
+    stateAddress: PublicKey
+  ): [PublicKey, number] {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from("yield_account"), stateAddress.toBuffer()],
+      PROGRAM_ID
+    );
+  }
+
   public static async fetch(stateAddress: PublicKey): Promise<any> {
     const client = new TreasuryControllerClient(setUpAnchor());
     return client.program.account.state.fetch(stateAddress);
@@ -82,9 +91,12 @@ export class TreasuryControllerClient {
     index: number
   ): Promise<TreasuryControllerClient> {
     // find state address
-    const state = await this.getStateAddress(mint, index);
+    const state = this.getStateAddress(mint, index);
 
     const client = new TreasuryControllerClient(setUpAnchor());
+
+    const [, yieldAccountBump] =
+      TreasuryControllerClient.calculateYieldAccount(state);
 
     const accounts = {
       payer: client.provider.wallet.publicKey,
@@ -104,6 +116,7 @@ export class TreasuryControllerClient {
         purchaseProportion,
         purchaseThreshold,
         index,
+        yieldAccountBump,
       })
       .accounts(accounts)
       .rpc()
@@ -135,6 +148,9 @@ export class TreasuryControllerClient {
       state,
     };
 
+    const [, yieldAccountBump] =
+      TreasuryControllerClient.calculateYieldAccount(state);
+
     await client.program.methods
       .updateState({
         mint,
@@ -146,6 +162,7 @@ export class TreasuryControllerClient {
         purchaseProportion,
         purchaseThreshold,
         index,
+        yieldAccountBump,
       })
       .accounts(accounts)
       .rpc()
@@ -165,6 +182,9 @@ export class TreasuryControllerClient {
     // TODO make non-static and fix return value
     const state = await TreasuryControllerClient.fetch(stateAddress);
 
+    const [yieldAccount] =
+      TreasuryControllerClient.calculateYieldAccount(stateAddress);
+
     const accounts = {
       payer,
       state: stateAddress,
@@ -172,9 +192,9 @@ export class TreasuryControllerClient {
       treasury: state.treasury,
       holdingAccount: state.holdingAccount,
       holdingTokenAccount: state.holdingTokenAccount,
+      yieldAccount,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
-      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
     };
     console.log(accounts);
     await client.program.methods

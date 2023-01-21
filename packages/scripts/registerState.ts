@@ -17,7 +17,7 @@ const treasuryKey = new PublicKey(
 const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
 const mint = new PublicKey(process.env.MINT ?? defaultMint);
 
-const defaultHoldingAccount = "48V9nmW9awiR9BmihdGhUL3ZpYJ8MCgGeUoSWbtqjicv";
+const defaultHoldingAccount = "dhcB568T3skiP2D9ujf4eAJEnW2gACaaA9BUCVbwbXD";
 const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
@@ -40,8 +40,14 @@ const holdingAccount = new PublicKey(
     PRICE,
     PURCHASE_PROPORTION,
     new anchor.BN(PURCHASE_THRESHOLD),
-    0
+    1
+  );
+
+  const [yieldAccount] = TreasuryControllerClient.calculateYieldAccount(
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    client.stateAddress!
   );
 
   console.log("newly registered state:", client.stateAddress);
+  console.log("yield account:", yieldAccount);
 })().catch(console.error);

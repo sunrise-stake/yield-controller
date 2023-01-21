@@ -93,6 +93,11 @@ export type TreasuryController = {
           "isSigner": false
         },
         {
+          "name": "yieldAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "mint",
           "isMut": true,
           "isSigner": false
@@ -119,11 +124,6 @@ export type TreasuryController = {
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -180,6 +180,10 @@ export type TreasuryController = {
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
+            "type": "u8"
           }
         ]
       }
@@ -225,6 +229,10 @@ export type TreasuryController = {
           },
           {
             "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
             "type": "u8"
           }
         ]
@@ -350,6 +358,11 @@ export const IDL: TreasuryController = {
           "isSigner": false
         },
         {
+          "name": "yieldAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "mint",
           "isMut": true,
           "isSigner": false
@@ -376,11 +389,6 @@ export const IDL: TreasuryController = {
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -437,6 +445,10 @@ export const IDL: TreasuryController = {
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
+            "type": "u8"
           }
         ]
       }
@@ -482,6 +494,10 @@ export const IDL: TreasuryController = {
           },
           {
             "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
             "type": "u8"
           }
         ]
