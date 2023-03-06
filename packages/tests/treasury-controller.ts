@@ -1,9 +1,9 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { TreasuryController } from "../types/treasury_controller";
+import { TreasuryController } from "../client/src/types/treasury_controller";
 import BN from "bn.js";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { PROGRAM_ID, TreasuryControllerClient } from "../client";
+import { PROGRAM_ID, YieldControllerClient } from "../client";
 import {
   Account,
   createMint,
@@ -40,7 +40,7 @@ export const expectAmount = (
 };
 
 describe("treasury-controller", () => {
-  let client: TreasuryControllerClient;
+  let client: YieldControllerClient;
   const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
   const treasury = Keypair.generate();
   const holdingAccount = Keypair.generate();
@@ -90,7 +90,7 @@ describe("treasury-controller", () => {
   });
 
   it("It can register a new controller state", async () => {
-    client = await TreasuryControllerClient.register(
+    client = await YieldControllerClient.register(
       authority.publicKey,
       treasury.publicKey,
       mint,
@@ -171,7 +171,7 @@ describe("treasury-controller", () => {
 
     // turn the crank
     console.log("turning the crank");
-    client = await TreasuryControllerClient.allocateYield(
+    client = await YieldControllerClient.allocateYield(
       authority.publicKey,
       stateAddress
     );
@@ -197,22 +197,24 @@ describe("treasury-controller", () => {
     // 2. The treasury account to have received 100 SOL * 0.1 = 10 SOL
     // 3. The SOL holding account to have received 100 SOL * 0.9 = 90 SOL
     // 4. The token holding account to have (90 / 0.05 = 1800) fewer tokens
-    // 5. The state account to ahve been updated with the amount that was sent to the holding account
+    // 5. The state account to have been updated with the amount of tokens that were burned
+
+    const expectedBurnedTokens = 1800;
 
     expectAmount(yieldAccountBalanceAfter, 0);
     expectAmount(treasuryBalanceAfter, 10 * LAMPORTS_PER_SOL, 3000); // TODO fix floating point maths
     expectAmount(holdingAccountBalanceAfter, 90 * LAMPORTS_PER_SOL, 3000); // TODO fix floating point maths
     expectAmount(
       holdingTokenAccountBalanceAfter.value.uiAmount!,
-      tokensToMint - 1800
+      tokensToMint - expectedBurnedTokens
     );
-    expectAmount(state.totalSpent.toNumber(), holdingAccountBalanceAfter);
+    expectAmount(state.totalTokensPurchased.toNumber(), expectedBurnedTokens * 10 ** tokenDecimals, 10);
   });
 
   it("Can update controller price", async () => {
     const newPrice = 1.23;
 
-    client = await TreasuryControllerClient.updatePrice(
+    client = await YieldControllerClient.updatePrice(
       stateAddress,
       authority.publicKey,
       newPrice
@@ -233,7 +235,7 @@ describe("treasury-controller", () => {
       true
     );
 
-    client = await TreasuryControllerClient.updateController(
+    client = await YieldControllerClient.updateController(
       stateAddress,
       newAuthority.publicKey,
       newTreasury.publicKey,

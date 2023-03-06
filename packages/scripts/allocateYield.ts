@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { TreasuryControllerClient, setUpAnchor } from "../client";
+import { YieldControllerClient, setUpAnchor } from "../client/src";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 
 const defaultStateAddress = "77aJfgRudbv9gFfjRQw3tuYzgnjoDgs9jorVTmK7cv73";
@@ -9,7 +9,7 @@ const stateAddress = new PublicKey(
 
 (async () => {
   const provider = setUpAnchor();
-  const stateAccount = await TreasuryControllerClient.fetch(stateAddress);
+  const stateAccount = await YieldControllerClient.getYieldAccount(stateAddress);
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     stateAccount.mint,
     stateAccount.holdingAccount,
@@ -58,7 +58,7 @@ const stateAddress = new PublicKey(
     return null;
   }
 
-  await TreasuryControllerClient.allocateYield(
+  await YieldControllerClient.allocateYield(
     provider.publicKey,
     stateAddress
   );

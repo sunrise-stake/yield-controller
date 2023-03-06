@@ -1,4 +1,4 @@
-import { setUpAnchor, TreasuryControllerClient } from "../client";
+import { setUpAnchor, YieldControllerClient } from "../client/src";
 import * as anchor from "@project-serum/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
@@ -38,7 +38,7 @@ const stateAddress = new PublicKey(
     true
   );
 
-  const client = await TreasuryControllerClient.updateController(
+  const client = await YieldControllerClient.updateController(
     stateAddress,
     provider.publicKey,
     treasuryKey,

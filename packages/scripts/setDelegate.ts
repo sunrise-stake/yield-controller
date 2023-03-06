@@ -2,7 +2,7 @@ import {
   approveChecked,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
-import { setUpAnchor } from "../client";
+import { setUpAnchor } from "../client/src";
 import { PublicKey } from "@solana/web3.js";
 import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
 

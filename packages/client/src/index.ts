@@ -1,9 +1,12 @@
 import { AnchorProvider, Program } from "@project-serum/anchor";
-import * as anchor from "@project-serum/anchor";
+import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { TreasuryController, IDL } from "../types/treasury_controller";
+import { TreasuryController, IDL } from "./types/treasury_controller";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import {YieldControllerState} from "./types";
+
+export {YieldControllerState} from "./types";
 
 export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
@@ -32,7 +35,7 @@ export interface TreasuryControllerConfig {
   bump: number;
 }
 
-export class TreasuryControllerClient {
+export class YieldControllerClient {
   config: TreasuryControllerConfig | undefined;
   readonly program: Program<TreasuryController>;
   stateAddress: PublicKey | undefined;
@@ -74,9 +77,19 @@ export class TreasuryControllerClient {
     );
   }
 
-  public static async fetch(stateAddress: PublicKey): Promise<any> {
-    const client = new TreasuryControllerClient(setUpAnchor());
-    return client.program.account.state.fetch(stateAddress);
+  public static async get(provider: AnchorProvider, stateAddress: PublicKey): Promise<YieldControllerClient> {
+    const client = new YieldControllerClient(provider);
+    await client.init(stateAddress);
+    return client;
+  }
+
+  public getState(): Promise<YieldControllerState> {
+    if (!this.stateAddress) throw new Error("Client not initialised");
+    return this.program.account.state.fetch(this.stateAddress);
+  }
+
+  public static async getYieldAccount(stateAddress: PublicKey): Promise<YieldControllerState> {
+    return YieldControllerClient.get(setUpAnchor(), stateAddress).then(client => client.getState());
   }
 
   public static async register(
@@ -89,14 +102,14 @@ export class TreasuryControllerClient {
     purchaseProportion: number,
     purchaseThreshold: BN,
     index: number
-  ): Promise<TreasuryControllerClient> {
+  ): Promise<YieldControllerClient> {
     // find state address
     const state = this.getStateAddress(mint, index);
 
-    const client = new TreasuryControllerClient(setUpAnchor());
+    const client = new YieldControllerClient(setUpAnchor());
 
     const [, yieldAccountBump] =
-      TreasuryControllerClient.calculateYieldAccount(state);
+      YieldControllerClient.calculateYieldAccount(state);
 
     const accounts = {
       payer: client.provider.wallet.publicKey,
@@ -105,19 +118,23 @@ export class TreasuryControllerClient {
       systemProgram: SystemProgram.programId,
     };
 
+    const args = {
+      mint,
+      updateAuthority,
+      treasury,
+      holdingAccount,
+      holdingTokenAccount,
+      price,
+      purchaseProportion,
+      purchaseThreshold,
+      index,
+      yieldAccountBump,
+    };
+
+    console.log({ accounts, args });
+
     await client.program.methods
-      .registerState({
-        mint,
-        updateAuthority,
-        treasury,
-        holdingAccount,
-        holdingTokenAccount,
-        price,
-        purchaseProportion,
-        purchaseThreshold,
-        index,
-        yieldAccountBump,
-      })
+      .registerState(args)
       .accounts(accounts)
       .rpc()
       .then(() => {
@@ -140,8 +157,8 @@ export class TreasuryControllerClient {
     purchaseProportion: number,
     purchaseThreshold: BN,
     index: number
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<YieldControllerClient> {
+    const client = new YieldControllerClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.publicKey,
@@ -149,7 +166,7 @@ export class TreasuryControllerClient {
     };
 
     const [, yieldAccountBump] =
-      TreasuryControllerClient.calculateYieldAccount(state);
+      YieldControllerClient.calculateYieldAccount(state);
 
     await client.program.methods
       .updateState({
@@ -176,14 +193,14 @@ export class TreasuryControllerClient {
   public static async allocateYield(
     payer: PublicKey,
     stateAddress: PublicKey
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<YieldControllerClient> {
+    const client = new YieldControllerClient(setUpAnchor());
 
     // TODO make non-static and fix return value
-    const state = await TreasuryControllerClient.fetch(stateAddress);
+    const state = await YieldControllerClient.getYieldAccount(stateAddress);
 
     const [yieldAccount] =
-      TreasuryControllerClient.calculateYieldAccount(stateAddress);
+      YieldControllerClient.calculateYieldAccount(stateAddress);
 
     const accounts = {
       payer,
@@ -210,8 +227,8 @@ export class TreasuryControllerClient {
     state: PublicKey,
     payer: PublicKey,
     price: number
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<YieldControllerClient> {
+    const client = new YieldControllerClient(setUpAnchor());
 
     await client.program.methods
       .updatePrice(price)

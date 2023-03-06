@@ -1,4 +1,4 @@
-import { setUpAnchor, TreasuryControllerClient } from "../client";
+import { setUpAnchor, YieldControllerClient } from "../client/src";
 import * as anchor from "@project-serum/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
@@ -31,7 +31,7 @@ const holdingAccount = new PublicKey(
     true
   );
 
-  const client = await TreasuryControllerClient.register(
+  const client = await YieldControllerClient.register(
     provider.publicKey,
     treasuryKey,
     mint,
@@ -43,7 +43,7 @@ const holdingAccount = new PublicKey(
     1
   );
 
-  const [yieldAccount] = TreasuryControllerClient.calculateYieldAccount(
+  const [yieldAccount] = YieldControllerClient.calculateYieldAccount(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     client.stateAddress!
   );

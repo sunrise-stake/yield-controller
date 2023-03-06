@@ -170,7 +170,7 @@ export type TreasuryController = {
             "type": "publicKey"
           },
           {
-            "name": "totalSpent",
+            "name": "totalTokensPurchased",
             "type": "u64"
           },
           {
@@ -435,7 +435,7 @@ export const IDL: TreasuryController = {
             "type": "publicKey"
           },
           {
-            "name": "totalSpent",
+            "name": "totalTokensPurchased",
             "type": "u64"
           },
           {

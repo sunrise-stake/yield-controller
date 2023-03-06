@@ -133,8 +133,8 @@ pub mod treasury_controller {
             amount_sent_to_treasury,
         )?;
 
-        // update total sol spent
-        state_account.total_spent += amount_used_for_token_purchase;
+        // update total tokens purchased
+        state_account.total_tokens_purchased += token_amount_to_buy_and_burn;
 
         Ok(())
     }

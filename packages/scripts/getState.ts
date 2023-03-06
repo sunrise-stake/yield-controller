@@ -1,13 +1,15 @@
-import { TreasuryControllerClient } from "../client";
+import { YieldControllerClient } from "../client/src";
 import { PublicKey } from "@solana/web3.js";
 
-// used for devnet testing
-const defaultStateAddress = "CaFanGeqN6ykNTGTE7U2StJ8n1RJY6on6FoDFeLxabia";
+const defaultStateAddress = "htGs6L3pCRxgfkJP2vLUdb9hVPtcE4mKsdWP4CnirQA";  // mainnet
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
 
 (async () => {
-  const state = await TreasuryControllerClient.fetch(stateAddress);
+  const state = await YieldControllerClient.getYieldAccount(stateAddress);
   console.log("state account data", state);
+
+  const yieldAccount = YieldControllerClient.calculateYieldAccount(stateAddress);
+  console.log("yield account", yieldAccount);
 })().catch(console.error);

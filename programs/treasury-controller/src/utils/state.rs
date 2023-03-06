@@ -28,7 +28,7 @@ pub struct State {
     pub purchase_proportion: f32,
     pub holding_account: Pubkey,
     pub holding_token_account: Pubkey,
-    pub total_spent: u64,
+    pub total_tokens_purchased: u64,
     pub index: u8,
     pub bump: u8,
     pub yield_account_bump: u8,
