@@ -223,22 +223,15 @@ export class YieldControllerClient {
     return client;
   }
 
-  public static async updatePrice(
-    state: PublicKey,
-    payer: PublicKey,
+  public async setPrice(
     price: number
-  ): Promise<YieldControllerClient> {
-    const client = new YieldControllerClient(setUpAnchor());
-
-    await client.program.methods
+  ): Promise<string> {
+    return this.program.methods
       .updatePrice(price)
       .accounts({
-        payer,
-        state,
+        payer: this.provider.publicKey,
+        state: this.stateAddress,
       })
-      .rpc()
-      .then(confirm(client.provider.connection));
-
-    return client;
+      .rpc();
   }
 }
