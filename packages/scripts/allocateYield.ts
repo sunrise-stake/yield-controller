@@ -1,25 +1,21 @@
 import { PublicKey } from "@solana/web3.js";
 import { YieldControllerClient, setUpAnchor } from "../client/src";
-import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
+import { getAccount } from "@solana/spl-token";
 
-const defaultStateAddress = "77aJfgRudbv9gFfjRQw3tuYzgnjoDgs9jorVTmK7cv73";
+const defaultStateAddress = "htGs6L3pCRxgfkJP2vLUdb9hVPtcE4mKsdWP4CnirQA";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
 
 (async () => {
   const provider = setUpAnchor();
-  const stateAccount = await YieldControllerClient.getYieldAccount(stateAddress);
-  const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
-    stateAccount.mint,
-    stateAccount.holdingAccount,
-    true
-  );
+  const client = await YieldControllerClient.get(provider, stateAddress);
+  const stateAccount = await client.getState();
   // get sol holding accounts balance
   const solAccountBalance = await provider.connection.getBalance(stateAddress);
   // get token holding accounts balance
   const tokenAccountBalance = await provider.connection.getTokenAccountBalance(
-    holdingAccountTokenAddress
+    stateAccount.holdingTokenAccount
   );
   console.log(
     "holding account token balance:",
@@ -33,7 +29,7 @@ const stateAddress = new PublicKey(
   }
 
   if (
-    tokenAccountBalance.value.amount < stateAccount.minimumPurchaseThreshold
+      Number(tokenAccountBalance.value.amount) < stateAccount.purchaseThreshold.toNumber()
   ) {
     console.log("not enough tokens to allocate");
     return null;
@@ -42,7 +38,7 @@ const stateAddress = new PublicKey(
   // get token account info
   const tokenAccountInfo = await getAccount(
     provider.connection,
-    holdingAccountTokenAddress
+      stateAccount.holdingTokenAccount
   );
 
   if (!tokenAccountInfo.delegate) {

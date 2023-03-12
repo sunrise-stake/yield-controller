@@ -1,4 +1,4 @@
-import { AnchorProvider, Program } from "@project-serum/anchor";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
