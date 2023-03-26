@@ -74,15 +74,14 @@ pub struct UpdateState<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64)]
-pub struct UpdatePrice<'info> {
-    #[account(
-        mut,
-        constraint = state.update_authority == payer.key()
-    )]
-    pub state: Account<'info, State>,
+pub struct SetTotalTokensPurchased<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+    #[account(
+    mut,
+    constraint = state.update_authority == payer.key()
+    )]
+    pub state: Account<'info, State>,
 }
 
 #[derive(Accounts)]
