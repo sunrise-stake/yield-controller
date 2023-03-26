@@ -2,14 +2,14 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { TreasuryController, IDL } from "./types/treasury_controller";
+import { BuyAndBurn, IDL } from "./types/buy_and_burn";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import {YieldControllerState} from "./types";
+import {BuyAndBurnState} from "./types";
 
-export {YieldControllerState} from "./types";
+export {BuyAndBurnState} from "./types";
 
 export const PROGRAM_ID = new PublicKey(
-  "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
+  "sbnbpcN3HVfcj9jTwzncwLeNvCzSwbfMwNmdAgX36VW"
 );
 
 export const setUpAnchor = (): anchor.AnchorProvider => {
@@ -37,26 +37,26 @@ export interface TreasuryControllerConfig {
 
 export class YieldControllerClient {
   config: TreasuryControllerConfig | undefined;
-  readonly program: Program<TreasuryController>;
+  readonly program: Program<BuyAndBurn>;
   stateAddress: PublicKey | undefined;
+  state: BuyAndBurnState | undefined;
 
   constructor(readonly provider: AnchorProvider) {
-    this.program = new Program<TreasuryController>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<BuyAndBurn>(IDL, PROGRAM_ID, provider);
   }
 
   private async init(stateAddress: PublicKey): Promise<void> {
-    const state = await this.program.account.state.fetch(stateAddress);
+    this.stateAddress = stateAddress;
+    this.state = await this.program.account.state.fetch(stateAddress) as BuyAndBurnState;
 
     this.config = {
-      updateAuthority: state.updateAuthority,
-      treasury: state.treasury,
-      mint: state.mint,
-      purchaseThreshold: state.purchaseThreshold,
-      purchaseProportion: state.purchaseProportion,
-      bump: state.bump,
+      updateAuthority: this.state.updateAuthority,
+      treasury: this.state.treasury,
+      mint: this.state.mint,
+      purchaseThreshold: this.state.purchaseThreshold,
+      purchaseProportion: this.state.purchaseProportion,
+      bump: this.state.bump,
     };
-
-    this.stateAddress = stateAddress;
   }
 
   public static getStateAddress(mint: PublicKey, index: number): PublicKey {
@@ -83,12 +83,12 @@ export class YieldControllerClient {
     return client;
   }
 
-  public getState(): Promise<YieldControllerState> {
-    if (!this.stateAddress) throw new Error("Client not initialised");
-    return this.program.account.state.fetch(this.stateAddress);
+  public getState(): BuyAndBurnState {
+    if (!this.state) throw new Error("Client not initialised");
+    return this.state;
   }
 
-  public static async getYieldAccount(stateAddress: PublicKey): Promise<YieldControllerState> {
+  public static async getYieldAccount(stateAddress: PublicKey): Promise<BuyAndBurnState> {
     return YieldControllerClient.get(setUpAnchor(), stateAddress).then(client => client.getState());
   }
 
@@ -98,7 +98,9 @@ export class YieldControllerClient {
     mint: PublicKey,
     holdingAccount: PublicKey,
     holdingTokenAccount: PublicKey,
-    price: number,
+    solUsdPriceFeed: PublicKey,
+    nctUsdPriceFeed: PublicKey,
+    feedStalenessThreshold: BN,
     purchaseProportion: number,
     purchaseThreshold: BN,
     index: number
@@ -118,23 +120,25 @@ export class YieldControllerClient {
       systemProgram: SystemProgram.programId,
     };
 
-    const args = {
+    const stateInput = {
       mint,
       updateAuthority,
       treasury,
       holdingAccount,
       holdingTokenAccount,
-      price,
+      solUsdPriceFeed,
+      nctUsdPriceFeed,
+      feedStalenessThreshold,
       purchaseProportion,
       purchaseThreshold,
       index,
       yieldAccountBump,
     };
 
-    console.log({ accounts, args });
+    console.log({ accounts, stateInput });
 
     await client.program.methods
-      .registerState(args)
+      .registerState(stateInput)
       .accounts(accounts)
       .rpc()
       .then(() => {
@@ -153,12 +157,15 @@ export class YieldControllerClient {
     mint: PublicKey,
     holdingAccount: PublicKey,
     holdingTokenAccount: PublicKey,
-    price: number,
+    solUsdPriceFeed: PublicKey,
+    nctUsdPriceFeed: PublicKey,
+    feedStalenessThreshold: BN,
     purchaseProportion: number,
     purchaseThreshold: BN,
     index: number
   ): Promise<YieldControllerClient> {
     const client = new YieldControllerClient(setUpAnchor());
+    await client.init(state);
 
     const accounts = {
       payer: client.provider.publicKey,
@@ -175,7 +182,9 @@ export class YieldControllerClient {
         treasury,
         holdingAccount,
         holdingTokenAccount,
-        price,
+        solUsdPriceFeed,
+        nctUsdPriceFeed,
+        feedStalenessThreshold,
         purchaseProportion,
         purchaseThreshold,
         index,
@@ -190,48 +199,35 @@ export class YieldControllerClient {
     return client;
   }
 
-  public static async allocateYield(
+  public async allocateYield(
     payer: PublicKey,
-    stateAddress: PublicKey
-  ): Promise<YieldControllerClient> {
-    const client = new YieldControllerClient(setUpAnchor());
-
-    // TODO make non-static and fix return value
-    const state = await YieldControllerClient.getYieldAccount(stateAddress);
+  ): Promise<string> {
+    if (!this.stateAddress || !this.state) throw new Error("Client not initialised");
 
     const [yieldAccount] =
-      YieldControllerClient.calculateYieldAccount(stateAddress);
+      YieldControllerClient.calculateYieldAccount(this.stateAddress);
 
     const accounts = {
       payer,
-      state: stateAddress,
-      mint: state.mint,
-      treasury: state.treasury,
-      holdingAccount: state.holdingAccount,
-      holdingTokenAccount: state.holdingTokenAccount,
+      state: this.stateAddress,
+      mint: this.state.mint,
+      treasury: this.state.treasury,
+      holdingAccount: this.state.holdingAccount,
+      holdingTokenAccount: this.state.holdingTokenAccount,
       yieldAccount,
+      solUsdPriceFeed: this.state.solUsdPriceFeed,
+        nctUsdPriceFeed: this.state.nctUsdPriceFeed,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     };
     console.log(accounts);
-    await client.program.methods
-      .allocateYield()
-      .accounts(accounts)
-      .rpc()
-      .then(confirm(client.provider.connection));
+    const transactionSignature = await this.program.methods
+        .allocateYield()
+        .accounts(accounts)
+        .rpc();
 
-    return client;
-  }
+    await confirm(this.provider.connection)(transactionSignature);
 
-  public async setPrice(
-    price: number
-  ): Promise<string> {
-    return this.program.methods
-      .updatePrice(price)
-      .accounts({
-        payer: this.provider.publicKey,
-        state: this.stateAddress,
-      })
-      .rpc();
+    return transactionSignature;
   }
 }
