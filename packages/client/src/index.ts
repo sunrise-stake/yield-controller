@@ -150,8 +150,7 @@ export class YieldControllerClient {
     return client;
   }
 
-  public static async updateController(
-    state: PublicKey,
+  public async updateController(
     updateAuthority: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
@@ -164,18 +163,16 @@ export class YieldControllerClient {
     purchaseThreshold: BN,
     index: number
   ): Promise<YieldControllerClient> {
-    const client = new YieldControllerClient(setUpAnchor());
-    await client.init(state);
-
+    if (!this.stateAddress || !this.state) throw new Error("Client not initialised");
     const accounts = {
-      payer: client.provider.publicKey,
-      state,
+      payer: this.provider.publicKey,
+      state: this.stateAddress,
     };
 
     const [, yieldAccountBump] =
-      YieldControllerClient.calculateYieldAccount(state);
+      YieldControllerClient.calculateYieldAccount(this.stateAddress);
 
-    await client.program.methods
+    await this.program.methods
       .updateState({
         mint,
         updateAuthority,
@@ -192,11 +189,30 @@ export class YieldControllerClient {
       })
       .accounts(accounts)
       .rpc()
-      .then(confirm(client.provider.connection));
+      .then(confirm(this.provider.connection));
 
-    await client.init(state);
+    await this.init(this.stateAddress);
 
-    return client;
+    return this;
+  }
+
+  public async setTotalTokensPurchased(
+      value: BN
+  ): Promise<string> {
+    if (!this.stateAddress || !this.state) throw new Error("Client not initialised");
+    const accounts = {
+      payer: this.provider.publicKey,
+      state: this.stateAddress,
+    };
+    const txSig = await this.program.methods
+        .setTotalTokensPurchased(value)
+        .accounts(accounts)
+        .rpc();
+    await confirm(this.provider.connection)(txSig);
+
+    await this.init(this.stateAddress);
+
+    return txSig;
   }
 
   public async allocateYield(

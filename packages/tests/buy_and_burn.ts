@@ -223,6 +223,16 @@ describe.only("buy-and-burn", () => {
     expectAmount(state.totalTokensPurchased.toNumber(), expectedBurnedTokens * 10 ** tokenDecimals, 10);
   });
 
+  it("can set a new value for total tokens purchased", async () => {
+    const newTotalTokens = new BN(5);
+    await client.setTotalTokensPurchased(newTotalTokens);
+    const state = await client.getState();
+
+    expect(state.totalTokensPurchased.toNumber()).equal(
+        newTotalTokens.toNumber()
+    );
+  });
+
   it("Can update controller state", async () => {
     const newAuthority = Keypair.generate();
     const newTreasury = Keypair.generate();
@@ -235,8 +245,7 @@ describe.only("buy-and-burn", () => {
         true
     );
 
-    client = await YieldControllerClient.updateController(
-        stateAddress,
+    client = await client.updateController(
         newAuthority.publicKey,
         newTreasury.publicKey,
         mint,

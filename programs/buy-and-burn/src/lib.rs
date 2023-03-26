@@ -9,8 +9,8 @@ declare_id!("sbnbpcN3HVfcj9jTwzncwLeNvCzSwbfMwNmdAgX36VW");
 
 #[program]
 pub mod buy_and_burn {
-    use crate::utils::switchboard::get_latest_price;
     use super::*;
+    use crate::utils::switchboard::get_latest_price;
 
     pub fn register_state(ctx: Context<RegisterState>, state: GenericStateInput) -> Result<()> {
         let state_account = &mut ctx.accounts.state;
@@ -75,7 +75,11 @@ pub mod buy_and_burn {
             .checked_sub(amount_used_for_token_purchase)
             .unwrap();
 
-        let price = get_latest_price(&ctx.accounts.sol_usd_price_feed, &ctx.accounts.nct_usd_price_feed, state_account.feed_staleness_threshold)?;
+        let price = get_latest_price(
+            &ctx.accounts.sol_usd_price_feed,
+            &ctx.accounts.nct_usd_price_feed,
+            state_account.feed_staleness_threshold,
+        )?;
         msg!("Latest oracle price: {}", price);
 
         // Price is token price in SOL
@@ -84,9 +88,8 @@ pub mod buy_and_burn {
         // token amount = lamports / (10^(9-decimals)) * price
         // Note, this works even if decimals > 9
         let token_decimal_denominator = (10_f64).powi(9_i32 - mint_account.decimals as i32);
-        let token_amount_to_buy_and_burn = (amount_used_for_token_purchase as f64
-            / (token_decimal_denominator * price))
-            as u64;
+        let token_amount_to_buy_and_burn =
+            (amount_used_for_token_purchase as f64 / (token_decimal_denominator * price)) as u64;
 
         msg!("Available amount: {}", available_amount);
         msg!(
@@ -138,6 +141,15 @@ pub mod buy_and_burn {
         // update total tokens purchased
         state_account.total_tokens_purchased += token_amount_to_buy_and_burn;
 
+        Ok(())
+    }
+
+    pub fn set_total_tokens_purchased(
+        ctx: Context<SetTotalTokensPurchased>,
+        value: u64,
+    ) -> Result<()> {
+        let state_account = &mut ctx.accounts.state;
+        state_account.total_tokens_purchased = value;
         Ok(())
     }
 }

@@ -118,6 +118,27 @@ export type BuyAndBurn = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "setTotalTokensPurchased",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "value",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -393,6 +414,27 @@ export const IDL: BuyAndBurn = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "setTotalTokensPurchased",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "value",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
