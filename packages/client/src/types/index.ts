@@ -1,7 +1,7 @@
 import {PublicKey} from "@solana/web3.js";
 import BN from "bn.js";
 
-export type YieldControllerState = {
+export type BuyAndBurnState = {
     mint: PublicKey,
     treasury: PublicKey,
     holdingAccount: PublicKey,
@@ -9,7 +9,8 @@ export type YieldControllerState = {
 
     updateAuthority: PublicKey,
 
-    price: number,
+    solUsdPriceFeed: PublicKey,
+    nctUsdPriceFeed: PublicKey,
     purchaseProportion: number,
     purchaseThreshold: BN,
 

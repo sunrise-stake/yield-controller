@@ -4,7 +4,9 @@ types = "packages/client/src/types"
 [features]
 seeds = false
 skip-lint = false
+
 [programs.localnet]
+buy_and_burn = "sbnbpcN3HVfcj9jTwzncwLeNvCzSwbfMwNmdAgX36VW"
 treasury_controller = "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
 
 [registry]
@@ -21,3 +23,11 @@ get_state = "yarn run ts-node packages/scripts/getState.ts"
 update_state = "yarn run ts-node packages/scripts/updateState.ts"
 allocate_yield = "yarn run ts-node packages/scripts/allocateYield.ts"
 set_delegate = "yarn run ts-node packages/scripts/setDelegate.ts"
+
+[[test.validator.account]]
+address = "4YL36VBtFkD2zfNGWdGFSc5suvskjrHnx3Asuksyek1J"
+filename = "packages/tests/fixtures/switchboard_nct_usd.json"
+
+[[test.validator.account]]
+address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
+filename = "packages/tests/fixtures/switchboard_sol_usd.json"

@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { YieldControllerClient, setUpAnchor } from "../client/src";
 import { getAccount } from "@solana/spl-token";
 
-const defaultStateAddress = "htGs6L3pCRxgfkJP2vLUdb9hVPtcE4mKsdWP4CnirQA";
+const defaultStateAddress = "DzyP73X4TWnh5jarfjapaNBxtjeEVsfknWVfToRYARDL";
 const stateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultStateAddress
 );
@@ -53,9 +53,7 @@ const stateAddress = new PublicKey(
     console.log("token account delegate not set to state address");
     return null;
   }
-
-  await YieldControllerClient.allocateYield(
+  await client.allocateYield(
     provider.publicKey,
-    stateAddress
   );
 })().catch(console.error);

@@ -1,11 +1,10 @@
 import { setUpAnchor, YieldControllerClient } from "../client/src";
-import * as anchor from "@project-serum/anchor";
+import * as anchor from "@coral-xyz/anchor";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 /** Adjust these values to whatever you want them to be */
-const PRICE = 0.08;
-const PURCHASE_THRESHOLD = LAMPORTS_PER_SOL; // purchase if the account has at least 1 SOL
+const PURCHASE_THRESHOLD = 1; // purchase if the account has at least 100 Lamports
 const PURCHASE_PROPORTION = 1; // 100% of yield goes to purchasing tokens
 
 const defaultTreasuryKey = "stdeYBs3MUtQN7zqgAQaxvsYemxncJKNDMJhciHct9M";
@@ -22,6 +21,10 @@ const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
 
+const solUsdPriceFeed = new PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
+const nctUsdPriceFeed = new PublicKey("4YL36VBtFkD2zfNGWdGFSc5suvskjrHnx3Asuksyek1J");
+const FEED_STALENESS_THRESHOLD = 60 * 60 * 24 * 2; // 2 days
+
 (async () => {
   const provider = setUpAnchor();
   // get token account for holding account
@@ -37,7 +40,9 @@ const holdingAccount = new PublicKey(
     mint,
     holdingAccount,
     holdingAccountTokenAddress,
-    PRICE,
+    solUsdPriceFeed,
+    nctUsdPriceFeed,
+    new anchor.BN(FEED_STALENESS_THRESHOLD),
     PURCHASE_PROPORTION,
     new anchor.BN(PURCHASE_THRESHOLD),
     1
