@@ -4,9 +4,9 @@ import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
 import { BuyAndBurn, IDL } from "./types/buy_and_burn";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import {BuyAndBurnState} from "./types";
+import { BuyAndBurnState } from "./types";
 
-export {BuyAndBurnState} from "./types";
+export { BuyAndBurnState } from "./types";
 
 export const PROGRAM_ID = new PublicKey(
   "sbnbpcN3HVfcj9jTwzncwLeNvCzSwbfMwNmdAgX36VW"
@@ -47,7 +47,9 @@ export class YieldControllerClient {
 
   private async init(stateAddress: PublicKey): Promise<void> {
     this.stateAddress = stateAddress;
-    this.state = await this.program.account.state.fetch(stateAddress) as BuyAndBurnState;
+    this.state = (await this.program.account.state.fetch(
+      stateAddress
+    )) as BuyAndBurnState;
 
     this.config = {
       updateAuthority: this.state.updateAuthority,
@@ -77,7 +79,10 @@ export class YieldControllerClient {
     );
   }
 
-  public static async get(provider: AnchorProvider, stateAddress: PublicKey): Promise<YieldControllerClient> {
+  public static async get(
+    provider: AnchorProvider,
+    stateAddress: PublicKey
+  ): Promise<YieldControllerClient> {
     const client = new YieldControllerClient(provider);
     await client.init(stateAddress);
     return client;
@@ -88,8 +93,12 @@ export class YieldControllerClient {
     return this.state;
   }
 
-  public static async getYieldAccount(stateAddress: PublicKey): Promise<BuyAndBurnState> {
-    return YieldControllerClient.get(setUpAnchor(), stateAddress).then(client => client.getState());
+  public static async getYieldAccount(
+    stateAddress: PublicKey
+  ): Promise<BuyAndBurnState> {
+    return YieldControllerClient.get(setUpAnchor(), stateAddress).then(
+      (client) => client.getState()
+    );
   }
 
   public static async register(
@@ -163,14 +172,16 @@ export class YieldControllerClient {
     purchaseThreshold: BN,
     index: number
   ): Promise<YieldControllerClient> {
-    if (!this.stateAddress || !this.state) throw new Error("Client not initialised");
+    if (!this.stateAddress || !this.state)
+      throw new Error("Client not initialised");
     const accounts = {
       payer: this.provider.publicKey,
       state: this.stateAddress,
     };
 
-    const [, yieldAccountBump] =
-      YieldControllerClient.calculateYieldAccount(this.stateAddress);
+    const [, yieldAccountBump] = YieldControllerClient.calculateYieldAccount(
+      this.stateAddress
+    );
 
     await this.program.methods
       .updateState({
@@ -196,18 +207,17 @@ export class YieldControllerClient {
     return this;
   }
 
-  public async setTotalTokensPurchased(
-      value: BN
-  ): Promise<string> {
-    if (!this.stateAddress || !this.state) throw new Error("Client not initialised");
+  public async setTotalTokensPurchased(value: BN): Promise<string> {
+    if (!this.stateAddress || !this.state)
+      throw new Error("Client not initialised");
     const accounts = {
       payer: this.provider.publicKey,
       state: this.stateAddress,
     };
     const txSig = await this.program.methods
-        .setTotalTokensPurchased(value)
-        .accounts(accounts)
-        .rpc();
+      .setTotalTokensPurchased(value)
+      .accounts(accounts)
+      .rpc();
     await confirm(this.provider.connection)(txSig);
 
     await this.init(this.stateAddress);
@@ -215,13 +225,13 @@ export class YieldControllerClient {
     return txSig;
   }
 
-  public async allocateYield(
-    payer: PublicKey,
-  ): Promise<string> {
-    if (!this.stateAddress || !this.state) throw new Error("Client not initialised");
+  public async allocateYield(payer: PublicKey): Promise<string> {
+    if (!this.stateAddress || !this.state)
+      throw new Error("Client not initialised");
 
-    const [yieldAccount] =
-      YieldControllerClient.calculateYieldAccount(this.stateAddress);
+    const [yieldAccount] = YieldControllerClient.calculateYieldAccount(
+      this.stateAddress
+    );
 
     const accounts = {
       payer,
@@ -232,15 +242,15 @@ export class YieldControllerClient {
       holdingTokenAccount: this.state.holdingTokenAccount,
       yieldAccount,
       solUsdPriceFeed: this.state.solUsdPriceFeed,
-        nctUsdPriceFeed: this.state.nctUsdPriceFeed,
+      nctUsdPriceFeed: this.state.nctUsdPriceFeed,
       tokenProgram: TOKEN_PROGRAM_ID,
       systemProgram: SystemProgram.programId,
     };
     console.log(accounts);
     const transactionSignature = await this.program.methods
-        .allocateYield()
-        .accounts(accounts)
-        .rpc();
+      .allocateYield()
+      .accounts(accounts)
+      .rpc();
 
     await confirm(this.provider.connection)(transactionSignature);
 

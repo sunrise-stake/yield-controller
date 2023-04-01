@@ -13,7 +13,10 @@ const newTokensPurchased = new BN(process.argv[2], 10);
   const provider = setUpAnchor();
   const client = await YieldControllerClient.get(provider, stateAddress);
 
-  console.log("current tokens purchased", (await client.getState()).totalTokensPurchased);
+  console.log(
+    "current tokens purchased",
+    (await client.getState()).totalTokensPurchased.toString()
+  );
   console.log("changing to tokens purchased", newTokensPurchased.toNumber());
   const txSig = await client.setTotalTokensPurchased(newTokensPurchased);
 
