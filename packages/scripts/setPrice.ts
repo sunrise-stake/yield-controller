@@ -2,9 +2,10 @@ import { setUpAnchor, YieldControllerClient } from "../client/src";
 import { PublicKey } from "@solana/web3.js";
 
 /** Adjust these values to whatever you want them to be */
-const SOL_PRICE_IN_USD_CENTS = 2095
+const SOL_PRICE_IN_USD_CENTS = 2095;
 const CARBON_TOKEN_PRICE_IN_USD_CENTS = 196;
-const CARBON_TOKEN_PRICE_IN_SOL = CARBON_TOKEN_PRICE_IN_USD_CENTS / SOL_PRICE_IN_USD_CENTS;
+const CARBON_TOKEN_PRICE_IN_SOL =
+  CARBON_TOKEN_PRICE_IN_USD_CENTS / SOL_PRICE_IN_USD_CENTS;
 
 // used for devnet testing
 const defaultStateAddress = "htGs6L3pCRxgfkJP2vLUdb9hVPtcE4mKsdWP4CnirQA";

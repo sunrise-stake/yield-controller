@@ -208,15 +208,17 @@ describe("treasury-controller", () => {
       holdingTokenAccountBalanceAfter.value.uiAmount!,
       tokensToMint - expectedBurnedTokens
     );
-    expectAmount(state.totalTokensPurchased.toNumber(), expectedBurnedTokens * 10 ** tokenDecimals, 10);
+    expectAmount(
+      state.totalTokensPurchased.toNumber(),
+      expectedBurnedTokens * 10 ** tokenDecimals,
+      10
+    );
   });
 
   it("Can update controller price", async () => {
     const newPrice = 1.23;
 
-    await client.setPrice(
-      newPrice
-    );
+    await client.setPrice(newPrice);
 
     const state = await program.account.state.fetch(stateAddress);
     expect(state.price).equal(newPrice);

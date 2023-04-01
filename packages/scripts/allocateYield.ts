@@ -29,7 +29,8 @@ const stateAddress = new PublicKey(
   }
 
   if (
-      Number(tokenAccountBalance.value.amount) < stateAccount.purchaseThreshold.toNumber()
+    Number(tokenAccountBalance.value.amount) <
+    stateAccount.purchaseThreshold.toNumber()
   ) {
     console.log("not enough tokens to allocate");
     return null;
@@ -38,7 +39,7 @@ const stateAddress = new PublicKey(
   // get token account info
   const tokenAccountInfo = await getAccount(
     provider.connection,
-      stateAccount.holdingTokenAccount
+    stateAccount.holdingTokenAccount
   );
 
   if (!tokenAccountInfo.delegate) {
@@ -53,7 +54,5 @@ const stateAddress = new PublicKey(
     console.log("token account delegate not set to state address");
     return null;
   }
-  await client.allocateYield(
-    provider.publicKey,
-  );
+  await client.allocateYield(provider.publicKey);
 })().catch(console.error);

@@ -1,6 +1,6 @@
 import { setUpAnchor, YieldControllerClient } from "../client/src";
 import * as anchor from "@coral-xyz/anchor";
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 /** Adjust these values to whatever you want them to be */
@@ -21,8 +21,12 @@ const holdingAccount = new PublicKey(
   process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
 );
 
-const solUsdPriceFeed = new PublicKey("GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR");
-const nctUsdPriceFeed = new PublicKey("4YL36VBtFkD2zfNGWdGFSc5suvskjrHnx3Asuksyek1J");
+const solUsdPriceFeed = new PublicKey(
+  "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
+);
+const nctUsdPriceFeed = new PublicKey(
+  "4YL36VBtFkD2zfNGWdGFSc5suvskjrHnx3Asuksyek1J"
+);
 const FEED_STALENESS_THRESHOLD = 60 * 60 * 24 * 2; // 2 days
 
 (async () => {
