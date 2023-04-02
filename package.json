@@ -1,4 +1,9 @@
 {
+    "workspaces": [
+        "packages/client",
+        "packages/tests"
+    ],
+    "private": true,
     "scripts": {
         "program:lint": "cargo fmt --all -- --check && cargo clippy -- --deny warnings",
         "program:dylint": "cargo dylint --all --workspace",
@@ -29,6 +34,7 @@
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-promise": "^6.0.0",
         "eslint-plugin-react": "^7.31.10",
+        "lerna": "^6.4.1",
         "mocha": "^10.2.0",
         "prettier": "^2.6.2",
         "ts-mocha": "^10.0.0",
