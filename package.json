@@ -2,7 +2,7 @@
     "scripts": {
         "program:lint": "cargo fmt --all -- --check && cargo clippy -- --deny warnings",
         "program:dylint": "cargo dylint --all --workspace",
-        "lint": "eslint .",
+        "lint": "yarn run eslint .",
         "test": "anchor test",
         "test:anchor": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/**/*.ts",
         "program:build": "anchor build",
