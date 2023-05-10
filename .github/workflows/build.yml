@@ -87,7 +87,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Run lint
-        run: yarn lint
+        run: yarn run eslint .
 
   test:
     needs: [lint-client, lint-program]
