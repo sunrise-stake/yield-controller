@@ -4,7 +4,7 @@ on:
   pull_request:
 
 env:
-  solana_version: stable
+  solana_version: latest
   VERBOSE: 1
 
 jobs:
