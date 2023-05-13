@@ -19,8 +19,8 @@ pub mod treasury_controller {
         state_account.purchase_threshold = state.purchase_threshold;
         state_account.purchase_proportion = state.purchase_proportion;
         state_account.price = state.price;
-        state_account.holding_account = state.holding_account;
-        state_account.holding_token_account = state.holding_token_account;
+        state_account.yield_account = state.yield_account;
+        state_account.yield_token_account = state.yield_token_account;
         state_account.bump = *ctx.bumps.get("state").unwrap();
         Ok(())
     }
@@ -32,8 +32,8 @@ pub mod treasury_controller {
         state_account.treasury = state.treasury;
         state_account.purchase_threshold = state.purchase_threshold;
         state_account.purchase_proportion = state.purchase_proportion;
-        state_account.holding_account = state.holding_account;
-        state_account.holding_token_account = state.holding_token_account;
+        state_account.yield_account = state.yield_account;
+        state_account.yield_token_account = state.yield_token_account;
         state_account.price = state.price;
         Ok(())
     }
@@ -49,8 +49,8 @@ pub mod treasury_controller {
         let state_account = &mut ctx.accounts.state;
         let treasury = &mut ctx.accounts.treasury;
         let token_program = &ctx.accounts.token_program;
-        let holding_account = &mut ctx.accounts.holding_account;
-        let holding_token_account = &mut ctx.accounts.holding_token_account;
+        let yield_account = &mut ctx.accounts.yield_account;
+        let yield_token_account = &mut ctx.accounts.yield_token_account;
 
         if state_account.treasury != treasury.key() {
             return Err(ErrorCode::InvalidTreasury.into());
@@ -68,7 +68,7 @@ pub mod treasury_controller {
         let treasury_amount =
             (args.sol_amount as f64 * state_account.purchase_proportion as f64) as u64;
 
-        let holding_account_amount = args.sol_amount - treasury_amount;
+        let yield_account_amount = args.sol_amount - treasury_amount;
 
         let burn_amount = args.token_amount / state_account.price;
 
@@ -76,19 +76,19 @@ pub mod treasury_controller {
             burn_amount,
             state_account,
             mint_account,
-            holding_token_account,
+            yield_token_account,
             token_program,
         )?;
 
         transfer_native(&state_account.to_account_info(), treasury, treasury_amount)?;
         transfer_native(
             &state_account.to_account_info(),
-            holding_account,
-            holding_account_amount,
+            yield_account,
+            yield_account_amount,
         )?;
 
         // update total sol spent
-        state_account.total_spent += holding_account_amount;
+        state_account.total_spent += yield_account_amount;
 
         Ok(())
     }

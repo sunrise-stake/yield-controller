@@ -9,8 +9,8 @@ pub struct GenericStateInput {
     // pub market: Pubkey,
     pub update_authority: Pubkey,
     pub treasury: Pubkey,
-    pub holding_account: Pubkey,
-    pub holding_token_account: Pubkey,
+    pub yield_account: Pubkey,
+    pub yield_token_account: Pubkey,
     pub price: u64, /* TODO: replace with oracle */
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
@@ -30,8 +30,8 @@ pub struct State {
     pub price: u64,
     pub purchase_threshold: u64,
     pub purchase_proportion: f32,
-    pub holding_account: Pubkey,
-    pub holding_token_account: Pubkey,
+    pub yield_account: Pubkey,
+    pub yield_token_account: Pubkey,
     pub total_spent: u64,
     pub bump: u8,
 }
@@ -109,15 +109,15 @@ pub struct AllocateYield<'info> {
     pub treasury: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = holding_account.key() == state.holding_account.key(),
+        constraint = yield_account.key() == state.yield_account.key(),
     )]
     /// CHECK: Assumes correct state setup
-    pub holding_account: AccountInfo<'info>,
+    pub yield_account: AccountInfo<'info>,
     #[account(
         mut,
-        constraint = holding_token_account.key() == state.holding_token_account.key(),
+        constraint = yield_token_account.key() == state.yield_token_account.key(),
     )]
-    pub holding_token_account: Account<'info, TokenAccount>,
+    pub yield_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
