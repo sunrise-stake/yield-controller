@@ -1,9 +1,9 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { TreasuryController } from "../types/treasury_controller";
+import { BuyBurnFixed } from "../types/buy_burn_fixed";
 import BN from "bn.js";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { PROGRAM_ID, TreasuryControllerClient } from "../client";
+import { PROGRAM_ID, BuyBurnFixedClient } from "../client";
 import {
   Account,
   createMint,
@@ -14,11 +14,10 @@ import {
 } from "@solana/spl-token";
 import { expect } from "chai";
 import testAuthority from "./fixtures/id.json";
-const program = anchor.workspace
-  .TreasuryController as Program<TreasuryController>;
+const program = anchor.workspace.BuyBurnFixed as Program<BuyBurnFixed>;
 
 describe("treasury-controller", () => {
-  let client: TreasuryControllerClient;
+  let client: BuyBurnFixedClient;
   const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
   const treasury = Keypair.generate();
   const holdingAccount = Keypair.generate();
@@ -57,7 +56,7 @@ describe("treasury-controller", () => {
   });
 
   it("It can register a new controller state", async () => {
-    client = await TreasuryControllerClient.register(
+    client = await BuyBurnFixedClient.register(
       authority.publicKey,
       treasury.publicKey,
       mint,
@@ -151,7 +150,7 @@ describe("treasury-controller", () => {
       .uiAmount as number;
 
     // turn the crank
-    client = await TreasuryControllerClient.allocateYield(
+    client = await BuyBurnFixedClient.allocateYield(
       authority.publicKey,
       stateAddress,
       treasury.publicKey,
@@ -188,7 +187,7 @@ describe("treasury-controller", () => {
   it("Can update controller price", async () => {
     const price = new BN(1_000);
 
-    client = await TreasuryControllerClient.updatePrice(
+    client = await BuyBurnFixedClient.updatePrice(
       stateAddress,
       authority.publicKey,
       price
@@ -210,7 +209,7 @@ describe("treasury-controller", () => {
     );
 
     try {
-      client = await TreasuryControllerClient.updateController(
+      client = await BuyBurnFixedClient.updateController(
         stateAddress,
         newAuthority.publicKey,
         newTreasury.publicKey,

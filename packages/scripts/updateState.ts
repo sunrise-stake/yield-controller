@@ -1,5 +1,5 @@
-import { TreasuryControllerClient } from "../client";
-import * as anchor from "@project-serum/anchor";
+import { BuyBurnFixedClient } from "../client";
+import * as anchor from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
@@ -41,7 +41,7 @@ const stateAddress = new PublicKey(
     true
   );
 
-  const client = await TreasuryControllerClient.updateController(
+  const client = await BuyBurnFixedClient.updateController(
     stateAddress,
     authorityKey,
     treasuryKey,

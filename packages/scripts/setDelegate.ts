@@ -4,7 +4,7 @@ import {
 } from "@solana/spl-token";
 import { setUpAnchor } from "../client";
 import { PublicKey } from "@solana/web3.js";
-import NodeWallet from "@project-serum/anchor/dist/cjs/nodewallet";
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
 const mint = new PublicKey(process.env.MINT ?? defaultMint);

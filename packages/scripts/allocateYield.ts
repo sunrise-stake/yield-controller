@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { TreasuryControllerClient, setUpAnchor } from "../client";
+import { BuyBurnFixedClient, setUpAnchor } from "../client";
 import { getAssociatedTokenAddressSync, getAccount } from "@solana/spl-token";
 import BN from "bn.js";
 
@@ -28,7 +28,7 @@ const holdingAccount = new PublicKey(
 
 (async () => {
   const provider = setUpAnchor();
-  const stateAccount = await TreasuryControllerClient.fetch(stateAddress);
+  const stateAccount = await BuyBurnFixedClient.fetch(stateAddress);
   const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
     mint,
     holdingAccount,
@@ -77,7 +77,7 @@ const holdingAccount = new PublicKey(
     return null;
   }
 
-  await TreasuryControllerClient.allocateYield(
+  await BuyBurnFixedClient.allocateYield(
     authorityKey,
     stateAddress,
     treasuryKey,

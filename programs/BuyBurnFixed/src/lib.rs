@@ -8,7 +8,7 @@ mod utils;
 declare_id!("stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B");
 
 #[program]
-pub mod treasury_controller {
+pub mod buy_burn_fixed {
     use super::*;
 
     pub fn register_state(ctx: Context<RegisterState>, state: GenericStateInput) -> Result<()> {

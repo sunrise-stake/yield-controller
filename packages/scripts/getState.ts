@@ -1,4 +1,4 @@
-import { TreasuryControllerClient } from "../client";
+import { BuyBurnFixedClient } from "../client";
 import { PublicKey } from "@solana/web3.js";
 
 // used for devnet testing
@@ -8,6 +8,6 @@ const stateAddress = new PublicKey(
 );
 
 (async () => {
-  const state = await TreasuryControllerClient.fetch(stateAddress);
+  const state = await BuyBurnFixedClient.fetch(stateAddress);
   console.log("state account data", state);
 })().catch(console.error);

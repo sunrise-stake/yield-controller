@@ -2,7 +2,7 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { TreasuryController, IDL } from "../types/treasury_controller";
+import { BuyBurnFixed, IDL } from "../types/buy_burn_fixed";
 
 export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
@@ -22,7 +22,7 @@ export const confirm = (connection: Connection) => async (txSig: string) =>
     ...(await connection.getLatestBlockhash()),
   });
 
-export interface TreasuryControllerConfig {
+export interface BuyBurnFixedConfig {
   updateAuthority: PublicKey;
   treasury: PublicKey;
   mint: PublicKey;
@@ -31,13 +31,13 @@ export interface TreasuryControllerConfig {
   bump: number;
 }
 
-export class TreasuryControllerClient {
-  config: TreasuryControllerConfig | undefined;
-  readonly program: Program<TreasuryController>;
+export class BuyBurnFixedClient {
+  config: BuyBurnFixedConfig | undefined;
+  readonly program: Program<BuyBurnFixed>;
   stateAddress: PublicKey | undefined;
 
   constructor(readonly provider: AnchorProvider) {
-    this.program = new Program<TreasuryController>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<BuyBurnFixed>(IDL, PROGRAM_ID, provider);
   }
 
   private async init(stateAddress: PublicKey): Promise<void> {
@@ -67,7 +67,7 @@ export class TreasuryControllerClient {
   }
 
   public static async fetch(stateAddress: PublicKey): Promise<any> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+    const client = new BuyBurnFixedClient(setUpAnchor());
     return client.program.account.state.fetch(stateAddress);
   }
 
@@ -80,11 +80,11 @@ export class TreasuryControllerClient {
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
-  ): Promise<TreasuryControllerClient> {
+  ): Promise<BuyBurnFixedClient> {
     // find state address
     const state = await this.getStateAddress(mint);
 
-    const client = new TreasuryControllerClient(setUpAnchor());
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.wallet.publicKey,
@@ -125,8 +125,8 @@ export class TreasuryControllerClient {
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<BuyBurnFixedClient> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.publicKey,
@@ -162,8 +162,8 @@ export class TreasuryControllerClient {
     yieldTokenAccount: PublicKey,
     solAmount: BN,
     tokenAmount: BN
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<BuyBurnFixedClient> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     await client.program.methods
       .allocateYield({ solAmount, tokenAmount })
@@ -185,8 +185,8 @@ export class TreasuryControllerClient {
     state: PublicKey,
     payer: PublicKey,
     price: BN
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<BuyBurnFixedClient> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     await client.program.methods
       .updatePrice(price)
