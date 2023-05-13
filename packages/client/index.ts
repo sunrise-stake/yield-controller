@@ -75,8 +75,8 @@ export class TreasuryControllerClient {
     updateAuthority: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
-    holdingAccount: PublicKey,
-    holdingTokenAccount: PublicKey,
+    yieldAccount: PublicKey,
+    yieldTokenAccount: PublicKey,
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
@@ -98,8 +98,8 @@ export class TreasuryControllerClient {
         mint,
         updateAuthority,
         treasury,
-        holdingAccount,
-        holdingTokenAccount,
+        yieldAccount,
+        yieldTokenAccount,
         price,
         purchaseProportion,
         purchaseThreshold,
@@ -120,8 +120,8 @@ export class TreasuryControllerClient {
     updateAuthority: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
-    holdingAccount: PublicKey,
-    holdingTokenAccount: PublicKey,
+    yieldAccount: PublicKey,
+    yieldTokenAccount: PublicKey,
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
@@ -138,8 +138,8 @@ export class TreasuryControllerClient {
         mint,
         updateAuthority,
         treasury,
-        holdingAccount,
-        holdingTokenAccount,
+        yieldAccount,
+        yieldTokenAccount,
         price,
         purchaseProportion,
         purchaseThreshold,
@@ -158,8 +158,8 @@ export class TreasuryControllerClient {
     state: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
-    holdingAccount: PublicKey,
-    holdingTokenAccount: PublicKey,
+    yieldAccount: PublicKey,
+    yieldTokenAccount: PublicKey,
     solAmount: BN,
     tokenAmount: BN
   ): Promise<TreasuryControllerClient> {
@@ -172,8 +172,8 @@ export class TreasuryControllerClient {
         state,
         treasury,
         mint,
-        holdingAccount,
-        holdingTokenAccount,
+        yieldAccount,
+        yieldTokenAccount,
       })
       .rpc()
       .then(confirm(client.provider.connection));

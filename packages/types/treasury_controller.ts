@@ -103,12 +103,12 @@ export type TreasuryController = {
           "isSigner": false
         },
         {
-          "name": "holdingAccount",
+          "name": "yieldAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "holdingTokenAccount",
+          "name": "yieldTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -164,11 +164,11 @@ export type TreasuryController = {
             "type": "f32"
           },
           {
-            "name": "holdingAccount",
+            "name": "yieldAccount",
             "type": "publicKey"
           },
           {
-            "name": "holdingTokenAccount",
+            "name": "yieldTokenAccount",
             "type": "publicKey"
           },
           {
@@ -202,11 +202,11 @@ export type TreasuryController = {
             "type": "publicKey"
           },
           {
-            "name": "holdingAccount",
+            "name": "yieldAccount",
             "type": "publicKey"
           },
           {
-            "name": "holdingTokenAccount",
+            "name": "yieldTokenAccount",
             "type": "publicKey"
           },
           {
@@ -370,12 +370,12 @@ export const IDL: TreasuryController = {
           "isSigner": false
         },
         {
-          "name": "holdingAccount",
+          "name": "yieldAccount",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "holdingTokenAccount",
+          "name": "yieldTokenAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -431,11 +431,11 @@ export const IDL: TreasuryController = {
             "type": "f32"
           },
           {
-            "name": "holdingAccount",
+            "name": "yieldAccount",
             "type": "publicKey"
           },
           {
-            "name": "holdingTokenAccount",
+            "name": "yieldTokenAccount",
             "type": "publicKey"
           },
           {
@@ -469,11 +469,11 @@ export const IDL: TreasuryController = {
             "type": "publicKey"
           },
           {
-            "name": "holdingAccount",
+            "name": "yieldAccount",
             "type": "publicKey"
           },
           {
-            "name": "holdingTokenAccount",
+            "name": "yieldTokenAccount",
             "type": "publicKey"
           },
           {
