@@ -34,61 +34,63 @@ export interface BuyBurnFixedConfig {
 export class BuyBurnFixedClient {
   config: BuyBurnFixedConfig | undefined;
   readonly program: Program<BuyBurnFixed>;
-  stateAddress: PublicKey | undefined;
+  yieldAccountAddress: PublicKey | undefined;
 
   constructor(readonly provider: AnchorProvider) {
     this.program = new Program<BuyBurnFixed>(IDL, PROGRAM_ID, provider);
   }
 
-  private async init(stateAddress: PublicKey): Promise<void> {
-    const state = await this.program.account.state.fetch(stateAddress);
+  private async init(yieldAccountAddress: PublicKey): Promise<void> {
+    const yieldAccount = await this.program.account.state.fetch(
+      yieldAccountAddress
+    );
 
     this.config = {
-      updateAuthority: state.updateAuthority,
-      treasury: state.treasury,
-      mint: state.mint,
-      purchaseThreshold: state.purchaseThreshold,
-      purchaseProportion: state.purchaseProportion,
-      bump: state.bump,
+      updateAuthority: yieldAccount.updateAuthority,
+      treasury: yieldAccount.treasury,
+      mint: yieldAccount.mint,
+      purchaseThreshold: yieldAccount.purchaseThreshold,
+      purchaseProportion: yieldAccount.purchaseProportion,
+      bump: yieldAccount.bump,
     };
 
-    this.stateAddress = stateAddress;
+    this.yieldAccountAddress = yieldAccountAddress;
   }
 
-  public static async getStateAddress(
+  public static async getyieldAccountAddress(
     mint: PublicKey
   ): Promise<anchor.web3.PublicKey> {
-    const [state] = PublicKey.findProgramAddressSync(
+    const [yieldAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from("state"), mint.toBuffer()],
       PROGRAM_ID
     );
 
-    return state;
+    return yieldAccount;
   }
 
-  public static async fetch(stateAddress: PublicKey): Promise<any> {
+  public static async fetch(yieldAccountAddress: PublicKey): Promise<any> {
     const client = new BuyBurnFixedClient(setUpAnchor());
-    return client.program.account.state.fetch(stateAddress);
+    return client.program.account.yieldAccount.fetch(yieldAccountAddress);
   }
 
   public static async register(
     updateAuthority: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
-    yieldAccount: PublicKey,
-    yieldTokenAccount: PublicKey,
+    holdingAccount: PublicKey,
+    holdingTokenAccount: PublicKey,
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
   ): Promise<BuyBurnFixedClient> {
     // find state address
-    const state = await this.getStateAddress(mint);
+    const yieldAccount = await this.getyieldAccountAddress(mint);
 
     const client = new BuyBurnFixedClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.wallet.publicKey,
-      state,
+      yieldAccount,
       mint,
       systemProgram: SystemProgram.programId,
     };
@@ -98,8 +100,8 @@ export class BuyBurnFixedClient {
         mint,
         updateAuthority,
         treasury,
-        yieldAccount,
-        yieldTokenAccount,
+        holdingAccount,
+        holdingTokenAccount,
         price,
         purchaseProportion,
         purchaseThreshold,
@@ -110,18 +112,18 @@ export class BuyBurnFixedClient {
         confirm(client.provider.connection);
       });
 
-    await client.init(state);
+    await client.init(yieldAccount);
 
     return client;
   }
 
   public static async updateController(
-    state: PublicKey,
+    yieldAccount: PublicKey,
     updateAuthority: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
-    yieldAccount: PublicKey,
-    yieldTokenAccount: PublicKey,
+    holdingAccount: PublicKey,
+    holdingTokenAccount: PublicKey,
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
@@ -130,7 +132,7 @@ export class BuyBurnFixedClient {
 
     const accounts = {
       payer: client.provider.publicKey,
-      state,
+      yieldAccount,
     };
 
     await client.program.methods
@@ -138,8 +140,8 @@ export class BuyBurnFixedClient {
         mint,
         updateAuthority,
         treasury,
-        yieldAccount,
-        yieldTokenAccount,
+        holdingAccount,
+        holdingTokenAccount,
         price,
         purchaseProportion,
         purchaseThreshold,
@@ -148,18 +150,18 @@ export class BuyBurnFixedClient {
       .rpc()
       .then(confirm(client.provider.connection));
 
-    await client.init(state);
+    await client.init(yieldAccount);
 
     return client;
   }
 
   public static async allocateYield(
     payer: PublicKey,
-    state: PublicKey,
+    yieldAccount: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
-    yieldAccount: PublicKey,
-    yieldTokenAccount: PublicKey,
+    holdingAccount: PublicKey,
+    holdingTokenAccount: PublicKey,
     solAmount: BN,
     tokenAmount: BN
   ): Promise<BuyBurnFixedClient> {
@@ -169,11 +171,11 @@ export class BuyBurnFixedClient {
       .allocateYield({ solAmount, tokenAmount })
       .accounts({
         payer,
-        state,
+        yieldAccount,
         treasury,
         mint,
-        yieldAccount,
-        yieldTokenAccount,
+        holdingAccount,
+        holdingTokenAccount,
       })
       .rpc()
       .then(confirm(client.provider.connection));
@@ -182,7 +184,7 @@ export class BuyBurnFixedClient {
   }
 
   public static async updatePrice(
-    state: PublicKey,
+    yieldAccount: PublicKey,
     payer: PublicKey,
     price: BN
   ): Promise<BuyBurnFixedClient> {
@@ -192,7 +194,7 @@ export class BuyBurnFixedClient {
       .updatePrice(price)
       .accounts({
         payer,
-        state,
+        yieldAccount,
       })
       .rpc()
       .then(confirm(client.provider.connection));

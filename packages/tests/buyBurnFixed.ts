@@ -23,7 +23,7 @@ describe("treasury-controller", () => {
   const holdingAccount = Keypair.generate();
   let holdingTokenAccount: Account;
   let mint: anchor.web3.PublicKey;
-  let stateAddress: anchor.web3.PublicKey;
+  let yieldAccountAddress: anchor.web3.PublicKey;
   let bump: number;
 
   before(async () => {
@@ -49,10 +49,11 @@ describe("treasury-controller", () => {
       true
     );
 
-    [stateAddress, bump] = await anchor.web3.PublicKey.findProgramAddress(
-      [Buffer.from("state"), mint.toBuffer()],
-      PROGRAM_ID
-    );
+    [yieldAccountAddress, bump] =
+      await anchor.web3.PublicKey.findProgramAddress(
+        [Buffer.from("state"), mint.toBuffer()],
+        PROGRAM_ID
+      );
   });
 
   it("It can register a new controller state", async () => {
@@ -67,34 +68,36 @@ describe("treasury-controller", () => {
       new BN(1)
     );
 
-    expect(client.stateAddress).not.to.be.null;
+    expect(client.yieldAccountAddress).not.to.be.null;
 
-    const stateAddress = client.stateAddress as PublicKey;
+    const yieldAccountAddress = client.yieldAccountAddress as PublicKey;
 
-    const state = await program.account.state.fetch(stateAddress);
+    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
 
-    expect(state.updateAuthority.toBase58()).equal(
+    expect(yieldAccount.updateAuthority.toBase58()).equal(
       client.provider.publicKey.toBase58()
     );
-    expect(state.treasury.toBase58()).equal(treasury.publicKey.toBase58());
-    expect(state.mint.toBase58()).equal(mint.toBase58());
-    expect(state.purchaseThreshold.toNumber()).equal(1);
-    expect(state.purchaseProportion).equal(0.5);
-    expect(state.bump).equal(bump);
+    expect(yieldAccount.treasury.toBase58()).equal(
+      treasury.publicKey.toBase58()
+    );
+    expect(yieldAccount.mint.toBase58()).equal(mint.toBase58());
+    expect(yieldAccount.purchaseThreshold.toNumber()).equal(1);
+    expect(yieldAccount.purchaseProportion).equal(0.5);
+    expect(yieldAccount.bump).equal(bump);
   });
   it("Can allocate yield", async () => {
     // state account is PDA target for sunrise
     await program.provider.connection
-      .requestAirdrop(stateAddress, 100 * LAMPORTS_PER_SOL)
+      .requestAirdrop(yieldAccountAddress, 100 * LAMPORTS_PER_SOL)
       .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
     await program.provider.connection
       .requestAirdrop(treasury.publicKey, 100 * LAMPORTS_PER_SOL)
       .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
-    // check that stateAddress now has 10 SOL
-    const stateBalanceBefore = await program.provider.connection.getBalance(
-      stateAddress
+    // check that yieldAccountAddress now has 10 SOL
+    const yieldBalanceBefore = await program.provider.connection.getBalance(
+      yieldAccountAddress
     );
     // treasury token account is created and delegate is set to the state account
     const holdingTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -122,7 +125,7 @@ describe("treasury-controller", () => {
       authority,
       mint,
       holdingTokenAccount.address,
-      stateAddress,
+      yieldAccountAddress,
       holdingAccount,
       1000 * 10 ** 9,
       9
@@ -138,7 +141,7 @@ describe("treasury-controller", () => {
     );
 
     expect(holdingTokenAccountInfo?.delegate?.toBase58()).equal(
-      stateAddress.toBase58()
+      yieldAccountAddress.toBase58()
     );
 
     // check DAO token account balance
@@ -152,7 +155,7 @@ describe("treasury-controller", () => {
     // turn the crank
     client = await BuyBurnFixedClient.allocateYield(
       authority.publicKey,
-      stateAddress,
+      yieldAccountAddress,
       treasury.publicKey,
       mint,
       holdingAccount.publicKey,
@@ -162,7 +165,7 @@ describe("treasury-controller", () => {
     );
 
     const treasuryBalanceAfter = await program.provider.connection.getBalance(
-      stateAddress
+      yieldAccountAddress
     );
 
     const holdingTokenAccountBalanceAfter =
@@ -173,7 +176,7 @@ describe("treasury-controller", () => {
     const holdingAccountBalanceAfter =
       await program.provider.connection.getBalance(holdingAccount.publicKey);
 
-    expect(treasuryBalanceAfter).equal(stateBalanceBefore - 10 * 10 ** 9);
+    expect(treasuryBalanceAfter).equal(yieldBalanceBefore - 10 * 10 ** 9);
     expect(holdingAccountBalanceAfter).equal(
       holdingAccountBalanceBefore + 5 * 10 ** 9
     );
@@ -181,20 +184,20 @@ describe("treasury-controller", () => {
       balanceBeforeNumber - 10
     );
 
-    const state = await program.account.state.fetch(stateAddress);
-    expect(state.totalSpent.toNumber()).equal(5 * 10 ** 9);
+    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
+    expect(yieldAccount.totalSpent.toNumber()).equal(5 * 10 ** 9);
   });
   it("Can update controller price", async () => {
     const price = new BN(1_000);
 
     client = await BuyBurnFixedClient.updatePrice(
-      stateAddress,
+      yieldAccountAddress,
       authority.publicKey,
       price
     );
 
-    const state = await program.account.state.fetch(stateAddress);
-    expect(state.price.toNumber()).equal(price.toNumber());
+    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
+    expect(yieldAccount.price.toNumber()).equal(price.toNumber());
   });
   it("Can update controller state", async () => {
     const newAuthority = Keypair.generate();
@@ -210,7 +213,7 @@ describe("treasury-controller", () => {
 
     try {
       client = await BuyBurnFixedClient.updateController(
-        stateAddress,
+        yieldAccountAddress,
         newAuthority.publicKey,
         newTreasury.publicKey,
         mint,
@@ -224,15 +227,17 @@ describe("treasury-controller", () => {
       console.log(e);
     }
 
-    const state = await program.account.state.fetch(stateAddress);
+    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
 
-    expect(state.updateAuthority.toBase58()).equal(
+    expect(yieldAccount.updateAuthority.toBase58()).equal(
       newAuthority.publicKey.toBase58()
     );
-    expect(state.treasury.toBase58()).equal(newTreasury.publicKey.toBase58());
-    expect(state.mint.toBase58()).equal(mint.toBase58());
-    expect(state.purchaseThreshold.toNumber()).equal(100);
-    expect(state.purchaseProportion).equal(1);
-    expect(state.bump).equal(bump);
+    expect(yieldAccount.treasury.toBase58()).equal(
+      newTreasury.publicKey.toBase58()
+    );
+    expect(yieldAccount.mint.toBase58()).equal(mint.toBase58());
+    expect(yieldAccount.purchaseThreshold.toNumber()).equal(100);
+    expect(yieldAccount.purchaseProportion).equal(1);
+    expect(yieldAccount.bump).equal(bump);
   });
 });
