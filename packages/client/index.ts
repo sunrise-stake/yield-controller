@@ -57,7 +57,7 @@ export class BuyBurnFixedClient {
     this.yieldAccountAddress = yieldAccountAddress;
   }
 
-  public static async getyieldAccountAddress(
+  public static async getYieldAccountAddress(
     mint: PublicKey
   ): Promise<anchor.web3.PublicKey> {
     const [yieldAccount] = PublicKey.findProgramAddressSync(
