@@ -2,7 +2,7 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { TreasuryController, IDL } from "../types/treasury_controller";
+import { BuyBurnFixed, IDL } from "../types/buy_burn_fixed";
 
 export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
@@ -22,7 +22,7 @@ export const confirm = (connection: Connection) => async (txSig: string) =>
     ...(await connection.getLatestBlockhash()),
   });
 
-export interface TreasuryControllerConfig {
+export interface BuyBurnFixedConfig {
   updateAuthority: PublicKey;
   treasury: PublicKey;
   mint: PublicKey;
@@ -31,44 +31,46 @@ export interface TreasuryControllerConfig {
   bump: number;
 }
 
-export class TreasuryControllerClient {
-  config: TreasuryControllerConfig | undefined;
-  readonly program: Program<TreasuryController>;
-  stateAddress: PublicKey | undefined;
+export class BuyBurnFixedClient {
+  config: BuyBurnFixedConfig | undefined;
+  readonly program: Program<BuyBurnFixed>;
+  yieldAccountAddress: PublicKey | undefined;
 
   constructor(readonly provider: AnchorProvider) {
-    this.program = new Program<TreasuryController>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<BuyBurnFixed>(IDL, PROGRAM_ID, provider);
   }
 
-  private async init(stateAddress: PublicKey): Promise<void> {
-    const state = await this.program.account.state.fetch(stateAddress);
+  private async init(yieldAccountAddress: PublicKey): Promise<void> {
+    const yieldAccount = await this.program.account.state.fetch(
+      yieldAccountAddress
+    );
 
     this.config = {
-      updateAuthority: state.updateAuthority,
-      treasury: state.treasury,
-      mint: state.mint,
-      purchaseThreshold: state.purchaseThreshold,
-      purchaseProportion: state.purchaseProportion,
-      bump: state.bump,
+      updateAuthority: yieldAccount.updateAuthority,
+      treasury: yieldAccount.treasury,
+      mint: yieldAccount.mint,
+      purchaseThreshold: yieldAccount.purchaseThreshold,
+      purchaseProportion: yieldAccount.purchaseProportion,
+      bump: yieldAccount.bump,
     };
 
-    this.stateAddress = stateAddress;
+    this.yieldAccountAddress = yieldAccountAddress;
   }
 
-  public static async getStateAddress(
+  public static async getYieldAccount(
     mint: PublicKey
   ): Promise<anchor.web3.PublicKey> {
-    const [state] = PublicKey.findProgramAddressSync(
+    const [yieldAccount] = PublicKey.findProgramAddressSync(
       [Buffer.from("state"), mint.toBuffer()],
       PROGRAM_ID
     );
 
-    return state;
+    return yieldAccount;
   }
 
-  public static async fetch(stateAddress: PublicKey): Promise<any> {
-    const client = new TreasuryControllerClient(setUpAnchor());
-    return client.program.account.state.fetch(stateAddress);
+  public static async fetch(yieldAccountAddress: PublicKey): Promise<any> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
+    return client.program.account.yieldAccount.fetch(yieldAccountAddress);
   }
 
   public static async register(
@@ -80,15 +82,15 @@ export class TreasuryControllerClient {
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
-  ): Promise<TreasuryControllerClient> {
+  ): Promise<BuyBurnFixedClient> {
     // find state address
-    const state = await this.getStateAddress(mint);
+    const yieldAccount = await this.getYieldAccount(mint);
 
-    const client = new TreasuryControllerClient(setUpAnchor());
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.wallet.publicKey,
-      state,
+      yieldAccount,
       mint,
       systemProgram: SystemProgram.programId,
     };
@@ -110,13 +112,13 @@ export class TreasuryControllerClient {
         confirm(client.provider.connection);
       });
 
-    await client.init(state);
+    await client.init(yieldAccount);
 
     return client;
   }
 
   public static async updateController(
-    state: PublicKey,
+    yieldAccount: PublicKey,
     updateAuthority: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
@@ -125,12 +127,12 @@ export class TreasuryControllerClient {
     price: BN,
     purchaseProportion: number,
     purchaseThreshold: BN
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<BuyBurnFixedClient> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     const accounts = {
       payer: client.provider.publicKey,
-      state,
+      yieldAccount,
     };
 
     await client.program.methods
@@ -148,28 +150,28 @@ export class TreasuryControllerClient {
       .rpc()
       .then(confirm(client.provider.connection));
 
-    await client.init(state);
+    await client.init(yieldAccount);
 
     return client;
   }
 
   public static async allocateYield(
     payer: PublicKey,
-    state: PublicKey,
+    yieldAccount: PublicKey,
     treasury: PublicKey,
     mint: PublicKey,
     holdingAccount: PublicKey,
     holdingTokenAccount: PublicKey,
     solAmount: BN,
     tokenAmount: BN
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<BuyBurnFixedClient> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     await client.program.methods
       .allocateYield({ solAmount, tokenAmount })
       .accounts({
         payer,
-        state,
+        yieldAccount,
         treasury,
         mint,
         holdingAccount,
@@ -182,17 +184,17 @@ export class TreasuryControllerClient {
   }
 
   public static async updatePrice(
-    state: PublicKey,
+    yieldAccount: PublicKey,
     payer: PublicKey,
     price: BN
-  ): Promise<TreasuryControllerClient> {
-    const client = new TreasuryControllerClient(setUpAnchor());
+  ): Promise<BuyBurnFixedClient> {
+    const client = new BuyBurnFixedClient(setUpAnchor());
 
     await client.program.methods
       .updatePrice(price)
       .accounts({
         payer,
-        state,
+        yieldAccount,
       })
       .rpc()
       .then(confirm(client.provider.connection));

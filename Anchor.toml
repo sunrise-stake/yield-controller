@@ -5,7 +5,7 @@ types = "packages/types"
 seeds = false
 skip-lint = false
 [programs.localnet]
-treasury_controller = "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
+buy_burn_fixed = "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
 
 [registry]
 url = "https://api.apr.dev"
