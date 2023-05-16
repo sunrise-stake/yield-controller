@@ -57,7 +57,7 @@ export class BuyBurnFixedClient {
     this.yieldAccountAddress = yieldAccountAddress;
   }
 
-  public static async getYieldAccountAddress(
+  public static async getYieldAccount(
     mint: PublicKey
   ): Promise<anchor.web3.PublicKey> {
     const [yieldAccount] = PublicKey.findProgramAddressSync(
@@ -84,7 +84,7 @@ export class BuyBurnFixedClient {
     purchaseThreshold: BN
   ): Promise<BuyBurnFixedClient> {
     // find state address
-    const yieldAccount = await this.getyieldAccountAddress(mint);
+    const yieldAccount = await this.getYieldAccount(mint);
 
     const client = new BuyBurnFixedClient(setUpAnchor());
 
