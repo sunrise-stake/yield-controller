@@ -2,7 +2,7 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { BuyBurnFixed, IDL } from "../types/buy_burn_fixed";
+import { BuyBurnFixed, IDL } from "../../types/buy_burn_fixed";
 
 export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
@@ -70,7 +70,7 @@ export class BuyBurnFixedClient {
 
   public static async fetch(yieldAccountAddress: PublicKey): Promise<any> {
     const client = new BuyBurnFixedClient(setUpAnchor());
-    return client.program.account.yieldAccount.fetch(yieldAccountAddress);
+    return client.program.account.state.fetch(yieldAccountAddress);
   }
 
   public static async register(

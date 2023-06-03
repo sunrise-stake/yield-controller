@@ -1,6 +1,6 @@
-export type BuyBurnFixed = {
+export type BuyBurnSwitchboard = {
   "version": "0.1.0",
-  "name": "buy_burn_fixed",
+  "name": "buy_burn_switchboard",
   "instructions": [
     {
       "name": "registerState",
@@ -11,7 +11,7 @@ export type BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         },
@@ -44,7 +44,7 @@ export type BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         }
@@ -59,33 +59,17 @@ export type BuyBurnFixed = {
       ]
     },
     {
-      "name": "updatePrice",
-      "accounts": [
-        {
-          "name": "yieldAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "price",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "allocateYield",
       "accounts": [
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "yieldAccount",
@@ -113,6 +97,16 @@ export type BuyBurnFixed = {
           "isSigner": false
         },
         {
+          "name": "solUsdPriceFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nctUsdPriceFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
@@ -123,12 +117,26 @@ export type BuyBurnFixed = {
           "isSigner": false
         }
       ],
+      "args": []
+    },
+    {
+      "name": "setTotalTokensPurchased",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
       "args": [
         {
-          "name": "args",
-          "type": {
-            "defined": "AllocateYieldInput"
-          }
+          "name": "value",
+          "type": "u64"
         }
       ]
     }
@@ -152,7 +160,23 @@ export type BuyBurnFixed = {
             "type": "publicKey"
           },
           {
-            "name": "price",
+            "name": "solUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "nctUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedStalenessThreshold",
             "type": "u64"
           },
           {
@@ -164,19 +188,19 @@ export type BuyBurnFixed = {
             "type": "f32"
           },
           {
-            "name": "holdingAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "holdingTokenAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "totalSpent",
+            "name": "totalTokensPurchased",
             "type": "u64"
           },
           {
+            "name": "index",
+            "type": "u8"
+          },
+          {
             "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
             "type": "u8"
           }
         ]
@@ -210,7 +234,15 @@ export type BuyBurnFixed = {
             "type": "publicKey"
           },
           {
-            "name": "price",
+            "name": "solUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "nctUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedStalenessThreshold",
             "type": "u64"
           },
           {
@@ -220,22 +252,14 @@ export type BuyBurnFixed = {
           {
             "name": "purchaseProportion",
             "type": "f32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateYieldInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "solAmount",
-            "type": "u64"
           },
           {
-            "name": "tokenAmount",
-            "type": "u64"
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
+            "type": "u8"
           }
         ]
       }
@@ -245,29 +269,34 @@ export type BuyBurnFixed = {
     {
       "code": 6000,
       "name": "InsufficientFundsForTransaction",
-      "msg": "insufficient funds for transaction"
+      "msg": "Insufficient funds for transaction"
     },
     {
       "code": 6001,
       "name": "InvalidTreasury",
-      "msg": "invalid treasury account"
+      "msg": "Invalid treasury account"
     },
     {
       "code": 6002,
       "name": "InvalidMint",
-      "msg": "invalid mint"
+      "msg": "Invalid mint"
     },
     {
       "code": 6003,
       "name": "PurchaseThresholdExceeded",
-      "msg": "purchase threshold exceeded"
+      "msg": "Purchase threshold exceeded"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidSwitchboardAccount",
+      "msg": "The switchboard feed account is invalid"
     }
   ]
 };
 
-export const IDL: BuyBurnFixed = {
+export const IDL: BuyBurnSwitchboard = {
   "version": "0.1.0",
-  "name": "buy_burn_fixed",
+  "name": "buy_burn_switchboard",
   "instructions": [
     {
       "name": "registerState",
@@ -278,7 +307,7 @@ export const IDL: BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         },
@@ -311,7 +340,7 @@ export const IDL: BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         }
@@ -326,33 +355,17 @@ export const IDL: BuyBurnFixed = {
       ]
     },
     {
-      "name": "updatePrice",
-      "accounts": [
-        {
-          "name": "yieldAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "payer",
-          "isMut": true,
-          "isSigner": true
-        }
-      ],
-      "args": [
-        {
-          "name": "price",
-          "type": "u64"
-        }
-      ]
-    },
-    {
       "name": "allocateYield",
       "accounts": [
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "yieldAccount",
@@ -380,6 +393,16 @@ export const IDL: BuyBurnFixed = {
           "isSigner": false
         },
         {
+          "name": "solUsdPriceFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nctUsdPriceFeed",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
@@ -390,12 +413,26 @@ export const IDL: BuyBurnFixed = {
           "isSigner": false
         }
       ],
+      "args": []
+    },
+    {
+      "name": "setTotalTokensPurchased",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
       "args": [
         {
-          "name": "args",
-          "type": {
-            "defined": "AllocateYieldInput"
-          }
+          "name": "value",
+          "type": "u64"
         }
       ]
     }
@@ -419,7 +456,23 @@ export const IDL: BuyBurnFixed = {
             "type": "publicKey"
           },
           {
-            "name": "price",
+            "name": "solUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "nctUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedStalenessThreshold",
             "type": "u64"
           },
           {
@@ -431,19 +484,19 @@ export const IDL: BuyBurnFixed = {
             "type": "f32"
           },
           {
-            "name": "holdingAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "holdingTokenAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "totalSpent",
+            "name": "totalTokensPurchased",
             "type": "u64"
           },
           {
+            "name": "index",
+            "type": "u8"
+          },
+          {
             "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
             "type": "u8"
           }
         ]
@@ -477,7 +530,15 @@ export const IDL: BuyBurnFixed = {
             "type": "publicKey"
           },
           {
-            "name": "price",
+            "name": "solUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "nctUsdPriceFeed",
+            "type": "publicKey"
+          },
+          {
+            "name": "feedStalenessThreshold",
             "type": "u64"
           },
           {
@@ -487,22 +548,14 @@ export const IDL: BuyBurnFixed = {
           {
             "name": "purchaseProportion",
             "type": "f32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateYieldInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "solAmount",
-            "type": "u64"
           },
           {
-            "name": "tokenAmount",
-            "type": "u64"
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
+            "type": "u8"
           }
         ]
       }
@@ -512,22 +565,27 @@ export const IDL: BuyBurnFixed = {
     {
       "code": 6000,
       "name": "InsufficientFundsForTransaction",
-      "msg": "insufficient funds for transaction"
+      "msg": "Insufficient funds for transaction"
     },
     {
       "code": 6001,
       "name": "InvalidTreasury",
-      "msg": "invalid treasury account"
+      "msg": "Invalid treasury account"
     },
     {
       "code": 6002,
       "name": "InvalidMint",
-      "msg": "invalid mint"
+      "msg": "Invalid mint"
     },
     {
       "code": 6003,
       "name": "PurchaseThresholdExceeded",
-      "msg": "purchase threshold exceeded"
+      "msg": "Purchase threshold exceeded"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidSwitchboardAccount",
+      "msg": "The switchboard feed account is invalid"
     }
   ]
 };

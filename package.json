@@ -3,7 +3,8 @@
         "program:lint": "cargo fmt --all -- --check && cargo clippy -- --deny warnings",
         "program:dylint": "cargo dylint --all --workspace",
         "lint": "eslint .",
-        "test": "anchor test",
+        "test:fixed": "anchor run test_fixed",
+        "test:switchboard": "anchor run test_switchboard",
         "test:anchor": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/**/*.ts",
         "program:build": "anchor build",
         "program:deploy": "anchor deploy"

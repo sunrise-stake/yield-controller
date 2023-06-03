@@ -1,6 +1,6 @@
-export type BuyBurnFixed = {
+export type YieldController = {
   "version": "0.1.0",
-  "name": "buy_burn_fixed",
+  "name": "treasury_controller",
   "instructions": [
     {
       "name": "registerState",
@@ -11,7 +11,7 @@ export type BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         },
@@ -44,7 +44,7 @@ export type BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         }
@@ -62,7 +62,7 @@ export type BuyBurnFixed = {
       "name": "updatePrice",
       "accounts": [
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         },
@@ -75,7 +75,7 @@ export type BuyBurnFixed = {
       "args": [
         {
           "name": "price",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -86,6 +86,11 @@ export type BuyBurnFixed = {
           "name": "payer",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "yieldAccount",
@@ -123,14 +128,7 @@ export type BuyBurnFixed = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": "AllocateYieldInput"
-          }
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -153,7 +151,7 @@ export type BuyBurnFixed = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -172,11 +170,19 @@ export type BuyBurnFixed = {
             "type": "publicKey"
           },
           {
-            "name": "totalSpent",
+            "name": "totalTokensPurchased",
             "type": "u64"
           },
           {
+            "name": "index",
+            "type": "u8"
+          },
+          {
             "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
             "type": "u8"
           }
         ]
@@ -211,7 +217,7 @@ export type BuyBurnFixed = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -220,22 +226,14 @@ export type BuyBurnFixed = {
           {
             "name": "purchaseProportion",
             "type": "f32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateYieldInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "solAmount",
-            "type": "u64"
           },
           {
-            "name": "tokenAmount",
-            "type": "u64"
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
+            "type": "u8"
           }
         ]
       }
@@ -265,9 +263,9 @@ export type BuyBurnFixed = {
   ]
 };
 
-export const IDL: BuyBurnFixed = {
+export const IDL: YieldController = {
   "version": "0.1.0",
-  "name": "buy_burn_fixed",
+  "name": "treasury_controller",
   "instructions": [
     {
       "name": "registerState",
@@ -278,7 +276,7 @@ export const IDL: BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         },
@@ -311,7 +309,7 @@ export const IDL: BuyBurnFixed = {
           "isSigner": true
         },
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         }
@@ -329,7 +327,7 @@ export const IDL: BuyBurnFixed = {
       "name": "updatePrice",
       "accounts": [
         {
-          "name": "yieldAccount",
+          "name": "state",
           "isMut": true,
           "isSigner": false
         },
@@ -342,7 +340,7 @@ export const IDL: BuyBurnFixed = {
       "args": [
         {
           "name": "price",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -353,6 +351,11 @@ export const IDL: BuyBurnFixed = {
           "name": "payer",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
         },
         {
           "name": "yieldAccount",
@@ -390,14 +393,7 @@ export const IDL: BuyBurnFixed = {
           "isSigner": false
         }
       ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": "AllocateYieldInput"
-          }
-        }
-      ]
+      "args": []
     }
   ],
   "accounts": [
@@ -420,7 +416,7 @@ export const IDL: BuyBurnFixed = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -439,11 +435,19 @@ export const IDL: BuyBurnFixed = {
             "type": "publicKey"
           },
           {
-            "name": "totalSpent",
+            "name": "totalTokensPurchased",
             "type": "u64"
           },
           {
+            "name": "index",
+            "type": "u8"
+          },
+          {
             "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
             "type": "u8"
           }
         ]
@@ -478,7 +482,7 @@ export const IDL: BuyBurnFixed = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "purchaseThreshold",
@@ -487,22 +491,14 @@ export const IDL: BuyBurnFixed = {
           {
             "name": "purchaseProportion",
             "type": "f32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AllocateYieldInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "solAmount",
-            "type": "u64"
           },
           {
-            "name": "tokenAmount",
-            "type": "u64"
+            "name": "index",
+            "type": "u8"
+          },
+          {
+            "name": "yieldAccountBump",
+            "type": "u8"
           }
         ]
       }

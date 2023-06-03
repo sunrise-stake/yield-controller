@@ -1,0 +1,22 @@
+[package]
+name = "buy-burn-switchboard"
+version = "0.1.0"
+description = "A program that buys and burns tokens from a holding account at a price set by an oracle"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "buy_burn_switchboard"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.27.0"
+anchor-spl = "0.27.0"
+solana-program = "1.14.12"
+switchboard-v2 = "0.1.23"

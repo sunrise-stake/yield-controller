@@ -1,0 +1,129 @@
+use crate::utils::seeds::{STATE, YIELD_ACCOUNT};
+use anchor_lang::prelude::*;
+use anchor_spl::token::{Mint, Token, TokenAccount};
+use switchboard_v2::AggregatorAccountData;
+
+/* This argument will be used for both registering and updating the state account */
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct GenericStateInput {
+    pub mint: Pubkey,
+    pub update_authority: Pubkey,
+    pub treasury: Pubkey,
+    pub holding_account: Pubkey,
+    pub holding_token_account: Pubkey,
+    pub sol_usd_price_feed: Pubkey,
+    pub nct_usd_price_feed: Pubkey,
+    pub feed_staleness_threshold: u64,
+    pub purchase_threshold: u64,
+    pub purchase_proportion: f32,
+    pub index: u8,
+    pub yield_account_bump: u8,
+}
+
+#[account]
+pub struct State {
+    pub update_authority: Pubkey,
+    pub treasury: Pubkey,
+    pub mint: Pubkey,
+    pub sol_usd_price_feed: Pubkey,
+    pub nct_usd_price_feed: Pubkey,
+    pub holding_account: Pubkey,
+    pub holding_token_account: Pubkey,
+    pub feed_staleness_threshold: u64,
+    pub purchase_threshold: u64,
+    pub purchase_proportion: f32,
+    pub total_tokens_purchased: u64,
+    pub index: u8,
+    pub bump: u8,
+    pub yield_account_bump: u8,
+}
+
+impl State {
+    pub const SPACE: usize = 32 + 32 + 32 + 32 + 32 + 32 + 32 + 8 + 8 + 4 + 8 + 1 + 1 + 1 + 8 /* Discriminator */;
+}
+
+#[derive(Accounts)]
+#[instruction(state_in: GenericStateInput)]
+pub struct RegisterState<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(
+        init,
+        space = State::SPACE,
+        seeds = [STATE, state_in.mint.key().as_ref(), state_in.index.to_le_bytes().as_ref()],
+        payer = payer,
+        bump
+    )]
+    pub state: Account<'info, State>,
+    pub mint: Account<'info, Mint>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(state_in: GenericStateInput)]
+pub struct UpdateState<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(
+        mut,
+        seeds = [STATE, state_in.mint.key().as_ref(), state_in.index.to_le_bytes().as_ref()],
+        bump = state.bump,
+        constraint = state.update_authority == payer.key()
+    )]
+    pub state: Account<'info, State>,
+}
+
+#[derive(Accounts)]
+pub struct SetTotalTokensPurchased<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(
+    mut,
+    constraint = state.update_authority == payer.key()
+    )]
+    pub state: Account<'info, State>,
+}
+
+#[derive(Accounts)]
+pub struct AllocateYield<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(
+        mut,
+        has_one = holding_account,
+        has_one = holding_token_account,
+        has_one = treasury,
+        has_one = mint,
+        has_one = sol_usd_price_feed,
+        has_one = nct_usd_price_feed,
+    )]
+    pub state: Account<'info, State>,
+    #[account(
+        mut,
+        seeds = [YIELD_ACCOUNT, state.key().as_ref()],
+        bump = state.yield_account_bump,
+    )]
+    pub yield_account: SystemAccount<'info>,
+    #[account(mut)]
+    pub mint: Account<'info, Mint>,
+    #[account(
+        mut,
+        constraint = treasury.key() == state.treasury.key(),
+    )]
+    pub treasury: SystemAccount<'info>,
+    #[account(
+        mut,
+        constraint = holding_account.key() == state.holding_account.key(),
+    )]
+    pub holding_account: SystemAccount<'info>,
+    #[account(
+        mut,
+        constraint = holding_token_account.key() == state.holding_token_account.key(),
+        has_one = mint
+    )]
+    pub holding_token_account: Account<'info, TokenAccount>,
+    pub sol_usd_price_feed: AccountLoader<'info, AggregatorAccountData>,
+    pub nct_usd_price_feed: AccountLoader<'info, AggregatorAccountData>,
+    pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
+}

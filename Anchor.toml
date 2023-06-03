@@ -6,6 +6,7 @@ seeds = false
 skip-lint = false
 [programs.localnet]
 buy_burn_fixed = "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
+buy_burn_switchboard = "sbnbpcN3HVfcj9jTwzncwLeNvCzSwbfMwNmdAgX36VW"
 
 [registry]
 url = "https://api.apr.dev"
@@ -15,9 +16,18 @@ cluster = "Localnet"
 wallet = "packages/tests/fixtures/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/*.ts"
+test_fixed = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/buyBurnFixed.ts"  
+test_switchboard = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/buyBurnFixed.ts"  
 register_state = "yarn run ts-node packages/scripts/registerState.ts"
 get_state = "yarn run ts-node packages/scripts/getState.ts"
 update_state = "yarn run ts-node packages/scripts/updateState.ts"
 allocate_yield = "yarn run ts-node packages/scripts/allocateYield.ts"
 set_delegate = "yarn run ts-node packages/scripts/setDelegate.ts"
+
+[[test.validator.account]]
+address = "4YL36VBtFkD2zfNGWdGFSc5suvskjrHnx3Asuksyek1J"
+filename = "packages/tests/fixtures/switchboard_nct_usd.json"
+
+[[test.validator.account]]
+address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
+filename = "packages/tests/fixtures/switchboard_sol_usd.json"
