@@ -1,5 +1,4 @@
 name: Build
-
 on:
   push:
   pull_request:
@@ -62,6 +61,7 @@ jobs:
   lint-program:
     needs: install
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
       - name: Cache rust
@@ -76,29 +76,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
           node-version: '16'
+
       - name: Cache node dependencies
         uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
       - name: Install dependencies
         run: yarn install
+
       - name: Run lint
         run: yarn lint
+
+
 
   test:
     needs: [lint-client, lint-program]
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
+
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
           node-version: '16'
+
       - name: Cache node dependencies
         uses: actions/cache@v3
         with:
@@ -108,6 +117,7 @@ jobs:
         run: |
           export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
           yarn --frozen-lockfile
+
       - uses: actions/cache@v3
         name: cache solana cli
         id: cache-solana
@@ -116,26 +126,19 @@ jobs:
             ~/.cache/solana/
             ~/.local/share/solana/
           key: solana-${{ runner.os }}-v0000-${{ env.solana_version }}
+
       - name: setup solana
         run: |
           export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
           solana --version
           solana-keygen new --silent --no-bip39-passphrase
-      - name: Start Anchor localnet
+
+      - name: run tests
         run: |
           export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
           ls node_modules/.bin
-          yarn localnet
-      - name: Wait for localnet to start
-        run: sleep 10
-      - name: Run fixed tests
-        run: |
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-          yarn test:fixed
-      - name: Run switchboard tests
-        run: |
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-          yarn test:switchboard
+          yarn test
+
       - uses: actions/upload-artifact@v3
         if: always()
         with:
