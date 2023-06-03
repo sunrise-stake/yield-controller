@@ -124,7 +124,8 @@ jobs:
       - name: Start Anchor localnet
         run: |
           export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-          anchor localnet
+          ls node_modules/.bin
+          yarn localnet
       - name: Wait for localnet to start
         run: sleep 10
       - name: Run fixed tests

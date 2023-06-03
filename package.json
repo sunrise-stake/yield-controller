@@ -5,6 +5,7 @@
         "lint": "eslint .",
         "test:fixed": "anchor run test_fixed",
         "test:switchboard": "anchor run test_switchboard",
+        "localnet": "anchor localnet",
         "test:anchor": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/**/*.ts",
         "program:build": "anchor build",
         "program:deploy": "anchor deploy"
