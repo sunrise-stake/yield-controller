@@ -2,4 +2,4 @@ build
 target
 migrations
 .anchor
-**/types/treasury_controller.ts
+packages/types/
