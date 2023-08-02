@@ -1,5 +1,5 @@
-use crate::utils::seeds::{STATE, INPUT_YIELD_ACCOUNT};
 use crate::utils::errors::ErrorCode;
+use crate::utils::seeds::{INPUT_YIELD_ACCOUNT, STATE};
 use anchor_lang::prelude::*;
 
 /* This struct will be used for both registering and updating the state account */
@@ -24,11 +24,15 @@ pub struct State {
 
 impl State {
     pub fn space(output_yield_account_count: u8) -> usize {
-        32 + 32 +
-            (32 * output_yield_account_count as usize) + 4 +
-            (output_yield_account_count as usize) + 4 +
-            8 + 8 + 1 +
-            8 /* Discriminator */
+        32 + 32
+            + (32 * output_yield_account_count as usize)
+            + 4
+            + (output_yield_account_count as usize)
+            + 4
+            + 8
+            + 8
+            + 1
+            + 8 /* Discriminator */
     }
 }
 

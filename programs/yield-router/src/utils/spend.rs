@@ -1,7 +1,7 @@
 use crate::utils::errors::ErrorCode;
+use crate::utils::seeds::INPUT_YIELD_ACCOUNT;
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
-use crate::utils::seeds::INPUT_YIELD_ACCOUNT;
 
 pub fn check_proportions(spend_proportions: &[u8]) -> Result<()> {
     // check proportions sum to 100
@@ -26,13 +26,14 @@ pub fn transfer_native_cpi<'a>(
     let state_bytes = state.to_bytes();
     let bump_bytes = &[source_bump];
     let seeds = &[INPUT_YIELD_ACCOUNT, &state_bytes[..], bump_bytes][..];
-    let signer_seeds = &[&seeds[..]];
+    let signer_seeds = &[seeds];
     let cpi_ctx = CpiContext::new(
         system_program.to_account_info(),
         system_program::Transfer {
             from: source.clone(),
             to: dest.clone(),
-        })
-        .with_signer(signer_seeds);
+        },
+    )
+    .with_signer(signer_seeds);
     system_program::transfer(cpi_ctx, amount)
 }

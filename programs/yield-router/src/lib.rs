@@ -1,7 +1,7 @@
 #![allow(clippy::result_large_err)]
 use crate::utils::errors::ErrorCode;
-use crate::utils::state::*;
 use crate::utils::spend::*;
+use crate::utils::state::*;
 use anchor_lang::prelude::*;
 mod utils;
 
@@ -11,7 +11,11 @@ declare_id!("syriqUnUPcFQjRSaxdFo2wPnXXPjbRsLmhiWUVoGdTo");
 pub mod yield_router {
     use super::*;
 
-    pub fn register_state(ctx: Context<RegisterState>, sunrise_state: Pubkey, state_in: GenericStateInput) -> Result<()> {
+    pub fn register_state(
+        ctx: Context<RegisterState>,
+        sunrise_state: Pubkey,
+        state_in: GenericStateInput,
+    ) -> Result<()> {
         let state = &mut ctx.accounts.state;
         state.sunrise_state = sunrise_state;
         state.update_authority = state_in.update_authority;
@@ -39,7 +43,10 @@ pub mod yield_router {
         Ok(())
     }
 
-    pub fn allocate_yield<'a, 'b, 'c, 'info>(ctx: Context<'a, 'b, 'c, 'info, AllocateYield<'info>>, amount: u64) -> Result<()> {
+    pub fn allocate_yield<'info>(
+        ctx: Context<'_, '_, '_, 'info, AllocateYield<'info>>,
+        amount: u64,
+    ) -> Result<()> {
         let state = &mut ctx.accounts.state;
         let input_yield_account = &mut ctx.accounts.input_yield_account;
 
@@ -62,7 +69,7 @@ pub mod yield_router {
             transfer_native_cpi(
                 &state.key(),
                 &input_yield_account.to_account_info(),
-                &output_yield_account,
+                output_yield_account,
                 amount_to_send,
                 state.input_yield_account_bump,
                 &ctx.accounts.system_program,
