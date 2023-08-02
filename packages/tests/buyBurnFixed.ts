@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import { BuyBurnFixed } from "../types/buy_burn_fixed";
 import BN from "bn.js";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { PROGRAM_ID, BuyBurnFixedClient } from "../client";
+import { PROGRAM_ID, BuyBurnFixedClient } from "../buy-burn-fixed/client";
 import {
   Account,
   createMint,
@@ -16,7 +16,7 @@ import { expect } from "chai";
 import testAuthority from "./fixtures/id.json";
 const program = anchor.workspace.BuyBurnFixed as Program<BuyBurnFixed>;
 
-describe("treasury-controller", () => {
+describe("buy-burn-fixed", () => {
   let client: BuyBurnFixedClient;
   const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
   const treasury = Keypair.generate();
