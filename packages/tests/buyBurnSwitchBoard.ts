@@ -51,7 +51,7 @@ const nctUsdPriceFeed = new PublicKey(
 );
 const FEED_STALENESS_THRESHOLD = 60 * 60 * 24 * 365 * 10; // the test fixtures will expire in 10 years
 
-describe.only("buy-and-burn", () => {
+describe.only("buy-burn-switchboard", () => {
   let client: YieldControllerClient;
   const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
   const treasury = Keypair.generate();

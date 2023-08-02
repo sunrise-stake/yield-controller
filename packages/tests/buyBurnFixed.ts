@@ -16,7 +16,7 @@ import { expect } from "chai";
 import testAuthority from "./fixtures/id.json";
 const program = anchor.workspace.BuyBurnFixed as Program<BuyBurnFixed>;
 
-describe("yield-controller", () => {
+describe("buy-burn-fixed", () => {
   let client: BuyBurnFixedClient;
   const authority = Keypair.fromSecretKey(Uint8Array.from(testAuthority));
   const treasury = Keypair.generate();
