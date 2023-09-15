@@ -55,6 +55,8 @@ It uses the "Yield Router" program to route yield from the Sunrise Stake program
 
 ### 4. (Planned) Diversified Yield Router
 
+![v4.png](doc/v4.png)
+
 The current implementation of the yield controller sends all funds from the Sunrise program directly to
 a PDA owned by the Offset Bridge using the Yield Router, however the Yield Router only has one destination,
 the offset bridge.
