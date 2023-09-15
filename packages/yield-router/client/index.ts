@@ -58,6 +58,10 @@ export interface YieldRouterConfig {
   spendThreshold: BN;
 }
 
+type InitialisedClient = YieldRouterClient & {
+    config: YieldRouterConfig;
+}
+
 export class YieldRouterClient {
   config: YieldRouterConfig | undefined;
   readonly program: Program<YieldRouter>;
@@ -80,7 +84,7 @@ export class YieldRouterClient {
     };
   }
 
-  public static getState(sunriseState: PublicKey): PublicKey {
+  public static getStateAddressFromSunriseAddress(sunriseState: PublicKey): PublicKey {
     const [state] = PublicKey.findProgramAddressSync(
       [Buffer.from("state"), sunriseState.toBuffer()],
       PROGRAM_ID
@@ -96,13 +100,17 @@ export class YieldRouterClient {
   public static async fetch(
     stateAddress: PublicKey,
     provider?: AnchorProvider
-  ): Promise<YieldRouterClient> {
+  ): Promise<InitialisedClient> {
     const client = new YieldRouterClient(
       provider ?? setUpAnchor(),
       stateAddress
     );
     await client.init();
-    return client;
+
+    if (!client.config) {
+        throw new Error("Could not fetch client");
+    }
+    return client as InitialisedClient;
   }
 
   public static async register(
@@ -111,9 +119,9 @@ export class YieldRouterClient {
     outputYieldAccounts: PublicKey[],
     spendProportions: number[],
     spendThreshold: BN
-  ): Promise<YieldRouterClient> {
+  ): Promise<InitialisedClient> {
     // find state address
-    const stateAddress = await YieldRouterClient.getState(sunriseState);
+    const stateAddress = await YieldRouterClient.getStateAddressFromSunriseAddress(sunriseState);
     const inputYieldAccount = getInputYieldAccountForState(stateAddress);
 
     const client = new YieldRouterClient(setUpAnchor(), stateAddress);
@@ -142,13 +150,16 @@ export class YieldRouterClient {
 
     await client.init();
 
-    return client;
+    return client as InitialisedClient;
   }
 
   public async updateOutputYieldAccounts(
     outputYieldAccounts: PublicKey[],
     spendProportions: number[]
   ): Promise<YieldRouterClient> {
+    if (!this.config) {
+        throw new Error("Client not initialized");
+    }
     const accounts = {
       payer: this.provider.wallet.publicKey,
       state: this.stateAddress,
@@ -156,10 +167,10 @@ export class YieldRouterClient {
     };
 
     const args = {
-      updateAuthority: this.config?.updateAuthority,
+      updateAuthority: this.config.updateAuthority,
       outputYieldAccounts,
       spendProportions: Buffer.from(spendProportions),
-      spendThreshold: this.config?.spendThreshold,
+      spendThreshold: this.config.spendThreshold,
     };
     await this.program.methods
       .updateState(args)
