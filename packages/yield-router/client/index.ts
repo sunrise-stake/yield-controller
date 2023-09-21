@@ -74,6 +74,7 @@ export class YieldRouterClient {
   }
 
   private async init(): Promise<void> {
+    // ask anchor to get the contents of the account at the stateAddress
     const state = await this.program.account.state.fetch(this.stateAddress);
 
     this.config = {
@@ -103,10 +104,12 @@ export class YieldRouterClient {
     stateAddress: PublicKey,
     provider?: AnchorProvider
   ): Promise<InitialisedClient> {
+    // constructor is synchronous and does not retrieve information from the blockchain
     const client = new YieldRouterClient(
       provider ?? setUpAnchor(),
       stateAddress
     );
+    // retrieve the state from the chain
     await client.init();
 
     if (!client.config) {
@@ -115,16 +118,25 @@ export class YieldRouterClient {
     return client as InitialisedClient;
   }
 
+  /**
+   * Register a new yield router state on chain.
+   * This will typically happen only once.
+   * @param sunriseState
+   * @param updateAuthority
+   * @param outputYieldAccounts
+   * @param spendProportions
+   * @param spendThreshold
+   */
   public static async register(
-    sunriseState: PublicKey,
+    sunriseState: PublicKey,  // (0)
     updateAuthority: PublicKey,
     outputYieldAccounts: PublicKey[],
     spendProportions: number[],
     spendThreshold: BN
   ): Promise<InitialisedClient> {
-    // find state address
-    const stateAddress =
-      await YieldRouterClient.getStateAddressFromSunriseAddress(sunriseState);
+    // find state address PDA (1)
+    const stateAddress = await YieldRouterClient.getStateAddressFromSunriseAddress(sunriseState);
+    // get input yield account PDA (2)
     const inputYieldAccount = getInputYieldAccountForState(stateAddress);
 
     const client = new YieldRouterClient(setUpAnchor(), stateAddress);
@@ -133,6 +145,7 @@ export class YieldRouterClient {
       payer: client.provider.wallet.publicKey,
       state: stateAddress,
       inputYieldAccount,
+      // system program is used because we are instantiating a new account
       systemProgram: SystemProgram.programId,
     };
 
@@ -157,6 +170,7 @@ export class YieldRouterClient {
         throw e;
       });
 
+    // now that the state is registered on chain, we can hydrate the client instance with its data
     await client.init();
 
     return client as InitialisedClient;
@@ -172,6 +186,7 @@ export class YieldRouterClient {
     const accounts = {
       payer: this.provider.wallet.publicKey,
       state: this.stateAddress,
+      // System program is needed because we may be resizing the state account
       systemProgram: SystemProgram.programId,
     };
 
