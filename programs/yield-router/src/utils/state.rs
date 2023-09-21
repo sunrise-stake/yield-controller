@@ -66,6 +66,7 @@ pub struct UpdateState<'info> {
     #[account(
     mut,
     constraint = state.update_authority == payer.key() @ ErrorCode::Unauthorized,
+    // resize the state account if necessary
     realloc = State::space(state_in.output_yield_accounts.len() as u8),
     realloc::payer = payer,
     realloc::zero = false,

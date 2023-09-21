@@ -29,9 +29,19 @@ describe("yield-router", () => {
 
   context("create and update", () => {
     it("can register a new yield router state", async () => {
-      const outputYieldAccounts = [Keypair.generate().publicKey];
-      const spendProportions = [100];
+      // setup
+      // where is the input?
 
+      const outputYieldAccounts = [
+          // create a new random public key
+        PublicKey.unique()
+      ];
+      const spendProportions = [
+          // 100% of the yield is sent to this address
+          100
+      ];
+
+      // act
       client = await YieldRouterClient.register(
         sunriseState,
         authority.publicKey,
@@ -39,14 +49,24 @@ describe("yield-router", () => {
         spendProportions,
         spendThreshold
       );
+
+      // assert
+      // ???
     });
 
     it("should be updateable by the admin", async () => {
+      // setup
       const outputYieldAccounts = [PublicKey.unique(), PublicKey.unique()];
       const proportions = [30, 70];
+
+      // act
+      // the client is using the admin key
       await client.updateOutputYieldAccounts(outputYieldAccounts, proportions);
 
-      const retrieved = await YieldRouterClient.fetch(client.stateAddress);
+      // assert
+      // get a new client instance
+      const yieldRouterStateAddress = client.stateAddress;
+      const retrieved = await YieldRouterClient.fetch(yieldRouterStateAddress);
 
       expect(retrieved.config?.outputYieldAccounts).to.deep.equal(
         outputYieldAccounts
@@ -55,20 +75,24 @@ describe("yield-router", () => {
     });
 
     it("should not be updateable by others", async () => {
-      const anotherUser = Keypair.generate();
-      const wallet = new Wallet(anotherUser);
+      // setup
+      // create a new user and give them some funds (so they can send transactions)
+      const unauthorisedUser = Keypair.generate();
+      const unauthorisedUserWallet = new Wallet(unauthorisedUser);
       const connection = client.program.provider.connection;
       const tx = await connection.requestAirdrop(
-        anotherUser.publicKey,
+        unauthorisedUser.publicKey,
         LAMPORTS_PER_SOL
       );
       const blockhash = await connection.getLatestBlockhash();
       await connection.confirmTransaction({ signature: tx, ...blockhash });
 
-      const provider = new AnchorProvider(connection, wallet, {});
+      // now the user has funds
+      // create a new yield router client for that user
+      const unauthorisedUserProvider = new AnchorProvider(connection, unauthorisedUserWallet, {});
       const unauthorisedClient = await YieldRouterClient.fetch(
         client.stateAddress,
-        provider
+        unauthorisedUserProvider
       );
 
       const shouldFail = unauthorisedClient.updateOutputYieldAccounts(
@@ -77,6 +101,22 @@ describe("yield-router", () => {
       );
 
       return expect(shouldFail).to.be.rejectedWith("Unauthorized.");
+    });
+
+    it('should ...', () => {
+      const newKey = Keypair.generate();
+
+      const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey: newKey.publicKey,
+            toPubkey: authority.publicKey,
+            lamports: 100_000,
+          })
+      )
+
+      transaction.sign(newKey);
+
+      console.log(transaction.signatures);
     });
   });
 
