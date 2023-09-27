@@ -72,7 +72,7 @@ describe("yield-router", () => {
       );
 
       const shouldFail = unauthorisedClient.updateOutputYieldAccounts(
-        unauthorisedClient.config!.outputYieldAccounts,
+        unauthorisedClient.config.outputYieldAccounts,
         [50, 50]
       );
 
@@ -128,7 +128,6 @@ describe("yield-router", () => {
         outputYieldAccounts
       );
       expect(retrieved.config?.spendProportions).to.deep.equal(proportions);
-      
     });
   });
 
