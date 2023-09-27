@@ -191,6 +191,42 @@ export class YieldRouterClient {
     return this;
   }
 
+  /**
+   * Update the updateAuthority such that the new updateAuthority can update the state account.
+   */
+  public async updateUpdateAuthority(
+    updateAuthority: PublicKey // the public key of the new update authority
+  ): Promise<YieldRouterClient> {
+    // Check if the client is initialized, config should be avaliable in such case
+    if (!this.config) {
+        throw new Error("Client not initialized");
+    }
+    const accounts = {
+      payer: this.provider.wallet.publicKey, // only the original authority has the authority to update the update authority
+      state: this.stateAddress,
+    };
+
+    const args = {
+      updateAuthority, // only this argument is new, everything else is inferred from the original state account
+      outputYieldAccounts: this.config.outputYieldAccounts,
+      spendProportions: Buffer.from(this.config.spendProportions),
+      spendThreshold: this.config.spendThreshold,
+    };
+    // call the updateState method from the program with the new update authority address
+    await this.program.methods
+      .updateState(args)
+      .accounts(accounts)
+      .rpc()
+      .then(() => {
+        confirm(this.provider.connection);
+      });
+
+    // repopulating the config with new data
+    await this.init();
+    
+    return this;
+  }
+
   public async allocateYield(amount: BN): Promise<YieldRouterClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
