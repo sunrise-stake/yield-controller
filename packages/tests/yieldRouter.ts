@@ -78,7 +78,6 @@ describe("yield-router", () => {
 
       return expect(shouldFail).to.be.rejectedWith("Unauthorized.");
     });
-  });
 
   context("with one output yield account", () => {
     let outputYieldAccounts: PublicKey[];

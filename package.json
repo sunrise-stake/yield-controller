@@ -6,7 +6,7 @@
         "test:fixed": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/buyBurnFixed.ts",
         "test:switchboard": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/buyBurnSwitchBoard.ts",
         "test:router": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/yieldRouter.ts",
-        "test:all": "yarn test:fixed && yarn test:switchboard && yarn test:router",
+        "test:all": " yarn test:router && yarn test:fixed && yarn test:switchboard",
         "test": "anchor test",
         "localnet": "anchor localnet",
         "test:anchor": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 packages/tests/**/*.ts",
@@ -14,12 +14,12 @@
         "program:deploy": "anchor deploy"
     },
     "dependencies": {
-        "@coral-xyz/anchor": "^0.27.0",
+        "@coral-xyz/anchor": "^0.28.0",
         "@solana/spl-token": "^0.3.7",
         "fs": "^0.0.1-security"
     },
     "devDependencies": {
-        "@coral-xyz/anchor-cli": "^0.27.0",
+        "@coral-xyz/anchor-cli": "^0.28.0",
         "@types/bn.js": "^5.1.0",
         "@types/chai": "^4.3.0",
         "@types/chai-as-promised": "^7.1.5",

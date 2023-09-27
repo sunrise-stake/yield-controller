@@ -146,7 +146,13 @@ export class YieldRouterClient {
       .rpc()
       .then(() => {
         confirm(client.provider.connection);
-      });
+      })
+        // Temporary - use this to get insight into failed transactions
+        // Can be removed after everything works, and re-added to debug as needed.
+        .catch((e) => {
+            console.log(e.logs);
+            throw e;
+        });
 
     await client.init();
 
