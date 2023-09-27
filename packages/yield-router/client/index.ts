@@ -160,7 +160,13 @@ export class YieldRouterClient {
       .rpc()
       .then(() => {
         confirm(client.provider.connection);
-      });
+      })
+        // Temporary - use this to get insight into failed transactions
+        // Can be removed after everything works, and re-added to debug as needed.
+        .catch((e) => {
+            console.log(e.logs);
+            throw e;
+        });
 
     // now that the state is registered on chain, we can hydrate the client instance with its data
     await client.init();
@@ -201,15 +207,15 @@ export class YieldRouterClient {
     return this;
   }
 
-  /**
-   * Update the state account with a new updateAuthority
-   * @param updateAuthority
-   */
-  public async updateUpdateAuthority(
-    updateAuthority: PublicKey
-  ): Promise<YieldRouterClient> {
-    // TODO
-  }
+  // /**
+  //  * Update the state account with a new updateAuthority
+  //  * @param updateAuthority
+  //  */
+  // public async updateUpdateAuthority(
+  //   updateAuthority: PublicKey
+  // ): Promise<YieldRouterClient> {
+  //   // TODO
+  // }
 
   public async allocateYield(amount: BN): Promise<YieldRouterClient> {
     if (!this.config) {

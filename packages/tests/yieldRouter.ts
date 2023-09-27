@@ -103,21 +103,21 @@ describe("yield-router", () => {
       return expect(shouldFail).to.be.rejectedWith("Unauthorized.");
     });
 
-    it('should ...', () => {
-      const newKey = Keypair.generate();
-
-      const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: newKey.publicKey,
-            toPubkey: authority.publicKey,
-            lamports: 100_000,
-          })
-      )
-
-      transaction.sign(newKey);
-
-      console.log(transaction.signatures);
-    });
+    // it('should ...', () => {
+    //   const newKey = Keypair.generate();
+    //
+    //   const transaction = new Transaction().add(
+    //       SystemProgram.transfer({
+    //         fromPubkey: newKey.publicKey,
+    //         toPubkey: authority.publicKey,
+    //         lamports: 100_000,
+    //       })
+    //   )
+    //
+    //   transaction.sign(newKey);
+    //
+    //   console.log(transaction.signatures);
+    // });
   });
 
   context("with one output yield account", () => {
