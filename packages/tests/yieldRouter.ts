@@ -72,11 +72,62 @@ describe("yield-router", () => {
       );
 
       const shouldFail = unauthorisedClient.updateOutputYieldAccounts(
-        unauthorisedClient.config!.outputYieldAccounts,
+        unauthorisedClient.config.outputYieldAccounts,
         [50, 50]
       );
 
       return expect(shouldFail).to.be.rejectedWith("Unauthorized.");
+    });
+
+    it("should be able to update with a new update authority", async () => {
+      // Setup
+      // Generate a new keypair that is going to be the new update authority
+      const newAuthorisedUser = Keypair.generate();
+      const newAuthorisedUserWallet = new Wallet(newAuthorisedUser);
+      const connection = client.program.provider.connection;
+      // put some funds into this new address
+      const tx = await connection.requestAirdrop(
+        newAuthorisedUser.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      const blockhash = await connection.getLatestBlockhash();
+      // wait for the transaction of request airderop to be confirmed
+      await connection.confirmTransaction({ signature: tx, ...blockhash });
+      // now the user has funds
+
+      // Act
+      // call updateUpdateAuthority() to update the update authority to newAuthorisedUser
+      await client.updateUpdateAuthority(newAuthorisedUser.publicKey);
+
+      // create an anchor provide that can sign for newAuthorisedUser
+      const newAuthorisedUserProvider = new AnchorProvider(
+        connection,
+        newAuthorisedUserWallet,
+        {}
+      );
+      // fetch the state configs from current client and wrap it into a new client
+      const newAuthorisedClient = await YieldRouterClient.fetch(
+        client.stateAddress,
+        newAuthorisedUserProvider
+      );
+
+      // we will try to update the state account with the following updates using newAuthorisedUser
+      const outputYieldAccounts = [PublicKey.unique(), PublicKey.unique()];
+      const proportions = [30, 70];
+
+      await newAuthorisedClient.updateOutputYieldAccounts(
+        outputYieldAccounts,
+        proportions
+      );
+
+      // check that the configs are updated with a new client instance
+      const yieldRouterStateAddress = newAuthorisedClient.stateAddress;
+      const retrieved = await YieldRouterClient.fetch(yieldRouterStateAddress);
+
+      expect(retrieved.config?.outputYieldAccounts).to.deep.equal(
+        outputYieldAccounts
+      );
+      expect(retrieved.config?.spendProportions).to.deep.equal(proportions);
     });
   });
 
