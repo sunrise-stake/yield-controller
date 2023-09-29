@@ -33,12 +33,12 @@ describe("yield-router", () => {
       // where is the input?
 
       const outputYieldAccounts = [
-          // create a new random public key
-        PublicKey.unique()
+        // create a new random public key
+        PublicKey.unique(),
       ];
       const spendProportions = [
-          // 100% of the yield is sent to this address
-          100
+        // 100% of the yield is sent to this address
+        100,
       ];
 
       // act
@@ -89,7 +89,11 @@ describe("yield-router", () => {
 
       // now the user has funds
       // create a new yield router client for that user
-      const unauthorisedUserProvider = new AnchorProvider(connection, unauthorisedUserWallet, {});
+      const unauthorisedUserProvider = new AnchorProvider(
+        connection,
+        unauthorisedUserWallet,
+        {}
+      );
       const unauthorisedClient = await YieldRouterClient.fetch(
         client.stateAddress,
         unauthorisedUserProvider
