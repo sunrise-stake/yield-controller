@@ -16,9 +16,6 @@ const outputYieldAddresses = [
 const spendProportions = [100];
 
 // new update authority
-// very dangerous, isn't it?
-// we can set the authority to some address where we don't have the private key
-// so we can never change the authority ever again
 const newUpdateAuthority = new PublicKey("");
 
 (async () => {
@@ -36,6 +33,7 @@ const newUpdateAuthority = new PublicKey("");
     state.config
   );
 
+  // Update authority
   state = await client.updateUpdateAuthority(newUpdateAuthority);
   console.log("state account data after updating authority", state.config);
 })().catch(console.error);

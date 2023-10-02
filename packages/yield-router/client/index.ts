@@ -13,6 +13,16 @@ export const PROGRAM_ID = new PublicKey(
   "syriqUnUPcFQjRSaxdFo2wPnXXPjbRsLmhiWUVoGdTo"
 );
 
+/**
+ * Transfroms a PublicKey to account metadata used to define instructions.
+ *
+ *
+ * @param pubkey - Public Key
+ * @param isSigner - Bool that defines if account is a signer
+ * @param isWritable - Bool that defines if account is writable
+ * @returns Account metadata used to define instructions
+ *
+ */
 const toAccountMeta = (
   pubkey: PublicKey,
   isSigner = false,
@@ -23,9 +33,24 @@ const toAccountMeta = (
   isWritable,
 });
 
+/**
+ * Creates account metadata with account that is writable and not a signer.
+ *
+ *
+ * @param pubkey - Public key
+ * @returns Account metadata
+ *
+ */
 const toWriteableAccountMeta = (pubkey: PublicKey): AccountMeta =>
   toAccountMeta(pubkey, false, true);
 
+/**
+ * Sets up an anchor provider read from the environment variable.
+ *
+ *
+ * @returns Anchor provider
+ *
+ */
 export const setUpAnchor = (): anchor.AnchorProvider => {
   // Configure the client to use the local cluster.
   const provider = AnchorProvider.env();
@@ -34,6 +59,14 @@ export const setUpAnchor = (): anchor.AnchorProvider => {
   return provider;
 };
 
+/**
+ * Confirms transaction.
+ *
+ *
+ * @param connection - Connection to a full node JSON RPC endpoint
+ * @returns Async function
+ *
+ */
 export const confirm = (connection: Connection) => async (txSig: string) => {
   console.log("Confirming transaction", txSig);
   return connection.confirmTransaction({
@@ -42,6 +75,14 @@ export const confirm = (connection: Connection) => async (txSig: string) => {
   });
 };
 
+/**
+ * Returns input yield account address for given state address.
+ *
+ *
+ * @param stateAddress - Public key of state
+ * @returns Public Key of input yield account
+ *
+ */
 const getInputYieldAccountForState = (stateAddress: PublicKey): PublicKey => {
   const [inputYieldAccount] = PublicKey.findProgramAddressSync(
     [Buffer.from("input_yield_account"), stateAddress.toBuffer()],
@@ -73,6 +114,10 @@ export class YieldRouterClient {
     this.program = new Program<YieldRouter>(IDL, PROGRAM_ID, provider);
   }
 
+  /**
+   * Initializes yield router client by setting its config.
+   *
+   */
   private async init(): Promise<void> {
     const state = await this.program.account.state.fetch(this.stateAddress);
 
@@ -84,6 +129,14 @@ export class YieldRouterClient {
     };
   }
 
+  /**
+   * Returns state pda derived from sunrise state address.
+   *
+   *
+   * @param sunriseState - Public key
+   * @returns Public key of state
+   *
+   */
   public static getStateAddressFromSunriseAddress(
     sunriseState: PublicKey
   ): PublicKey {
@@ -95,10 +148,26 @@ export class YieldRouterClient {
     return state;
   }
 
+  /**
+   * Returns input yield account address.
+   *
+   *
+   * @returns Public Key of input yield account
+   *
+   */
   public getInputYieldAccount(): PublicKey {
     return getInputYieldAccountForState(this.stateAddress);
   }
 
+  /**
+   * Returns initialised yield router client.
+   *
+   *
+   * @param stateAddress - Public key of state
+   * @param provider - Optional anchor provider, defaults to anchor provider read from the environment variable
+   * @returns Initialised yield router client
+   *
+   */
   public static async fetch(
     stateAddress: PublicKey,
     provider?: AnchorProvider
@@ -115,6 +184,18 @@ export class YieldRouterClient {
     return client as InitialisedClient;
   }
 
+  /**
+   * Register a new yield router state on chain.
+   * This will typically happen only once.
+   *
+   *
+   * @param sunriseState - Public key
+   * @param updateAuthorit - Public key
+   * @param outputYieldAccount - List of public keys
+   * @param spendProportions - List of numbers that add up to 100
+   * @param spendThreshol - Big number
+   * @returns Initialised yield router client
+   */
   public static async register(
     sunriseState: PublicKey,
     updateAuthority: PublicKey,
@@ -124,11 +205,12 @@ export class YieldRouterClient {
   ): Promise<InitialisedClient> {
     // find state address
     const stateAddress =
-      await YieldRouterClient.getStateAddressFromSunriseAddress(sunriseState);
+      YieldRouterClient.getStateAddressFromSunriseAddress(sunriseState);
     const inputYieldAccount = getInputYieldAccountForState(stateAddress);
 
     const client = new YieldRouterClient(setUpAnchor(), stateAddress);
 
+    // accounts needed to register state
     const accounts = {
       payer: client.provider.wallet.publicKey,
       state: stateAddress,
@@ -157,11 +239,21 @@ export class YieldRouterClient {
         throw e;
       });
 
+    // now that the state is registered on chain, we can hydrate the client instance with its data
     await client.init();
 
     return client as InitialisedClient;
   }
 
+  /**
+   * Updates output yield accounts.
+   *
+   *
+   * @param outputYieldAccounts - List of public keys of output yield accounts
+   * @param spendProportions - List of numbers that add up to 100
+   * @returns Yield router client
+   *
+   */
   public async updateOutputYieldAccounts(
     outputYieldAccounts: PublicKey[],
     spendProportions: number[]
@@ -196,6 +288,11 @@ export class YieldRouterClient {
 
   /**
    * Update the updateAuthority such that the new updateAuthority can update the state account.
+   *
+   *
+   * @param updateAuthority - Public key of new update authority
+   * @returns Yield router client
+   *
    */
   public async updateUpdateAuthority(
     updateAuthority: PublicKey // the public key of the new update authority
@@ -230,6 +327,14 @@ export class YieldRouterClient {
     return this;
   }
 
+  /**
+   * Allocates yield from input yield account to output yield accounts according to their proportions.
+   *
+   *
+   * @param amount - Big number, total amount of allocated yield
+   * @returns Yield router client
+   *
+   */
   public async allocateYield(amount: BN): Promise<YieldRouterClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
