@@ -13,7 +13,10 @@ const sunriseStateAddress = new PublicKey(
 if (!(process.env.AMOUNT ?? "")) {
   throw new Error("AMOUNT env variable must be set");
 }
-const amount = parseInt(process.env.AMOUNT, 10);
+const amount = parseInt(
+  process.env.AMOUNT !== undefined ? process.env.AMOUNT : "0",
+  10
+);
 
 (async () => {
   const stateAddress =

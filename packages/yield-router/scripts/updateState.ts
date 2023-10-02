@@ -1,57 +1,41 @@
-import { BuyBurnFixedClient } from "../client";
-import * as anchor from "@coral-xyz/anchor";
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { YieldRouterClient } from "../client";
 import { PublicKey } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
-/** Adjust these values to whatever you want them to be */
-const PRICE = 1;
-const PURCHASE_THRESHOLD = 100;
-const PURCHASE_PROPORTION = 0;
-
-const defaultTreasuryKey = "ALhQPLkXvbLKsH5Bm9TC3CTabKFSmnXFmzjqpTXYBPpu";
-const treasuryKey = new PublicKey(
-  process.env.TREASURY_KEY ?? defaultTreasuryKey
+// mainnet Sunrise
+const defaultSunriseStateAddress =
+  "43m66crxGfXSJpmx5wXRoFuHubhHA1GCvtHgmHW6cM1P";
+const sunriseStateAddress = new PublicKey(
+  process.env.STATE_ADDRESS ?? defaultSunriseStateAddress
 );
 
-const defaultAuthority = "5HnwQGT79JypiAdjdjsXEn1EMD2AsRVVubqDyWfyWXRv";
-const authorityKey = new PublicKey(
-  process.env.AUTHORITY_KEY ?? defaultAuthority
-);
+// mainnet offset bridge wrapped SOL ATA
+const outputYieldAddresses = [
+  new PublicKey("4XTLzYF3kteTbb3a9NYYjeDAYwNoEGSkjoqJYkiLCnmm"),
+];
+const spendProportions = [100];
 
-// used in devnet
-const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
-const mint = new PublicKey(process.env.MINT ?? defaultMint);
-
-const defaultHoldingAccount = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
-const holdingAccount = new PublicKey(
-  process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
-);
-
-// used for devnet testing
-const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
-const stateAddress = new PublicKey(
-  process.env.STATE_ADDRESS ?? defaultStateAddress
-);
+// new update authority
+// very dangerous, isn't it?
+// we can set the authority to some address where we don't have the private key
+// so we can never change the authority ever again
+const newUpdateAuthority = new PublicKey("");
 
 (async () => {
-  // get token account account for holding account
-  const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
-    mint,
-    holdingAccount,
-    true
+  const stateAddress =
+    YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
+  const client = await YieldRouterClient.fetch(stateAddress);
+
+  // Update output yield accounts
+  let state = await client.updateOutputYieldAccounts(
+    outputYieldAddresses,
+    spendProportions
+  );
+  console.log(
+    "state account data after updating output yield accounts",
+    state.config
   );
 
-  const client = await BuyBurnFixedClient.updateController(
-    stateAddress,
-    authorityKey,
-    treasuryKey,
-    mint,
-    holdingAccount,
-    holdingAccountTokenAddress,
-    new anchor.BN(PRICE),
-    PURCHASE_PROPORTION,
-    new anchor.BN(PURCHASE_THRESHOLD)
-  );
-
-  console.log("updated state:", client.stateAddress);
+  state = await client.updateUpdateAuthority(newUpdateAuthority);
+  console.log("state account data after updating authority", state.config);
 })().catch(console.error);
