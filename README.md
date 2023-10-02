@@ -10,7 +10,7 @@ projects, controlled by a DAO.
 
 ## History
 
-### 1. Initial release - Toucan NCT Buy-Burn-Fixxed
+### 1. Initial release - Toucan NCT Buy-Burn-Fixed
 
 The initial version of the Sunrise Yield Controller used the Buy-Burn-Fixed strategy to
 distribute yield. This strategy was implemented in the `buy-burn-fixed` package.
