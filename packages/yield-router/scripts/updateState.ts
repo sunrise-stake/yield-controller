@@ -10,10 +10,10 @@ const sunriseStateAddress = new PublicKey(
 );
 
 // mainnet offset bridge wrapped SOL ATA
-const outputYieldAddresses = [
+const newOutputYieldAddresses = [
   new PublicKey("4XTLzYF3kteTbb3a9NYYjeDAYwNoEGSkjoqJYkiLCnmm"),
 ];
-const spendProportions = [100];
+const newSpendProportions = [100];
 
 // new update authority
 const newUpdateAuthority = new PublicKey("");
@@ -25,8 +25,8 @@ const newUpdateAuthority = new PublicKey("");
 
   // Update output yield accounts
   let state = await client.updateOutputYieldAccounts(
-    outputYieldAddresses,
-    spendProportions
+    newOutputYieldAddresses,
+    newSpendProportions
   );
   console.log(
     "state account data after updating output yield accounts",
