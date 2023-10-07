@@ -1,57 +1,108 @@
-import { BuyBurnFixedClient } from "../client";
-import * as anchor from "@coral-xyz/anchor";
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { YieldRouterClient } from "../client";
 import { PublicKey } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import * as readline from "readline/promises";
 
-/** Adjust these values to whatever you want them to be */
-const PRICE = 1;
-const PURCHASE_THRESHOLD = 100;
-const PURCHASE_PROPORTION = 0;
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-const defaultTreasuryKey = "ALhQPLkXvbLKsH5Bm9TC3CTabKFSmnXFmzjqpTXYBPpu";
-const treasuryKey = new PublicKey(
-  process.env.TREASURY_KEY ?? defaultTreasuryKey
-);
-
-const defaultAuthority = "5HnwQGT79JypiAdjdjsXEn1EMD2AsRVVubqDyWfyWXRv";
-const authorityKey = new PublicKey(
-  process.env.AUTHORITY_KEY ?? defaultAuthority
-);
-
-// used in devnet
-const defaultMint = "tnct1RC5jg94CJLpiTZc2A2d98MP1Civjh7o6ShmTP6";
-const mint = new PublicKey(process.env.MINT ?? defaultMint);
-
-const defaultHoldingAccount = "A4c5nctuNSN7jTsjDahv6bAWthmUzmXi3yBocvLYM4Bz";
-const holdingAccount = new PublicKey(
-  process.env.HOLDING_ACCOUNT ?? defaultHoldingAccount
-);
-
-// used for devnet testing
-const defaultStateAddress = "9QxfwoxkgxE94uoHd3ZPFLmfNhewoFe3Xg5gwgtShYnn";
-const stateAddress = new PublicKey(
-  process.env.STATE_ADDRESS ?? defaultStateAddress
+// mainnet Sunrise
+const defaultSunriseStateAddress =
+  "43m66crxGfXSJpmx5wXRoFuHubhHA1GCvtHgmHW6cM1P";
+const sunriseStateAddress = new PublicKey(
+  process.env.STATE_ADDRESS ?? defaultSunriseStateAddress
 );
 
 (async () => {
-  // get token account account for holding account
-  const holdingAccountTokenAddress = getAssociatedTokenAddressSync(
-    mint,
-    holdingAccount,
-    true
+  // Get new update authority
+  let newUpdateAuthority: PublicKey | undefined;
+
+  const updateAuthority = await rl.question(
+    "New Update-Authority Address (Leave empty if you don't want to update it): "
+  );
+  if (updateAuthority === "") {
+    console.log("Don't update Update-Authority");
+  } else {
+    try {
+      newUpdateAuthority = new PublicKey(updateAuthority);
+      console.log("New Update-Authority:", updateAuthority);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  // Get new output yield addresses and proportions
+  const newOutputYieldAddresses: PublicKey[] = [];
+  const newSpendProportions: number[] = [];
+
+  let sumProportions = newSpendProportions.reduce(
+    (sum, current) => sum + current,
+    0
   );
 
-  const client = await BuyBurnFixedClient.updateController(
-    stateAddress,
-    authorityKey,
-    treasuryKey,
-    mint,
-    holdingAccount,
-    holdingAccountTokenAddress,
-    new anchor.BN(PRICE),
-    PURCHASE_PROPORTION,
-    new anchor.BN(PURCHASE_THRESHOLD)
+  const answer = await rl.question(
+    "Do you want to update output yield accounts? [y/n] "
   );
+  let i = 1;
+  switch (answer.toLowerCase()) {
+    case "y":
+      while (sumProportions < 100) {
+        try {
+          const yieldAddress = await rl.question(`Output yield address ${i}: `);
+          newOutputYieldAddresses.push(new PublicKey(yieldAddress));
 
-  console.log("updated state:", client.stateAddress);
+          const proportionStr = await rl.question(
+            `Proportion (1-100) for ${yieldAddress}: `
+          );
+          const proportion = Number.parseFloat(proportionStr);
+
+          newSpendProportions.push(proportion);
+          sumProportions += proportion;
+          if (sumProportions > 100) {
+            console.log(
+              "The proportions don't add up! Sum of proportions:",
+              sumProportions
+            );
+            break;
+          }
+        } catch (e) {
+          console.log(e);
+          break;
+        }
+
+        i++;
+      }
+      break;
+    case "n":
+      console.log("Don't update output yield accounts");
+      break;
+    default:
+      console.log("Invalid answer!");
+  }
+
+  rl.close();
+
+  const stateAddress =
+    YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
+  const client = await YieldRouterClient.fetch(stateAddress);
+
+  // Update output yield accounts and proportions
+  if (sumProportions === 100 && answer.toLocaleLowerCase() === "y") {
+    const state = await client.updateOutputYieldAccounts(
+      newOutputYieldAddresses,
+      newSpendProportions
+    );
+    console.log(
+      "state account data after updating output yield accounts",
+      state.config
+    );
+  }
+
+  // Update authority
+  if (newUpdateAuthority !== undefined) {
+    const state = await client.updateUpdateAuthority(newUpdateAuthority);
+    console.log("state account data after updating authority", state.config);
+  }
 })().catch(console.error);
