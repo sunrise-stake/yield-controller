@@ -163,7 +163,8 @@ export class FundSenderClient {
    *
    * @param sunriseState - Public key
    * @param updateAuthority - Public key
-   * @param outputYieldAccount - List of public keys
+   * @param destinationSeed - Seed to specify destination account
+   * @param destinationAccount - Public key of destination account
    * @param spendThreshold - Big number
    * @returns Initialised fund sender client
    */
@@ -323,6 +324,7 @@ export class FundSenderClient {
         payer: this.provider.publicKey,
         state: this.stateAddress,
         outputYieldAccount,
+        destinationAccount: this.config.destinationAccount,
         systemProgram: SystemProgram.programId,
       })
       .rpc()
