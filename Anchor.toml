@@ -8,6 +8,7 @@ skip-lint = false
 buy_burn_fixed = "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
 buy_burn_switchboard = "sbnbpcN3HVfcj9jTwzncwLeNvCzSwbfMwNmdAgX36VW"
 yield_router = "syriqUnUPcFQjRSaxdFo2wPnXXPjbRsLmhiWUVoGdTo"
+fund_sender = "rodTth5pXjkUfQpqMp7tEFdN1sdv2JwqhXg8RH9YrWD"
 
 [registry]
 url = "https://api.apr.dev"

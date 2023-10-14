@@ -72,7 +72,6 @@ pub struct UpdateState<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64)]
 pub struct SendFund<'info> {
     // to allocate correct yield proportion to various output_yield_accounts
     #[account(mut)]
