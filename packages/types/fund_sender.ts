@@ -87,7 +87,7 @@ export type FundSender = {
         },
         {
           "name": "destinationAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -276,7 +276,7 @@ export const IDL: FundSender = {
         },
         {
           "name": "destinationAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {

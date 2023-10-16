@@ -85,7 +85,8 @@ pub struct SendFund<'info> {
     )]
     /// CHECK: Must be correctly derived from the state
     pub output_yield_account: UncheckedAccount<'info>,
-    /// CHECK: Must be correctly derived from the state
+    #[account(mut)]
+    /// CHECK: Must be correct destination account (check is done in instruction)
     pub destination_account: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
