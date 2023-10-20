@@ -97,6 +97,45 @@ export type FundSender = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "storeCertificates",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "outputYieldAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "outputYieldTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "A token account owned by the outputYieldAccount"
+          ]
+        },
+        {
+          "name": "certificateVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -119,6 +158,10 @@ export type FundSender = {
           },
           {
             "name": "destinationAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "certificateVault",
             "type": "publicKey"
           },
           {
@@ -156,6 +199,10 @@ export type FundSender = {
             "type": "publicKey"
           },
           {
+            "name": "certificateVault",
+            "type": "publicKey"
+          },
+          {
             "name": "spendThreshold",
             "type": "u64"
           }
@@ -176,11 +223,21 @@ export type FundSender = {
     },
     {
       "code": 6002,
+      "name": "IncorrectTokenAccountOwner",
+      "msg": "Token account not owned by output yield account"
+    },
+    {
+      "code": 6003,
       "name": "IncorrectDestinationAccount",
       "msg": "Incorrect destination account"
     },
     {
-      "code": 6003,
+      "code": 6004,
+      "name": "IncorrectHoldAccount",
+      "msg": "Incorrect hold account"
+    },
+    {
+      "code": 6005,
       "name": "Unauthorized",
       "msg": "Incorrect update authority"
     }
@@ -286,6 +343,45 @@ export const IDL: FundSender = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "storeCertificates",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "state",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "outputYieldAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "outputYieldTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "A token account owned by the outputYieldAccount"
+          ]
+        },
+        {
+          "name": "certificateVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -308,6 +404,10 @@ export const IDL: FundSender = {
           },
           {
             "name": "destinationAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "certificateVault",
             "type": "publicKey"
           },
           {
@@ -345,6 +445,10 @@ export const IDL: FundSender = {
             "type": "publicKey"
           },
           {
+            "name": "certificateVault",
+            "type": "publicKey"
+          },
+          {
             "name": "spendThreshold",
             "type": "u64"
           }
@@ -365,11 +469,21 @@ export const IDL: FundSender = {
     },
     {
       "code": 6002,
+      "name": "IncorrectTokenAccountOwner",
+      "msg": "Token account not owned by output yield account"
+    },
+    {
+      "code": 6003,
       "name": "IncorrectDestinationAccount",
       "msg": "Incorrect destination account"
     },
     {
-      "code": 6003,
+      "code": 6004,
+      "name": "IncorrectHoldAccount",
+      "msg": "Incorrect hold account"
+    },
+    {
+      "code": 6005,
       "name": "Unauthorized",
       "msg": "Incorrect update authority"
     }

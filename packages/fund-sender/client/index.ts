@@ -1,6 +1,7 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
+import TOKEN_PROGRAM_ID from "@solana/spl-token";
 import BN from "bn.js";
 import { FundSender, IDL } from "../../types/fund_sender";
 
@@ -67,6 +68,7 @@ export interface FundSenderConfig {
   destinationSeed: Buffer;
   updateAuthority: PublicKey;
   destinationAccount: PublicKey;
+  certificateVault: PublicKey;
   spendThreshold: BN;
 }
 
@@ -96,6 +98,7 @@ export class FundSenderClient {
       destinationSeed: state.destinationSeed,
       updateAuthority: state.updateAuthority,
       destinationAccount: state.destinationAccount,
+      certificateVault: state.certificateVault,
       spendThreshold: state.spendThreshold,
     };
   }
@@ -165,6 +168,7 @@ export class FundSenderClient {
    * @param updateAuthority - Public key
    * @param destinationSeed - Seed to specify destination account
    * @param destinationAccount - Public key of destination account
+   * @param certificateVault - Public key of account holding the NFTs from climate projects
    * @param spendThreshold - Big number
    * @returns Initialised fund sender client
    */
@@ -173,6 +177,7 @@ export class FundSenderClient {
     updateAuthority: PublicKey,
     destinationSeed: Buffer,
     destinationAccount: PublicKey,
+    certificateVault: PublicKey,
     spendThreshold: BN
   ): Promise<InitialisedClient> {
     // find state address
@@ -199,6 +204,7 @@ export class FundSenderClient {
       destinationSeed,
       updateAuthority,
       destinationAccount,
+      certificateVault,
       spendThreshold,
     };
     await client.program.methods
@@ -247,7 +253,48 @@ export class FundSenderClient {
       destinationSeed: this.config.destinationSeed,
       updateAuthority: this.config.updateAuthority,
       destinationAccount,
+      certificateVault: this.config.certificateVault,
       spendThreshold,
+    };
+    await this.program.methods
+      .updateState(args)
+      .accounts(accounts)
+      .rpc()
+      .then(() => {
+        confirm(this.provider.connection);
+      });
+
+    await this.init();
+
+    return this;
+  }
+
+  /**
+   * Updates certification vault.
+   *
+   *
+   * @param certificateVault - Public keys of destination account
+   * @returns Fund sender client
+   *
+   */
+  public async updateCertificateVault(
+    certificateVault: PublicKey
+  ): Promise<FundSenderClient> {
+    if (!this.config) {
+      throw new Error("Client not initialized");
+    }
+    const accounts = {
+      payer: this.provider.wallet.publicKey,
+      state: this.stateAddress,
+      systemProgram: SystemProgram.programId,
+    };
+
+    const args = {
+      destinationSeed: this.config.destinationSeed,
+      updateAuthority: this.config.updateAuthority,
+      destinationAccount: this.config.destinationAccount,
+      certificateVault,
+      spendThreshold: this.config.spendThreshold,
     };
     await this.program.methods
       .updateState(args)
@@ -286,6 +333,7 @@ export class FundSenderClient {
       destinationSeed: this.config.destinationSeed,
       updateAuthority, // only this argument is new, everything else is inferred from the original state account
       destinationAccount: this.config.destinationAccount,
+      certificateVault: this.config.certificateVault,
       spendThreshold: this.config.spendThreshold,
     };
     // call the updateState method from the program with the new update authority address
@@ -326,6 +374,39 @@ export class FundSenderClient {
         outputYieldAccount,
         destinationAccount: this.config.destinationAccount,
         systemProgram: SystemProgram.programId,
+      })
+      .rpc()
+      .then(confirm(this.provider.connection));
+
+    return this;
+  }
+
+  /**
+   * Sends specified amount of NFTs from output yield account to hold account.
+   *
+   *
+   * @returns Fund sender client
+   *
+   */
+  public async storeCertificates(
+    outputYieldTokenAccount: PublicKey
+  ): Promise<FundSenderClient> {
+    if (!this.config) {
+      throw new Error("Client not initialized");
+    }
+    const outputYieldAccount = this.getOutputYieldAccount(
+      this.config.destinationSeed
+    );
+
+    await this.program.methods
+      .storeCertificates()
+      .accounts({
+        payer: this.provider.publicKey,
+        state: this.stateAddress,
+        outputYieldAccount,
+        outputYieldTokenAccount,
+        certificateVault: this.config.certificateVault,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc()
       .then(confirm(this.provider.connection));

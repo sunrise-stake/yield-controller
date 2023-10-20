@@ -8,6 +8,13 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { FundSenderClient } from "../fund-sender/client";
+import {
+  Account,
+  createMint,
+  getAccount,
+  getOrCreateAssociatedTokenAccount,
+  mintTo,
+} from "@solana/spl-token";
 
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -31,12 +38,36 @@ describe("fund-sender", () => {
   context("create and update", () => {
     it("can register a new fund sender state", async () => {
       const destinationAccount = Keypair.generate().publicKey;
+      const provider = AnchorProvider.local();
+      const connection0 = provider.connection;
+      const payer = Keypair.generate();
+      const tx = await connection0.requestAirdrop(
+        payer.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      const blockhash = await connection0.getLatestBlockhash();
+      await connection0.confirmTransaction({ signature: tx, ...blockhash });
+      const mint = await createMint(
+        connection0,
+        payer,
+        payer.publicKey,
+        null,
+        0
+      );
+      const certificateVault = await getOrCreateAssociatedTokenAccount(
+        connection0,
+        payer,
+        mint,
+        authority.publicKey,
+        true
+      );
 
       client = await FundSenderClient.register(
         sunriseState,
         authority.publicKey,
         destinationSeed,
         destinationAccount,
+        certificateVault.address,
         spendThreshold
       );
     });
@@ -135,17 +166,45 @@ describe("fund-sender", () => {
     });
   });
 
-  context("with one output yield account", () => {
+  context("transfer functions", () => {
     let destinationAccount: PublicKey;
+    let certificateVault: Account;
+    let authority: Keypair;
+    let mint: PublicKey;
+    // let connection0: Connection;
     const spendThreshold = new BN(0.8);
 
     beforeEach(async () => {
       destinationAccount = Keypair.generate().publicKey;
+      const provider = AnchorProvider.local();
+      const connection0 = provider.connection;
+      authority = Keypair.generate();
+      const tx = await connection0.requestAirdrop(
+        authority.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      const blockhash = await connection0.getLatestBlockhash();
+      await connection0.confirmTransaction({ signature: tx, ...blockhash });
+      mint = await createMint(
+        connection0,
+        authority,
+        authority.publicKey,
+        null,
+        10
+      );
+      certificateVault = await getOrCreateAssociatedTokenAccount(
+        connection0,
+        authority,
+        mint,
+        authority.publicKey,
+        true
+      );
       client = await FundSenderClient.register(
         sunriseState,
         authority.publicKey,
         destinationSeed,
         destinationAccount,
+        certificateVault.address,
         spendThreshold
       );
     });
@@ -166,6 +225,143 @@ describe("fund-sender", () => {
       const destinationAccountInfo =
         await client.provider.connection.getAccountInfo(destinationAccount);
       expect(destinationAccountInfo?.lamports).to.equal(LAMPORTS_PER_SOL);
+    });
+
+    it("should be transfer and store certificates (SPL tokens) to certificate vault", async () => {
+      const connection = client.program.provider.connection;
+      // const payer = Keypair.generate();
+      const tx1 = await connection.requestAirdrop(
+        authority.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      const blockhash1 = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({ signature: tx1, ...blockhash1 });
+      const ata = await getOrCreateAssociatedTokenAccount(
+        connection,
+        authority,
+        mint,
+        client.getOutputYieldAccount(destinationSeed),
+        true
+      );
+
+      const mintAmount = 100;
+      const tx3 = await mintTo(
+        connection,
+        authority,
+        mint,
+        ata.address,
+        authority.publicKey,
+        mintAmount
+      );
+
+      const blockhash3 = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({ signature: tx3, ...blockhash3 });
+
+      await client.storeCertificates(ata.address);
+      const certificateVaultInfo = await getAccount(
+        connection,
+        certificateVault.address
+      );
+
+      expect(Number(certificateVaultInfo.amount)).to.equal(mintAmount);
+    });
+
+    it("should not be able to transfer from a token account not owned by output_yield_account", async () => {
+      const connection = client.program.provider.connection;
+      // const payer = Keypair.generate();
+      const tx1 = await connection.requestAirdrop(
+        authority.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      const blockhash1 = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({ signature: tx1, ...blockhash1 });
+      const anotherUser = Keypair.generate();
+      const ata = await getOrCreateAssociatedTokenAccount(
+        connection,
+        authority,
+        mint,
+        anotherUser.publicKey,
+        true
+      );
+
+      const mintAmount = 100;
+      const tx3 = await mintTo(
+        connection,
+        authority,
+        mint,
+        ata.address,
+        authority.publicKey,
+        mintAmount
+      );
+
+      const blockhash3 = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({ signature: tx3, ...blockhash3 });
+
+      const shouldFail = client.storeCertificates(ata.address);
+      return expect(shouldFail).to.be.rejectedWith(
+        "IncorrectTokenAccountOwner."
+      );
+    });
+
+    it("should be able to update certificate vault and store certificates in new vault", async () => {
+      const connection = client.program.provider.connection;
+      const tx1 = await connection.requestAirdrop(
+        authority.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      const blockhash1 = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({ signature: tx1, ...blockhash1 });
+      const ata = await getOrCreateAssociatedTokenAccount(
+        connection,
+        authority,
+        mint,
+        client.getOutputYieldAccount(destinationSeed),
+        true
+      );
+
+      const mintAmount = 50;
+      const tx3 = await mintTo(
+        connection,
+        authority,
+        mint,
+        ata.address,
+        authority.publicKey,
+        mintAmount
+      );
+
+      const blockhash3 = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({ signature: tx3, ...blockhash3 });
+
+      const anotherUser = Keypair.generate();
+      const newCertificateVault = await getOrCreateAssociatedTokenAccount(
+        connection,
+        authority,
+        mint,
+        anotherUser.publicKey,
+        true
+      );
+      const authorisedUserProvider = new AnchorProvider(
+        connection,
+        new Wallet(authority),
+        {}
+      );
+      const authorisedClient = await FundSenderClient.fetch(
+        client.stateAddress,
+        authorisedUserProvider
+      );
+      await authorisedClient.updateCertificateVault(
+        newCertificateVault.address
+      );
+
+      const updatedClient = await FundSenderClient.fetch(client.stateAddress);
+
+      await updatedClient.storeCertificates(ata.address);
+      const certificateVaultInfo = await getAccount(
+        connection,
+        newCertificateVault.address
+      );
+
+      expect(Number(certificateVaultInfo.amount)).to.equal(mintAmount);
     });
   });
 });

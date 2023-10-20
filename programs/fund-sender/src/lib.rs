@@ -23,6 +23,7 @@ pub mod fund_sender {
         state.update_authority = state_in.update_authority;
         state.destination_seed = state_in.destination_seed;
         state.destination_account = state_in.destination_account;
+        state.certificate_vault = state_in.certificate_vault;
         state.spend_threshold = state_in.spend_threshold;
         state.output_yield_account_bump = *ctx.bumps.get("output_yield_account").unwrap();
         state.total_spent = 0;
@@ -35,6 +36,7 @@ pub mod fund_sender {
         let state = &mut ctx.accounts.state;
         state.update_authority = state_in.update_authority;
         state.destination_account = state_in.destination_account;
+        state.certificate_vault = state_in.certificate_vault;
         state.spend_threshold = state_in.spend_threshold;
 
         Ok(())
@@ -65,6 +67,32 @@ pub mod fund_sender {
         } else {
             return Err(ErrorCode::InsufficientFundsForTransaction.into());
         }
+
+        Ok(())
+    }
+
+    pub fn store_certificates<'info>(
+        ctx: Context<'_, '_, '_, 'info, StoreCertificates<'info>>,
+    ) -> Result<()> {
+        // send received climate tokens in output_yield_account to a hold account
+        let state = &mut ctx.accounts.state;
+        let output_yield_account = &mut ctx.accounts.output_yield_account;
+        let output_yield_token_account = &mut ctx.accounts.output_yield_token_account;
+        let certificate_vault = &mut ctx.accounts.certificate_vault;
+
+        let amount: u64 = output_yield_token_account.amount;
+        transfer_token(
+            &state.key(),
+            &AccountsTokenTransfer {
+                source: output_yield_token_account.to_account_info(),
+                dest: certificate_vault.to_account_info(),
+                authority: output_yield_account.to_account_info(),
+            },
+            amount,
+            state.output_yield_account_bump,
+            &state.destination_seed,
+            &ctx.accounts.token_program,
+        )?;
 
         Ok(())
     }
