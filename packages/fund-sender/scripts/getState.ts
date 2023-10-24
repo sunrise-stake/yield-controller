@@ -1,5 +1,5 @@
-import { logBalance } from "./lib/util";
 import { FundSenderClient } from "../client";
+import { logBalance } from "./lib/util";
 import { PublicKey } from "@solana/web3.js";
 
 // mainnet Sunrise
@@ -9,28 +9,20 @@ const sunriseStateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultSunriseStateAddress
 );
 
-const defaultDestinationSeed = "ecoToken";
-const destinationSeed = Buffer.from(
-  process.env.DESTINATION_SEED ?? defaultDestinationSeed
-);
+// USAGE: yarn ts-node packages/fund-sender/getState.ts destinationName
+const destinationName = process.argv[2];
 
 (async () => {
   const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
     sunriseStateAddress,
-    destinationSeed
+    destinationName
   );
   const client = await FundSenderClient.fetch(stateAddress);
   const log = logBalance(client);
 
   console.log("state address", stateAddress.toBase58());
   console.log("state account data", client.config);
-  console.log(
-    "out yield token address",
-    client.getOutputYieldAccount(destinationSeed).toBase58()
-  );
+  console.log("input address", client.getInputAccount().toBase58());
 
-  await log(
-    "output yield token",
-    client.getOutputYieldAccount(destinationSeed)
-  );
+  await log("input token", client.getInputAccount());
 })().catch(console.error);

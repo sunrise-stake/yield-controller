@@ -1,6 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { AnchorProvider } from "@coral-xyz/anchor";
 import { FundSenderClient } from "../client";
 import { logSplBalance } from "./lib/util";
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import {
+  getAccount,
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 
 // mainnet Sunrise
 const defaultSunriseStateAddress =
@@ -9,21 +16,13 @@ const sunriseStateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultSunriseStateAddress
 );
 
-const defaultDestinationSeed = "ecoToken";
-const destinationSeed = Buffer.from(
-  process.env.DESTINATION_SEED ?? defaultDestinationSeed
-);
-
-// account from which to transfer certificate
-const defaultOutputTokenAddress = "";
-const outputTokenAddress = new PublicKey(
-  process.env.OUTPUT_TOKEN_ADDRESS ?? defaultOutputTokenAddress
-);
+// USAGE: yarn ts-node packages/fund-sender/storeCertificate.ts destinationName
+const destinationName = process.argv[2];
 
 (async () => {
   const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
     sunriseStateAddress,
-    destinationSeed
+    destinationName
   );
   const client = await FundSenderClient.fetch(stateAddress);
 
@@ -31,21 +30,62 @@ const outputTokenAddress = new PublicKey(
 
   console.log("state address", stateAddress.toBase58());
   console.log("state account data", client.config);
+  const provider = AnchorProvider.local();
+  const connection = provider.connection;
+  const anchorWallet = Keypair.fromSecretKey(
+    Buffer.from(require(process.env.ANCHOR_WALLET as string))
+  );
+  const allInputTokenAccounts =
+    await client.provider.connection.getParsedProgramAccounts(
+      TOKEN_PROGRAM_ID,
+      {
+        filters: [
+          {
+            dataSize: 165, // number of bytes
+          },
+          {
+            memcmp: {
+              offset: 32, // number of bytes
+              bytes: client.getInputAccount().toBase58(),
+            },
+          },
+        ],
+      }
+    );
   console.log(
-    "output certificate token address",
-    client.getOutputYieldAccount(destinationSeed).toBase58()
+    "number of input certificate token addresses",
+    allInputTokenAccounts.length
   );
-
-  await log(
-    "output certificate token",
-    client.getOutputYieldAccount(destinationSeed)
-  );
-
   console.log("Storing certificates...");
-  await client.storeCertificates(outputTokenAddress);
+  for (const inputTokenAccount of allInputTokenAccounts) {
+    console.log(
+      "input certificate token account:",
+      inputTokenAccount.pubkey.toBase58()
+    );
 
-  await log(
-    "output certificate token",
-    client.getOutputYieldAccount(destinationSeed)
-  );
+    const inputTokenAddressInfo = await getAccount(
+      connection,
+      inputTokenAccount.pubkey
+    );
+
+    const certificateVaultAta = await getOrCreateAssociatedTokenAccount(
+      connection,
+      anchorWallet,
+      inputTokenAddressInfo.mint,
+      client.config.certificateVault,
+      false
+    );
+
+    await client.storeCertificates(
+      inputTokenAccount.pubkey,
+      certificateVaultAta.address,
+      inputTokenAddressInfo.mint
+    );
+
+    await log(
+      "remaining input certificate token in account",
+      inputTokenAccount.pubkey
+    );
+    await log("token in certificate vault ATA", certificateVaultAta.address);
+  }
 })().catch(console.error);

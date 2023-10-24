@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { AnchorProvider } from "@coral-xyz/anchor";
 import { FundSenderClient } from "../client";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import BN from "bn.js";
 
 // mainnet Sunrise
@@ -19,20 +17,9 @@ const sunriseTreasuryAddress = new PublicKey(
   process.env.TREASURY_ADDRESS ?? defaultSunriseTreasuryAddress
 );
 
-// ecoToken address
-const defaultDestinationAccount =
-  "FToVGCufMQQgt3ca2C8s1NHMMaGZBLjaj5zjjP66Brwb";
-const defaultDestinationSeed = "ecoToken";
-const destinationAccount = new PublicKey(
-  process.env.DESTINATION_ACCOUNT ?? defaultDestinationAccount
-);
-const destinationSeed = Buffer.from(
-  process.env.DESTINATION_SEED ?? defaultDestinationSeed
-);
-
-// ecoToken mintKey
-const defaultMintKey = "26KSs4cds9P3p2K5q6j8xGD2yzB1Wa2pzms7AHSMhG3s";
-const mintKey = new PublicKey(process.env.MINT_KEY ?? defaultMintKey);
+// USAGE: yarn ts-node packages/fund-sender/resgisterState.ts destinationName destinationAccount
+const destinationName = process.argv[2];
+const destinationAccount = new PublicKey(process.argv[3]);
 
 const defaultSpendThreshold = 1000000000;
 const spendThreshold = new BN(
@@ -44,23 +31,12 @@ const anchorWallet = Keypair.fromSecretKey(
 );
 
 (async () => {
-  const provider = AnchorProvider.local();
-  const connection = provider.connection;
-
-  const certificateVault = await getOrCreateAssociatedTokenAccount(
-    connection,
-    anchorWallet,
-    mintKey,
-    sunriseTreasuryAddress,
-    true
-  );
-
   const state = await FundSenderClient.register(
     sunriseStateAddress,
     anchorWallet.publicKey,
-    destinationSeed,
+    destinationName,
     destinationAccount,
-    certificateVault.address,
+    sunriseTreasuryAddress,
     spendThreshold
   );
   console.log("state account data", state.config);

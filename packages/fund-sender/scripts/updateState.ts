@@ -16,10 +16,8 @@ const sunriseStateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultSunriseStateAddress
 );
 
-const defaultDestinationSeed = "ecoToken";
-const destinationSeed = Buffer.from(
-  process.env.DESTINATION_SEED ?? defaultDestinationSeed
-);
+// USAGE: yarn ts-node packages/fund-sender/updateState.ts destinationName
+const destinationName = process.argv[2];
 
 (async () => {
   // Get new update authority
@@ -94,7 +92,7 @@ const destinationSeed = Buffer.from(
 
   const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
     sunriseStateAddress,
-    destinationSeed
+    destinationName
   );
   const client = await FundSenderClient.fetch(stateAddress);
   if (newDestinationAccount === undefined) {
