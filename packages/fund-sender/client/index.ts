@@ -1,7 +1,10 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
-import TOKEN_PROGRAM_ID from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import BN from "bn.js";
 import { FundSender, IDL } from "../../types/fund_sender";
 
@@ -389,7 +392,9 @@ export class FundSenderClient {
    *
    */
   public async storeCertificates(
-    outputYieldTokenAccount: PublicKey
+    outputYieldTokenAccount: PublicKey,
+    certificateVaultAta: PublicKey,
+    certificateMint: PublicKey
   ): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
@@ -404,9 +409,13 @@ export class FundSenderClient {
         payer: this.provider.publicKey,
         state: this.stateAddress,
         outputYieldAccount,
+        certificateMint,
         outputYieldTokenAccount,
         certificateVault: this.config.certificateVault,
+        certificateVaultAta,
+        systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .rpc()
       .then(confirm(this.provider.connection));

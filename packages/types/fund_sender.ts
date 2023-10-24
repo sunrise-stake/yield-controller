@@ -113,7 +113,12 @@ export type FundSender = {
         },
         {
           "name": "outputYieldAccount",
-          "isMut": true,
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "certificateMint",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -126,11 +131,26 @@ export type FundSender = {
         },
         {
           "name": "certificateVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "certificateVaultAta",
           "isMut": true,
           "isSigner": false
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -359,7 +379,12 @@ export const IDL: FundSender = {
         },
         {
           "name": "outputYieldAccount",
-          "isMut": true,
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "certificateMint",
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -372,11 +397,26 @@ export const IDL: FundSender = {
         },
         {
           "name": "certificateVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "certificateVaultAta",
           "isMut": true,
           "isSigner": false
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         }

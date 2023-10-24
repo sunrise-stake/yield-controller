@@ -1,7 +1,8 @@
 use crate::utils::errors::ErrorCode;
 use crate::utils::seeds::{OUTPUT_YIELD_ACCOUNT, STATE};
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Token, TokenAccount};
+use anchor_spl::associated_token::AssociatedToken;
+use anchor_spl::token::{Mint, Token, TokenAccount};
 
 /* This struct will be used for both registering and updating the state account */
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -101,23 +102,33 @@ pub struct StoreCertificates<'info> {
     pub payer: Signer<'info>,
     pub state: Account<'info, State>,
     #[account(
-        mut,
         seeds = [OUTPUT_YIELD_ACCOUNT, &state.destination_seed, state.key().as_ref()],
         bump = state.output_yield_account_bump,
     )]
     /// CHECK: Must be correctly derived from the state
     pub output_yield_account: UncheckedAccount<'info>,
+    pub certificate_mint: Account<'info, Mint>,
     #[account(
         mut,
+        token::mint = certificate_mint,
         constraint = output_yield_token_account.owner.key() == output_yield_account.key() @ ErrorCode::IncorrectTokenAccountOwner,
     )]
     ///  A token account owned by the outputYieldAccount
     pub output_yield_token_account: Account<'info, TokenAccount>,
     #[account(
-        mut,
-        constraint = certificate_vault.key() == state.certificate_vault @ ErrorCode::IncorrectHoldAccount,
+        constraint = certificate_vault.key() == state.certificate_vault.key() @ ErrorCode::IncorrectHoldAccount,
     )]
-    // the account where we store all the certificates
-    pub certificate_vault: Account<'info, TokenAccount>,
+    /// CHECK: must match the one stated in the state, but can be any account type
+    pub certificate_vault: UncheckedAccount<'info>,
+    #[account(
+        init_if_needed,
+        payer = payer,
+        associated_token::mint = certificate_mint,
+        associated_token::authority = certificate_vault,
+    )]
+    // the ATA of this particular mint of the account where we store all the certificates
+    pub certificate_vault_ata: Account<'info, TokenAccount>,
+    pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }

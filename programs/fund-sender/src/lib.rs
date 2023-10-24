@@ -78,14 +78,14 @@ pub mod fund_sender {
         let state = &mut ctx.accounts.state;
         let output_yield_account = &mut ctx.accounts.output_yield_account;
         let output_yield_token_account = &mut ctx.accounts.output_yield_token_account;
-        let certificate_vault = &mut ctx.accounts.certificate_vault;
+        let certificate_vault_ata = &mut ctx.accounts.certificate_vault_ata;
 
         let amount: u64 = output_yield_token_account.amount;
         transfer_token(
             &state.key(),
             &AccountsTokenTransfer {
                 source: output_yield_token_account.to_account_info(),
-                dest: certificate_vault.to_account_info(),
+                dest: certificate_vault_ata.to_account_info(),
                 authority: output_yield_account.to_account_info(),
             },
             amount,
