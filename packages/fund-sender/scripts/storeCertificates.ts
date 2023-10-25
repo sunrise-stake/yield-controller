@@ -4,7 +4,6 @@ import { FundSenderClient } from "../client";
 import { logSplBalance } from "./lib/util";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import {
-  getAccount,
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
@@ -35,23 +34,15 @@ const destinationName = process.argv[2];
   const anchorWallet = Keypair.fromSecretKey(
     Buffer.from(require(process.env.ANCHOR_WALLET as string))
   );
-  const allInputTokenAccounts =
-    await client.provider.connection.getParsedProgramAccounts(
-      TOKEN_PROGRAM_ID,
+  const allInputTokenAccountsResponse =
+    await client.provider.connection.getParsedTokenAccountsByOwner(
+      client.getInputAccount(),
       {
-        filters: [
-          {
-            dataSize: 165, // number of bytes
-          },
-          {
-            memcmp: {
-              offset: 32, // number of bytes
-              bytes: client.getInputAccount().toBase58(),
-            },
-          },
-        ],
+        programId: TOKEN_PROGRAM_ID,
       }
     );
+
+  const allInputTokenAccounts = allInputTokenAccountsResponse.value;
   console.log(
     "number of input certificate token addresses",
     allInputTokenAccounts.length
@@ -63,15 +54,12 @@ const destinationName = process.argv[2];
       inputTokenAccount.pubkey.toBase58()
     );
 
-    const inputTokenAddressInfo = await getAccount(
-      connection,
-      inputTokenAccount.pubkey
-    );
+    const mint = inputTokenAccount.account.data.parsed.info.mint;
 
     const certificateVaultAta = await getOrCreateAssociatedTokenAccount(
       connection,
       anchorWallet,
-      inputTokenAddressInfo.mint,
+      mint,
       client.config.certificateVault,
       false
     );
@@ -79,7 +67,7 @@ const destinationName = process.argv[2];
     await client.storeCertificates(
       inputTokenAccount.pubkey,
       certificateVaultAta.address,
-      inputTokenAddressInfo.mint
+      mint
     );
 
     await log(
