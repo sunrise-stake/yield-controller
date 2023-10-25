@@ -9,7 +9,7 @@ import BN from "bn.js";
 import { FundSender, IDL } from "../../types/fund_sender";
 
 export const PROGRAM_ID = new PublicKey(
-  "rodTth5pXjkUfQpqMp7tEFdN1sdv2JwqhXg8RH9YrWD"
+  "sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz"
 );
 
 /**
