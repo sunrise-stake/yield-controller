@@ -1,4 +1,4 @@
-use crate::utils::seeds::OUTPUT_YIELD_ACCOUNT;
+use crate::utils::seeds::INPUT_ACCOUNT;
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
 use anchor_spl::token::{self, Token, Transfer as SplTransfer};
@@ -9,18 +9,12 @@ pub fn transfer_native_cpi<'a>(
     dest: &AccountInfo<'a>,
     amount: u64,
     source_bump: u8,
-    destination_seed: &[u8],
     system_program: &Program<'a, System>,
 ) -> Result<()> {
     // transfer `amount` (in lamports) from `source` account to `dest` account
     let state_bytes = state.to_bytes();
     let bump_bytes = &[source_bump];
-    let seeds = &[
-        OUTPUT_YIELD_ACCOUNT,
-        destination_seed,
-        &state_bytes[..],
-        bump_bytes,
-    ][..];
+    let seeds = &[INPUT_ACCOUNT, &state_bytes[..], bump_bytes][..];
     let signer_seeds = &[seeds];
     let cpi_ctx = CpiContext::new(
         system_program.to_account_info(),
@@ -47,17 +41,11 @@ pub fn transfer_token<'a>(
     // authority: &AccountInfo<'a>,
     amount: u64,
     source_bump: u8,
-    destination_seed: &[u8],
     token_program: &Program<'a, Token>,
 ) -> Result<()> {
     let state_bytes = state.to_bytes();
     let bump_bytes = &[source_bump];
-    let seeds = &[
-        OUTPUT_YIELD_ACCOUNT,
-        destination_seed,
-        &state_bytes[..],
-        bump_bytes,
-    ][..];
+    let seeds = &[INPUT_ACCOUNT, &state_bytes[..], bump_bytes][..];
     let signer_seeds = &[seeds];
     let cpi_ctx = CpiContext::new(
         token_program.to_account_info(),

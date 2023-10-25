@@ -44,31 +44,24 @@ export const confirm = (connection: Connection) => async (txSig: string) => {
 };
 
 /**
- * Returns output yield account address for given state address.
+ * Returns input account address for given state address.
  *
  *
  * @param stateAddress - Public key of state
- * @returns Public Key of output yield account
+ * @returns Public Key of input account
  *
  */
-const getOutputYieldAccountForState = (
-  stateAddress: PublicKey,
-  destinationSeed: Buffer
-): PublicKey => {
-  const [outputYieldAccount] = PublicKey.findProgramAddressSync(
-    [
-      Buffer.from("output_yield_account"),
-      destinationSeed,
-      stateAddress.toBuffer(),
-    ],
+const getInputAccountForState = (stateAddress: PublicKey): PublicKey => {
+  const [inputAccount] = PublicKey.findProgramAddressSync(
+    [Buffer.from("input_account"), stateAddress.toBuffer()],
     PROGRAM_ID
   );
 
-  return outputYieldAccount;
+  return inputAccount;
 };
 
 export interface FundSenderConfig {
-  destinationSeed: Buffer;
+  destinationName: string;
   updateAuthority: PublicKey;
   destinationAccount: PublicKey;
   certificateVault: PublicKey;
@@ -98,7 +91,7 @@ export class FundSenderClient {
     const state = await this.program.account.state.fetch(this.stateAddress);
 
     this.config = {
-      destinationSeed: state.destinationSeed,
+      destinationName: state.destinationName,
       updateAuthority: state.updateAuthority,
       destinationAccount: state.destinationAccount,
       certificateVault: state.certificateVault,
@@ -116,10 +109,14 @@ export class FundSenderClient {
    */
   public static getStateAddressFromSunriseAddress(
     sunriseState: PublicKey,
-    destinationSeed: Buffer
+    destinationName: string
   ): PublicKey {
     const [state] = PublicKey.findProgramAddressSync(
-      [Buffer.from("state"), destinationSeed, sunriseState.toBuffer()],
+      [
+        Buffer.from("state"),
+        Buffer.from(destinationName),
+        sunriseState.toBuffer(),
+      ],
       PROGRAM_ID
     );
 
@@ -127,14 +124,14 @@ export class FundSenderClient {
   }
 
   /**
-   * Returns output yield account address.
+   * Returns input account address.
    *
    *
-   * @returns Public Key of output yield account
+   * @returns Public Key of input account
    *
    */
-  public getOutputYieldAccount(destinationSeed: Buffer): PublicKey {
-    return getOutputYieldAccountForState(this.stateAddress, destinationSeed);
+  public getInputAccount(): PublicKey {
+    return getInputAccountForState(this.stateAddress);
   }
 
   /**
@@ -178,7 +175,7 @@ export class FundSenderClient {
   public static async register(
     sunriseState: PublicKey,
     updateAuthority: PublicKey,
-    destinationSeed: Buffer,
+    destinationName: string,
     destinationAccount: PublicKey,
     certificateVault: PublicKey,
     spendThreshold: BN
@@ -186,12 +183,9 @@ export class FundSenderClient {
     // find state address
     const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
       sunriseState,
-      destinationSeed
+      destinationName
     );
-    const outputYieldAccount = getOutputYieldAccountForState(
-      stateAddress,
-      destinationSeed
-    );
+    const inputAccount = getInputAccountForState(stateAddress);
 
     const client = new FundSenderClient(setUpAnchor(), stateAddress);
 
@@ -199,12 +193,12 @@ export class FundSenderClient {
     const accounts = {
       payer: client.provider.wallet.publicKey,
       state: stateAddress,
-      outputYieldAccount,
+      inputAccount,
       systemProgram: SystemProgram.programId,
     };
 
     const args = {
-      destinationSeed,
+      destinationName,
       updateAuthority,
       destinationAccount,
       certificateVault,
@@ -253,7 +247,7 @@ export class FundSenderClient {
     };
 
     const args = {
-      destinationSeed: this.config.destinationSeed,
+      destinationName: this.config.destinationName,
       updateAuthority: this.config.updateAuthority,
       destinationAccount,
       certificateVault: this.config.certificateVault,
@@ -293,7 +287,7 @@ export class FundSenderClient {
     };
 
     const args = {
-      destinationSeed: this.config.destinationSeed,
+      destinationName: this.config.destinationName,
       updateAuthority: this.config.updateAuthority,
       destinationAccount: this.config.destinationAccount,
       certificateVault,
@@ -333,7 +327,7 @@ export class FundSenderClient {
     };
 
     const args = {
-      destinationSeed: this.config.destinationSeed,
+      destinationName: this.config.destinationName,
       updateAuthority, // only this argument is new, everything else is inferred from the original state account
       destinationAccount: this.config.destinationAccount,
       certificateVault: this.config.certificateVault,
@@ -355,7 +349,7 @@ export class FundSenderClient {
   }
 
   /**
-   * Sends all funds from output yield account to destination account.
+   * Sends all funds from input account to destination account.
    *
    *
    * @returns Fund sender client
@@ -365,16 +359,14 @@ export class FundSenderClient {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
-    const outputYieldAccount = this.getOutputYieldAccount(
-      this.config.destinationSeed
-    );
+    const inputAccount = this.getInputAccount();
 
     await this.program.methods
       .sendFund()
       .accounts({
         payer: this.provider.publicKey,
         state: this.stateAddress,
-        outputYieldAccount,
+        inputAccount,
         destinationAccount: this.config.destinationAccount,
         systemProgram: SystemProgram.programId,
       })
@@ -385,32 +377,30 @@ export class FundSenderClient {
   }
 
   /**
-   * Sends specified amount of NFTs from output yield account to hold account.
+   * Sends specified amount of NFTs from input account to hold account.
    *
    *
    * @returns Fund sender client
    *
    */
   public async storeCertificates(
-    outputYieldTokenAccount: PublicKey,
+    inputTokenAccount: PublicKey,
     certificateVaultAta: PublicKey,
     certificateMint: PublicKey
   ): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
-    const outputYieldAccount = this.getOutputYieldAccount(
-      this.config.destinationSeed
-    );
+    const inputAccount = this.getInputAccount();
 
     await this.program.methods
       .storeCertificates()
       .accounts({
         payer: this.provider.publicKey,
         state: this.stateAddress,
-        outputYieldAccount,
+        inputAccount,
         certificateMint,
-        outputYieldTokenAccount,
+        inputTokenAccount,
         certificateVault: this.config.certificateVault,
         certificateVaultAta,
         systemProgram: SystemProgram.programId,

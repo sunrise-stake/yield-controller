@@ -26,7 +26,7 @@ describe("fund-sender", () => {
   let client: FundSenderClient;
   let sunriseState: PublicKey;
   const authority = Keypair.fromSecretKey(Buffer.from(testAuthority));
-  const destinationSeed = Buffer.from("EcoToken");
+  const destinationName = "ecoToken";
 
   const spendThreshold = new BN(1);
 
@@ -42,7 +42,7 @@ describe("fund-sender", () => {
       client = await FundSenderClient.register(
         sunriseState,
         authority.publicKey,
-        destinationSeed,
+        destinationName,
         destinationAccount,
         certificateVault.publicKey,
         spendThreshold
@@ -180,7 +180,7 @@ describe("fund-sender", () => {
       client = await FundSenderClient.register(
         sunriseState,
         authority.publicKey,
-        destinationSeed,
+        destinationName,
         destinationAccount,
         certificateVault.publicKey,
         spendThreshold
@@ -192,7 +192,7 @@ describe("fund-sender", () => {
         new Transaction().add(
           SystemProgram.transfer({
             fromPubkey: client.provider.wallet.publicKey,
-            toPubkey: client.getOutputYieldAccount(destinationSeed),
+            toPubkey: client.getInputAccount(),
             lamports: LAMPORTS_PER_SOL,
           })
         )
@@ -218,7 +218,7 @@ describe("fund-sender", () => {
         connection,
         authority,
         mint,
-        client.getOutputYieldAccount(destinationSeed),
+        client.getInputAccount(),
         true
       );
 
@@ -256,7 +256,7 @@ describe("fund-sender", () => {
       expect(Number(certificateVaultInfo.amount)).to.equal(mintAmount);
     });
 
-    it("should not be able to transfer from a token account not owned by output_yield_account", async () => {
+    it("should not be able to transfer from a token account not owned by input_account", async () => {
       const connection = client.program.provider.connection;
       // const payer = Keypair.generate();
       const tx1 = await connection.requestAirdrop(
@@ -317,7 +317,7 @@ describe("fund-sender", () => {
         connection,
         authority,
         mint,
-        client.getOutputYieldAccount(destinationSeed),
+        client.getInputAccount(),
         true
       );
 
@@ -364,7 +364,7 @@ describe("fund-sender", () => {
         connection,
         authority,
         mint,
-        client.getOutputYieldAccount(destinationSeed),
+        client.getInputAccount(),
         true
       );
 
@@ -416,7 +416,7 @@ describe("fund-sender", () => {
         connection,
         authority,
         mint,
-        client.getOutputYieldAccount(destinationSeed),
+        client.getInputAccount(),
         true
       );
 

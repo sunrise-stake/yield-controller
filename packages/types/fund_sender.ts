@@ -16,7 +16,7 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -81,7 +81,7 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -112,7 +112,7 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -122,11 +122,11 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldTokenAccount",
+          "name": "inputTokenAccount",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "A token account owned by the outputYieldAccount"
+            "A token account owned by the input_account"
           ]
         },
         {
@@ -173,8 +173,8 @@ export type FundSender = {
             "type": "publicKey"
           },
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "destinationAccount",
@@ -193,7 +193,7 @@ export type FundSender = {
             "type": "u64"
           },
           {
-            "name": "outputYieldAccountBump",
+            "name": "inputAccountBump",
             "type": "u8"
           }
         ]
@@ -207,8 +207,8 @@ export type FundSender = {
         "kind": "struct",
         "fields": [
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "updateAuthority",
@@ -282,7 +282,7 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -347,7 +347,7 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -378,7 +378,7 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -388,11 +388,11 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldTokenAccount",
+          "name": "inputTokenAccount",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "A token account owned by the outputYieldAccount"
+            "A token account owned by the input_account"
           ]
         },
         {
@@ -439,8 +439,8 @@ export const IDL: FundSender = {
             "type": "publicKey"
           },
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "destinationAccount",
@@ -459,7 +459,7 @@ export const IDL: FundSender = {
             "type": "u64"
           },
           {
-            "name": "outputYieldAccountBump",
+            "name": "inputAccountBump",
             "type": "u8"
           }
         ]
@@ -473,8 +473,8 @@ export const IDL: FundSender = {
         "kind": "struct",
         "fields": [
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "updateAuthority",
