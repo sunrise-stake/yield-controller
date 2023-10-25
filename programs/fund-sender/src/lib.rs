@@ -21,11 +21,11 @@ pub mod fund_sender {
         let state = &mut ctx.accounts.state;
         state.sunrise_state = sunrise_state;
         state.update_authority = state_in.update_authority;
-        state.destination_seed = state_in.destination_seed;
+        state.destination_name = state_in.destination_name;
         state.destination_account = state_in.destination_account;
         state.certificate_vault = state_in.certificate_vault;
         state.spend_threshold = state_in.spend_threshold;
-        state.output_yield_account_bump = *ctx.bumps.get("output_yield_account").unwrap();
+        state.input_account_bump = *ctx.bumps.get("input_account").unwrap();
         state.total_spent = 0;
 
         Ok(())
@@ -43,24 +43,23 @@ pub mod fund_sender {
     }
 
     pub fn send_fund<'info>(ctx: Context<'_, '_, '_, 'info, SendFund<'info>>) -> Result<()> {
-        // send yield to output_yield_accounts with specified proportions
+        // send yield to input_accounts with specified proportions
         let state = &mut ctx.accounts.state;
-        let output_yield_account = &mut ctx.accounts.output_yield_account;
+        let input_account = &mut ctx.accounts.input_account;
         let destination_account = &mut ctx.accounts.destination_account;
         if destination_account.key() != state.destination_account {
             return Err(ErrorCode::IncorrectDestinationAccount.into());
         }
 
-        let amount: u64 = output_yield_account.lamports();
+        let amount: u64 = input_account.lamports();
         if amount >= state.spend_threshold {
             transfer_native_cpi(
                 &state.key(),
-                &output_yield_account.to_account_info(),
+                &input_account.to_account_info(),
                 // state.destination_account.to_account_info(), <- this leads to error trait bounds not satisfied, why?
                 &destination_account.to_account_info(),
                 amount,
-                state.output_yield_account_bump,
-                &state.destination_seed,
+                state.input_account_bump,
                 &ctx.accounts.system_program,
             )?;
             state.total_spent += amount;
@@ -74,23 +73,22 @@ pub mod fund_sender {
     pub fn store_certificates<'info>(
         ctx: Context<'_, '_, '_, 'info, StoreCertificates<'info>>,
     ) -> Result<()> {
-        // send received climate tokens in output_yield_account to a hold account
+        // send received climate tokens in input_account to a hold account
         let state = &mut ctx.accounts.state;
-        let output_yield_account = &mut ctx.accounts.output_yield_account;
-        let output_yield_token_account = &mut ctx.accounts.output_yield_token_account;
-        let certificate_vault = &mut ctx.accounts.certificate_vault;
+        let input_account = &mut ctx.accounts.input_account;
+        let input_token_account = &mut ctx.accounts.input_token_account;
+        let certificate_vault_ata = &mut ctx.accounts.certificate_vault_ata;
 
-        let amount: u64 = output_yield_token_account.amount;
+        let amount: u64 = input_token_account.amount;
         transfer_token(
             &state.key(),
             &AccountsTokenTransfer {
-                source: output_yield_token_account.to_account_info(),
-                dest: certificate_vault.to_account_info(),
-                authority: output_yield_account.to_account_info(),
+                source: input_token_account.to_account_info(),
+                dest: certificate_vault_ata.to_account_info(),
+                authority: input_account.to_account_info(),
             },
             amount,
-            state.output_yield_account_bump,
-            &state.destination_seed,
+            state.input_account_bump,
             &ctx.accounts.token_program,
         )?;
 

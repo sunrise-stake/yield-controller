@@ -16,7 +16,7 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -81,7 +81,7 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -112,25 +112,45 @@ export type FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
-          "isMut": true,
+          "name": "inputAccount",
+          "isMut": false,
           "isSigner": false
         },
         {
-          "name": "outputYieldTokenAccount",
+          "name": "certificateMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "inputTokenAccount",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "A token account owned by the outputYieldAccount"
+            "A token account owned by the input_account"
           ]
         },
         {
           "name": "certificateVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "certificateVaultAta",
           "isMut": true,
           "isSigner": false
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -153,8 +173,8 @@ export type FundSender = {
             "type": "publicKey"
           },
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "destinationAccount",
@@ -173,7 +193,7 @@ export type FundSender = {
             "type": "u64"
           },
           {
-            "name": "outputYieldAccountBump",
+            "name": "inputAccountBump",
             "type": "u8"
           }
         ]
@@ -187,8 +207,8 @@ export type FundSender = {
         "kind": "struct",
         "fields": [
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "updateAuthority",
@@ -262,7 +282,7 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": false,
           "isSigner": false
         },
@@ -327,7 +347,7 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
+          "name": "inputAccount",
           "isMut": true,
           "isSigner": false
         },
@@ -358,25 +378,45 @@ export const IDL: FundSender = {
           "isSigner": false
         },
         {
-          "name": "outputYieldAccount",
-          "isMut": true,
+          "name": "inputAccount",
+          "isMut": false,
           "isSigner": false
         },
         {
-          "name": "outputYieldTokenAccount",
+          "name": "certificateMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "inputTokenAccount",
           "isMut": true,
           "isSigner": false,
           "docs": [
-            "A token account owned by the outputYieldAccount"
+            "A token account owned by the input_account"
           ]
         },
         {
           "name": "certificateVault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "certificateVaultAta",
           "isMut": true,
           "isSigner": false
         },
         {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -399,8 +439,8 @@ export const IDL: FundSender = {
             "type": "publicKey"
           },
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "destinationAccount",
@@ -419,7 +459,7 @@ export const IDL: FundSender = {
             "type": "u64"
           },
           {
-            "name": "outputYieldAccountBump",
+            "name": "inputAccountBump",
             "type": "u8"
           }
         ]
@@ -433,8 +473,8 @@ export const IDL: FundSender = {
         "kind": "struct",
         "fields": [
           {
-            "name": "destinationSeed",
-            "type": "bytes"
+            "name": "destinationName",
+            "type": "string"
           },
           {
             "name": "updateAuthority",
