@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { AnchorProvider } from "@coral-xyz/anchor";
 import { FundSenderClient } from "../client";
 import { logSplBalance } from "./lib/util";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import {
-  getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
@@ -29,11 +28,6 @@ const destinationName = process.argv[2];
 
   console.log("state address", stateAddress.toBase58());
   console.log("state account data", client.config);
-  const provider = AnchorProvider.local();
-  const connection = provider.connection;
-  const anchorWallet = Keypair.fromSecretKey(
-    Buffer.from(require(process.env.ANCHOR_WALLET as string))
-  );
   const allInputTokenAccountsResponse =
     await client.provider.connection.getParsedTokenAccountsByOwner(
       client.getInputAccount(),
@@ -54,19 +48,18 @@ const destinationName = process.argv[2];
       inputTokenAccount.pubkey.toBase58()
     );
 
-    const mint = inputTokenAccount.account.data.parsed.info.mint;
+    const mint = new PublicKey(inputTokenAccount.account.data.parsed.info.mint);
+    console.log(mint);
 
-    const certificateVaultAta = await getOrCreateAssociatedTokenAccount(
-      connection,
-      anchorWallet,
+    const certificateVaultAta = getAssociatedTokenAddressSync(
       mint,
       client.config.certificateVault,
-      false
+      true
     );
 
     await client.storeCertificates(
       inputTokenAccount.pubkey,
-      certificateVaultAta.address,
+      certificateVaultAta,
       mint
     );
 
@@ -74,6 +67,6 @@ const destinationName = process.argv[2];
       "remaining input certificate token in account",
       inputTokenAccount.pubkey
     );
-    await log("token in certificate vault ATA", certificateVaultAta.address);
+    await log("token in certificate vault ATA", certificateVaultAta);
   }
 })().catch(console.error);
