@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 mod utils;
 
 // how to write it to leave it to be filled with new id for each deployed program for each climate project?
-declare_id!("rodTth5pXjkUfQpqMp7tEFdN1sdv2JwqhXg8RH9YrWD");
+declare_id!("sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz");
 
 #[program]
 pub mod fund_sender {
