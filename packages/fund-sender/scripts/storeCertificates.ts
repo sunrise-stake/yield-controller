@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+// Set up anchor provider
+import "./lib/util";
 import { FundSenderClient } from "../client";
 import { logSplBalance } from "./lib/util";
 import { PublicKey } from "@solana/web3.js";
@@ -22,6 +24,7 @@ const destinationName = process.argv[2];
     sunriseStateAddress,
     destinationName
   );
+  console.log("Getting state account...", stateAddress.toBase58());
   const client = await FundSenderClient.fetch(stateAddress);
 
   const log = logSplBalance(client);
@@ -49,7 +52,6 @@ const destinationName = process.argv[2];
     );
 
     const mint = new PublicKey(inputTokenAccount.account.data.parsed.info.mint);
-    console.log(mint);
 
     const certificateVaultAta = getAssociatedTokenAddressSync(
       mint,

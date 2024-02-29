@@ -25,6 +25,6 @@ const sunriseStateAddress = new PublicKey(
   await log("input yield token", client.getInputYieldAccount());
 
   for (const outputYieldAccount of client.config.outputYieldAccounts) {
-    await log("output yield token", outputYieldAccount);
+    await log(`output yield token ${outputYieldAccount}`, outputYieldAccount);
   }
 })().catch(console.error);

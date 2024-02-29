@@ -185,9 +185,12 @@ export class FundSenderClient {
       sunriseState,
       destinationName
     );
+    console.log("state address", stateAddress.toBase58());
     const inputAccount = getInputAccountForState(stateAddress);
+    console.log("input account", inputAccount.toBase58());
 
     const client = new FundSenderClient(setUpAnchor(), stateAddress);
+    console.log("Client created");
 
     // accounts needed to register state
     const accounts = {
@@ -204,6 +207,7 @@ export class FundSenderClient {
       certificateVault,
       spendThreshold,
     };
+    console.log("Registering state");
     await client.program.methods
       .registerState(sunriseState, args)
       .accounts(accounts)
