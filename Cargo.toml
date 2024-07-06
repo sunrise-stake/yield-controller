@@ -2,6 +2,11 @@
 members = [
     "programs/*"
 ]
+exclude = [
+#    temporarily exclude the switchboard program due to build issues with switchboard-solana
+    "programs/buy-burn-switchboard"
+]
+resolver = "2"
 
 [profile.release]
 overflow-checks = true

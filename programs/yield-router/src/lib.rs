@@ -23,7 +23,7 @@ pub mod yield_router {
         state.output_yield_accounts = state_in.output_yield_accounts;
         state.spend_threshold = state_in.spend_threshold;
         state.spend_proportions = state_in.spend_proportions;
-        state.input_yield_account_bump = *ctx.bumps.get("input_yield_account").unwrap();
+        state.input_yield_account_bump = ctx.bumps.input_yield_account;
 
         // make sure the input proportions sum up to 100
         check_proportions(&state.spend_proportions)?;

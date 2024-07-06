@@ -6,17 +6,17 @@ use anchor_spl::{token, token::Mint, token::TokenAccount};
 
 pub fn burn<'a>(
     amount: u64,
-    yield_account: &Account<'a, State>,
+    state: &Account<'a, State>,
     mint: &Account<'a, Mint>,
     token_account: &Account<'a, TokenAccount>,
     token_program: &AccountInfo<'a>,
 ) -> Result<()> {
-    let seeds = [STATE, yield_account.mint.as_ref(), &[yield_account.bump]];
+    let seeds = [STATE, state.mint.as_ref(), &[state.bump]];
 
     let cpi_program = token_program.clone();
     let accounts = token::Burn {
         mint: mint.to_account_info(),
-        authority: yield_account.to_account_info(),
+        authority: state.to_account_info(),
         from: token_account.to_account_info(),
     };
     let cpi_ctx = CpiContext::new(cpi_program, accounts);

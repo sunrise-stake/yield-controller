@@ -169,13 +169,6 @@ describe("fund-sender", () => {
         null,
         10
       );
-      /* certificateVault = await getOrCreateAssociatedTokenAccount(
-        connection0,
-        authority,
-        mint,
-        authority.publicKey,
-        true
-      ); */
       certificateVault = Keypair.generate();
       client = await FundSenderClient.register(
         sunriseState,
@@ -188,21 +181,22 @@ describe("fund-sender", () => {
     });
 
     it("should be able to send funds", async () => {
+      const amountToSend = LAMPORTS_PER_SOL;
       await client.provider.sendAndConfirm(
         new Transaction().add(
           SystemProgram.transfer({
             fromPubkey: client.provider.wallet.publicKey,
             toPubkey: client.getInputAccount(),
-            lamports: LAMPORTS_PER_SOL,
+            lamports: amountToSend,
           })
         )
       );
 
-      await client.sendFunds();
+      await client.sendFunds(new BN(amountToSend));
 
       const destinationAccountInfo =
         await client.provider.connection.getAccountInfo(destinationAccount);
-      expect(destinationAccountInfo?.lamports).to.equal(LAMPORTS_PER_SOL);
+      expect(destinationAccountInfo?.lamports).to.equal(amountToSend);
     });
 
     it("should be transfer and store certificates (SPL tokens) to certificate vault", async () => {
@@ -243,11 +237,7 @@ describe("fund-sender", () => {
         true
       );
 
-      await client.storeCertificates(
-        ata.address,
-        certificateVaultAta.address,
-        mint
-      );
+      await client.storeCertificates(ata.address, mint);
       const certificateVaultInfo = await getAccount(
         connection,
         certificateVaultAta.address
@@ -287,121 +277,10 @@ describe("fund-sender", () => {
       const blockhash3 = await connection.getLatestBlockhash();
       await connection.confirmTransaction({ signature: tx3, ...blockhash3 });
 
-      const certificateVaultAta = await getOrCreateAssociatedTokenAccount(
-        connection,
-        authority,
-        mint,
-        certificateVault.publicKey,
-        true
-      );
-
-      const shouldFail = client.storeCertificates(
-        ata.address,
-        certificateVaultAta.address,
-        mint
-      );
+      const shouldFail = client.storeCertificates(ata.address, mint);
       return expect(shouldFail).to.be.rejectedWith(
         "IncorrectTokenAccountOwner."
       );
-    });
-
-    it("should not be able to transfer to a token account not owned by certificate_vault", async () => {
-      const connection = client.program.provider.connection;
-      const tx1 = await connection.requestAirdrop(
-        authority.publicKey,
-        LAMPORTS_PER_SOL
-      );
-      const blockhash1 = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({ signature: tx1, ...blockhash1 });
-      const ata = await getOrCreateAssociatedTokenAccount(
-        connection,
-        authority,
-        mint,
-        client.getInputAccount(),
-        true
-      );
-
-      const mintAmount = 100;
-      const tx3 = await mintTo(
-        connection,
-        authority,
-        mint,
-        ata.address,
-        authority.publicKey,
-        mintAmount
-      );
-
-      const blockhash3 = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({ signature: tx3, ...blockhash3 });
-
-      const unauthorisedCertificateVault = Keypair.generate();
-      const unauthorisedCertificateVaultAta =
-        await getOrCreateAssociatedTokenAccount(
-          connection,
-          authority,
-          mint,
-          unauthorisedCertificateVault.publicKey,
-          true
-        );
-
-      const shouldFail = client.storeCertificates(
-        ata.address,
-        unauthorisedCertificateVaultAta.address,
-        mint
-      );
-      return expect(shouldFail).to.be.rejectedWith("ConstraintTokenOwner.");
-    });
-
-    it("should not be able to transfer to a token account of another mint", async () => {
-      const connection = client.program.provider.connection;
-      const tx1 = await connection.requestAirdrop(
-        authority.publicKey,
-        LAMPORTS_PER_SOL
-      );
-      const blockhash1 = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({ signature: tx1, ...blockhash1 });
-      const ata = await getOrCreateAssociatedTokenAccount(
-        connection,
-        authority,
-        mint,
-        client.getInputAccount(),
-        true
-      );
-
-      const mintAmount = 100;
-      const tx3 = await mintTo(
-        connection,
-        authority,
-        mint,
-        ata.address,
-        authority.publicKey,
-        mintAmount
-      );
-
-      const blockhash3 = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({ signature: tx3, ...blockhash3 });
-
-      const wrongMint = await createMint(
-        connection,
-        authority,
-        authority.publicKey,
-        null,
-        10
-      );
-      const wrongCertificateVaultAta = await getOrCreateAssociatedTokenAccount(
-        connection,
-        authority,
-        wrongMint,
-        certificateVault.publicKey,
-        true
-      );
-
-      const shouldFail = client.storeCertificates(
-        ata.address,
-        wrongCertificateVaultAta.address,
-        mint
-      );
-      return expect(shouldFail).to.be.rejectedWith("ConstraintTokenMint.");
     });
 
     it("should be able to update certificate vault and store certificates in new vault", async () => {
@@ -456,11 +335,7 @@ describe("fund-sender", () => {
 
       const updatedClient = await FundSenderClient.fetch(client.stateAddress);
 
-      await updatedClient.storeCertificates(
-        ata.address,
-        newCertificateVaultAta.address,
-        mint
-      );
+      await updatedClient.storeCertificates(ata.address, mint);
       const certificateVaultInfo = await getAccount(
         connection,
         newCertificateVaultAta.address

@@ -23,7 +23,7 @@ describe("buy-burn-fixed", () => {
   const holdingAccount = Keypair.generate();
   let holdingTokenAccount: Account;
   let mint: anchor.web3.PublicKey;
-  let yieldAccountAddress: anchor.web3.PublicKey;
+  let stateAddress: anchor.web3.PublicKey;
   let bump: number;
 
   before(async () => {
@@ -49,11 +49,10 @@ describe("buy-burn-fixed", () => {
       true
     );
 
-    [yieldAccountAddress, bump] =
-      await anchor.web3.PublicKey.findProgramAddress(
-        [Buffer.from("state"), mint.toBuffer()],
-        PROGRAM_ID
-      );
+    [stateAddress, bump] = await anchor.web3.PublicKey.findProgramAddress(
+      [Buffer.from("state"), mint.toBuffer()],
+      PROGRAM_ID
+    );
   });
 
   it("It can register a new controller state", async () => {
@@ -70,25 +69,23 @@ describe("buy-burn-fixed", () => {
 
     expect(client.yieldAccountAddress).not.to.be.null;
 
-    const yieldAccountAddress = client.yieldAccountAddress as PublicKey;
+    const stateAddress = client.yieldAccountAddress as PublicKey;
 
-    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
+    const state = await program.account.state.fetch(stateAddress);
 
-    expect(yieldAccount.updateAuthority.toBase58()).equal(
+    expect(state.updateAuthority.toBase58()).equal(
       client.provider.publicKey.toBase58()
     );
-    expect(yieldAccount.treasury.toBase58()).equal(
-      treasury.publicKey.toBase58()
-    );
-    expect(yieldAccount.mint.toBase58()).equal(mint.toBase58());
-    expect(yieldAccount.purchaseThreshold.toNumber()).equal(1);
-    expect(yieldAccount.purchaseProportion).equal(0.5);
-    expect(yieldAccount.bump).equal(bump);
+    expect(state.treasury.toBase58()).equal(treasury.publicKey.toBase58());
+    expect(state.mint.toBase58()).equal(mint.toBase58());
+    expect(state.purchaseThreshold.toNumber()).equal(1);
+    expect(state.purchaseProportion).equal(0.5);
+    expect(state.bump).equal(bump);
   });
   it("Can allocate yield", async () => {
     // state account is PDA target for sunrise
     await program.provider.connection
-      .requestAirdrop(yieldAccountAddress, 100 * LAMPORTS_PER_SOL)
+      .requestAirdrop(stateAddress, 100 * LAMPORTS_PER_SOL)
       .then(async (sig) => program.provider.connection.confirmTransaction(sig));
 
     await program.provider.connection
@@ -97,7 +94,7 @@ describe("buy-burn-fixed", () => {
 
     // check that yieldAccountAddress now has 10 SOL
     const yieldBalanceBefore = await program.provider.connection.getBalance(
-      yieldAccountAddress
+      stateAddress
     );
     // treasury token account is created and delegate is set to the state account
     const holdingTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -125,7 +122,7 @@ describe("buy-burn-fixed", () => {
       authority,
       mint,
       holdingTokenAccount.address,
-      yieldAccountAddress,
+      stateAddress,
       holdingAccount,
       1000 * 10 ** 9,
       9
@@ -141,7 +138,7 @@ describe("buy-burn-fixed", () => {
     );
 
     expect(holdingTokenAccountInfo?.delegate?.toBase58()).equal(
-      yieldAccountAddress.toBase58()
+      stateAddress.toBase58()
     );
 
     // check DAO token account balance
@@ -155,17 +152,13 @@ describe("buy-burn-fixed", () => {
     // turn the crank
     client = await BuyBurnFixedClient.allocateYield(
       authority.publicKey,
-      yieldAccountAddress,
-      treasury.publicKey,
-      mint,
-      holdingAccount.publicKey,
-      holdingTokenAccount.address,
-      new BN(10 * 10 ** 9),
-      new BN(10 * 10 ** 9)
+      stateAddress,
+      new BN(10 * LAMPORTS_PER_SOL),
+      new BN(10 * LAMPORTS_PER_SOL)
     );
 
     const treasuryBalanceAfter = await program.provider.connection.getBalance(
-      yieldAccountAddress
+      stateAddress
     );
 
     const holdingTokenAccountBalanceAfter =
@@ -184,19 +177,19 @@ describe("buy-burn-fixed", () => {
       balanceBeforeNumber - 10
     );
 
-    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
-    expect(yieldAccount.totalSpent.toNumber()).equal(5 * 10 ** 9);
+    const state = await program.account.state.fetch(stateAddress);
+    expect(state.totalSpent.toNumber()).equal(5 * 10 ** 9);
   });
   it("Can update controller price", async () => {
     const price = new BN(1_000);
 
     client = await BuyBurnFixedClient.updatePrice(
-      yieldAccountAddress,
+      stateAddress,
       authority.publicKey,
       price
     );
 
-    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
+    const yieldAccount = await program.account.state.fetch(stateAddress);
     expect(yieldAccount.price.toNumber()).equal(price.toNumber());
   });
   it("Can update controller state", async () => {
@@ -213,7 +206,7 @@ describe("buy-burn-fixed", () => {
 
     try {
       client = await BuyBurnFixedClient.updateController(
-        yieldAccountAddress,
+        stateAddress,
         newAuthority.publicKey,
         newTreasury.publicKey,
         mint,
@@ -227,7 +220,7 @@ describe("buy-burn-fixed", () => {
       console.log(e);
     }
 
-    const yieldAccount = await program.account.state.fetch(yieldAccountAddress);
+    const yieldAccount = await program.account.state.fetch(stateAddress);
 
     expect(yieldAccount.updateAuthority.toBase58()).equal(
       newAuthority.publicKey.toBase58()

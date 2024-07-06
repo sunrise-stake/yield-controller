@@ -76,11 +76,9 @@ pub struct UpdateState<'info> {
 pub struct UpdatePrice<'info> {
     #[account(
         mut,
-        seeds = [STATE, yield_account.mint.key().as_ref()],
-        bump = yield_account.bump,
-        constraint = yield_account.update_authority == payer.key()
+        constraint = state.update_authority == payer.key()
     )]
-    pub yield_account: Account<'info, State>,
+    pub state: Account<'info, State>,
     #[account(mut)]
     pub payer: Signer<'info>,
 }
@@ -92,31 +90,21 @@ pub struct AllocateYield<'info> {
     pub payer: Signer<'info>,
     #[account(
         mut,
-        seeds = [STATE, yield_account.mint.key().as_ref()],
-        bump = yield_account.bump,
+        has_one = holding_account,
+        has_one = holding_token_account,
+        has_one = treasury,
+        has_one = mint,
     )]
-    pub yield_account: Account<'info, State>,
-    #[account(
-        mut,
-        constraint = treasury.key() == yield_account.treasury.key(),
-    )]
+    pub state: Account<'info, State>,
+    #[account(mut)]
     pub mint: Account<'info, Mint>,
-    /// CHECK: Assumes correct state setup
-    #[account(
-        mut,
-        constraint = treasury.key() == yield_account.treasury.key(),
-    )]
-    pub treasury: AccountInfo<'info>,
-    #[account(
-        mut,
-        constraint = holding_account.key() == yield_account.holding_account.key(),
-    )]
-    /// CHECK: Assumes correct state setup
+    /// CHECK: constraints checked in state
+    #[account(mut)]
+    pub treasury: UncheckedAccount<'info>,
+    /// CHECK: constraints checked in state
+    #[account(mut)]
     pub holding_account: AccountInfo<'info>,
-    #[account(
-        mut,
-        constraint = holding_token_account.key() == yield_account.holding_token_account.key(),
-    )]
+    #[account(mut)]
     pub holding_token_account: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,

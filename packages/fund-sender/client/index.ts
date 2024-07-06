@@ -1,12 +1,9 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
 import BN from "bn.js";
-import { FundSender, IDL } from "../../types/fund_sender";
+import { FundSender } from "../../types/fund_sender";
+import IDL from "../../idl/fund_sender.json";
 
 export const PROGRAM_ID = new PublicKey(
   "sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz"
@@ -80,7 +77,7 @@ export class FundSenderClient {
     readonly provider: AnchorProvider,
     readonly stateAddress: PublicKey
   ) {
-    this.program = new Program<FundSender>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<FundSender>(IDL as FundSender, provider);
   }
 
   /**
@@ -104,6 +101,7 @@ export class FundSenderClient {
    *
    *
    * @param sunriseState - Public key
+   * @param destinationName
    * @returns Public key of state
    *
    */
@@ -166,7 +164,7 @@ export class FundSenderClient {
    *
    * @param sunriseState - Public key
    * @param updateAuthority - Public key
-   * @param destinationSeed - Seed to specify destination account
+   * @param destinationName - Seed to specify destination account
    * @param destinationAccount - Public key of destination account
    * @param certificateVault - Public key of account holding the NFTs from climate projects
    * @param spendThreshold - Big number
@@ -197,7 +195,6 @@ export class FundSenderClient {
       payer: client.provider.wallet.publicKey,
       state: stateAddress,
       inputAccount,
-      systemProgram: SystemProgram.programId,
     };
 
     const args = {
@@ -233,7 +230,7 @@ export class FundSenderClient {
    *
    *
    * @param destinationAccount - Public keys of destination account
-   * @param spendTreshold - Spend threshold
+   * @param spendThreshold - The minimum amount that can be sent from this fund sender
    * @returns Fund sender client
    *
    */
@@ -247,7 +244,6 @@ export class FundSenderClient {
     const accounts = {
       payer: this.provider.wallet.publicKey,
       state: this.stateAddress,
-      systemProgram: SystemProgram.programId,
     };
 
     const args = {
@@ -359,20 +355,17 @@ export class FundSenderClient {
    * @returns Fund sender client
    *
    */
-  public async sendFunds(): Promise<FundSenderClient> {
+  public async sendFunds(amount: BN): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
-    const inputAccount = this.getInputAccount();
 
     await this.program.methods
-      .sendFund()
+      .sendFund(amount)
       .accounts({
         payer: this.provider.publicKey,
         state: this.stateAddress,
-        inputAccount,
         destinationAccount: this.config.destinationAccount,
-        systemProgram: SystemProgram.programId,
       })
       .rpc()
       .then(confirm(this.provider.connection));
@@ -389,27 +382,20 @@ export class FundSenderClient {
    */
   public async storeCertificates(
     inputTokenAccount: PublicKey,
-    certificateVaultAta: PublicKey,
     certificateMint: PublicKey
   ): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
-    const inputAccount = this.getInputAccount();
 
     await this.program.methods
       .storeCertificates()
       .accounts({
         payer: this.provider.publicKey,
         state: this.stateAddress,
-        inputAccount,
         certificateMint,
         inputTokenAccount,
         certificateVault: this.config.certificateVault,
-        certificateVaultAta,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .rpc()
       .then(confirm(this.provider.connection));

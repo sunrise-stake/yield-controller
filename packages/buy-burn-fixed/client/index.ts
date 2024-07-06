@@ -2,7 +2,8 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { BuyBurnFixed, IDL } from "../../types/buy_burn_fixed";
+import { BuyBurnFixed } from "../../types/buy_burn_fixed";
+import IDL from "../../idl/buy_burn_fixed.json";
 
 export const PROGRAM_ID = new PublicKey(
   "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B"
@@ -37,7 +38,7 @@ export class BuyBurnFixedClient {
   yieldAccountAddress: PublicKey | undefined;
 
   constructor(readonly provider: AnchorProvider) {
-    this.program = new Program<BuyBurnFixed>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<BuyBurnFixed>(IDL as BuyBurnFixed, provider);
   }
 
   private async init(yieldAccountAddress: PublicKey): Promise<void> {
@@ -157,11 +158,7 @@ export class BuyBurnFixedClient {
 
   public static async allocateYield(
     payer: PublicKey,
-    yieldAccount: PublicKey,
-    treasury: PublicKey,
-    mint: PublicKey,
-    holdingAccount: PublicKey,
-    holdingTokenAccount: PublicKey,
+    state: PublicKey,
     solAmount: BN,
     tokenAmount: BN
   ): Promise<BuyBurnFixedClient> {
@@ -169,14 +166,7 @@ export class BuyBurnFixedClient {
 
     await client.program.methods
       .allocateYield({ solAmount, tokenAmount })
-      .accounts({
-        payer,
-        yieldAccount,
-        treasury,
-        mint,
-        holdingAccount,
-        holdingTokenAccount,
-      })
+      .accounts({ state, payer })
       .rpc()
       .then(confirm(client.provider.connection));
 
@@ -184,7 +174,7 @@ export class BuyBurnFixedClient {
   }
 
   public static async updatePrice(
-    yieldAccount: PublicKey,
+    state: PublicKey,
     payer: PublicKey,
     price: BN
   ): Promise<BuyBurnFixedClient> {
@@ -193,8 +183,8 @@ export class BuyBurnFixedClient {
     await client.program.methods
       .updatePrice(price)
       .accounts({
+        state,
         payer,
-        yieldAccount,
       })
       .rpc()
       .then(confirm(client.provider.connection));
