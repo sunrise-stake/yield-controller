@@ -26,7 +26,7 @@ pub mod buy_burn_switchboard {
         state_account.feed_staleness_threshold = state.feed_staleness_threshold;
         state_account.index = state.index;
         state_account.yield_account_bump = state.yield_account_bump;
-        state_account.bump = *ctx.bumps.get("state").unwrap();
+        state_account.bump = ctx.bumps.state;
         Ok(())
     }
 

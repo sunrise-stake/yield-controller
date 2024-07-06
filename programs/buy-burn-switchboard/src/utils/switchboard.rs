@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use std::convert::TryInto;
-use switchboard_v2::{AggregatorAccountData, SwitchboardDecimal};
+use switchboard_solana::{AggregatorAccountData, SwitchboardDecimal};
 
 fn get_price_from_feed(
     price_feed: &AccountLoader<AggregatorAccountData>,

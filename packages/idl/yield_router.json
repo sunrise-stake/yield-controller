@@ -1,20 +1,14 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/yield_router.json`.
- */
-export type YieldRouter = {
+{
   "address": "syriqUnUPcFQjRSaxdFo2wPnXXPjbRsLmhiWUVoGdTo",
   "metadata": {
-    "name": "yieldRouter",
+    "name": "yield_router",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "allocateYield",
+      "name": "allocate_yield",
       "discriminator": [
         225,
         224,
@@ -35,7 +29,7 @@ export type YieldRouter = {
           "name": "state"
         },
         {
-          "name": "inputYieldAccount",
+          "name": "input_yield_account",
           "writable": true,
           "pda": {
             "seeds": [
@@ -71,7 +65,7 @@ export type YieldRouter = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -83,7 +77,7 @@ export type YieldRouter = {
       ]
     },
     {
-      "name": "registerState",
+      "name": "register_state",
       "discriminator": [
         137,
         35,
@@ -117,13 +111,13 @@ export type YieldRouter = {
               },
               {
                 "kind": "arg",
-                "path": "sunriseState"
+                "path": "sunrise_state"
               }
             ]
           }
         },
         {
-          "name": "inputYieldAccount",
+          "name": "input_yield_account",
           "pda": {
             "seeds": [
               {
@@ -158,27 +152,27 @@ export type YieldRouter = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "sunriseState",
+          "name": "sunrise_state",
           "type": "pubkey"
         },
         {
-          "name": "stateIn",
+          "name": "state_in",
           "type": {
             "defined": {
-              "name": "genericStateInput"
+              "name": "GenericStateInput"
             }
           }
         }
       ]
     },
     {
-      "name": "updateState",
+      "name": "update_state",
       "discriminator": [
         135,
         112,
@@ -200,16 +194,16 @@ export type YieldRouter = {
           "writable": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "stateIn",
+          "name": "state_in",
           "type": {
             "defined": {
-              "name": "genericStateInput"
+              "name": "GenericStateInput"
             }
           }
         }
@@ -218,7 +212,7 @@ export type YieldRouter = {
   ],
   "accounts": [
     {
-      "name": "state",
+      "name": "State",
       "discriminator": [
         216,
         146,
@@ -234,94 +228,94 @@ export type YieldRouter = {
   "errors": [
     {
       "code": 6000,
-      "name": "insufficientFundsForTransaction",
+      "name": "InsufficientFundsForTransaction",
       "msg": "Insufficient funds for transaction"
     },
     {
       "code": 6001,
-      "name": "incorrectInputYieldAccount",
+      "name": "IncorrectInputYieldAccount",
       "msg": "Incorrect input yield account"
     },
     {
       "code": 6002,
-      "name": "incorrectOutputYieldAccount",
+      "name": "IncorrectOutputYieldAccount",
       "msg": "Incorrect output yield account"
     },
     {
       "code": 6003,
-      "name": "invalidProportions",
+      "name": "InvalidProportions",
       "msg": "Invalid spend proportions"
     },
     {
       "code": 6004,
-      "name": "unauthorized",
+      "name": "Unauthorized",
       "msg": "Incorrect update authority"
     }
   ],
   "types": [
     {
-      "name": "genericStateInput",
+      "name": "GenericStateInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "updateAuthority",
+            "name": "update_authority",
             "type": "pubkey"
           },
           {
-            "name": "outputYieldAccounts",
+            "name": "output_yield_accounts",
             "type": {
               "vec": "pubkey"
             }
           },
           {
-            "name": "spendProportions",
+            "name": "spend_proportions",
             "type": "bytes"
           },
           {
-            "name": "spendThreshold",
+            "name": "spend_threshold",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "state",
+      "name": "State",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "sunriseState",
+            "name": "sunrise_state",
             "type": "pubkey"
           },
           {
-            "name": "updateAuthority",
+            "name": "update_authority",
             "type": "pubkey"
           },
           {
-            "name": "outputYieldAccounts",
+            "name": "output_yield_accounts",
             "type": {
               "vec": "pubkey"
             }
           },
           {
-            "name": "spendProportions",
+            "name": "spend_proportions",
             "type": "bytes"
           },
           {
-            "name": "spendThreshold",
+            "name": "spend_threshold",
             "type": "u64"
           },
           {
-            "name": "totalSpent",
+            "name": "total_spent",
             "type": "u64"
           },
           {
-            "name": "inputYieldAccountBump",
+            "name": "input_yield_account_bump",
             "type": "u8"
           }
         ]
       }
     }
   ]
-};
+}

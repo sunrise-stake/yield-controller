@@ -5,7 +5,6 @@ use crate::utils::state::*;
 use anchor_lang::prelude::*;
 mod utils;
 
-// how to write it to leave it to be filled with new id for each deployed program for each climate project?
 declare_id!("sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz");
 
 #[program]
@@ -25,7 +24,7 @@ pub mod fund_sender {
         state.destination_account = state_in.destination_account;
         state.certificate_vault = state_in.certificate_vault;
         state.spend_threshold = state_in.spend_threshold;
-        state.input_account_bump = *ctx.bumps.get("input_account").unwrap();
+        state.input_account_bump = ctx.bumps.input_account;
         state.total_spent = 0;
 
         Ok(())
@@ -42,7 +41,10 @@ pub mod fund_sender {
         Ok(())
     }
 
-    pub fn send_fund<'info>(ctx: Context<'_, '_, '_, 'info, SendFund<'info>>) -> Result<()> {
+    pub fn send_fund<'info>(
+        ctx: Context<'_, '_, '_, 'info, SendFund<'info>>,
+        amount: u64,
+    ) -> Result<()> {
         // send yield to input_accounts with specified proportions
         let state = &mut ctx.accounts.state;
         let input_account = &mut ctx.accounts.input_account;
@@ -51,7 +53,6 @@ pub mod fund_sender {
             return Err(ErrorCode::IncorrectDestinationAccount.into());
         }
 
-        let amount: u64 = input_account.lamports();
         if amount >= state.spend_threshold {
             transfer_native_cpi(
                 &state.key(),
@@ -80,6 +81,11 @@ pub mod fund_sender {
         let certificate_vault_ata = &mut ctx.accounts.certificate_vault_ata;
 
         let amount: u64 = input_token_account.amount;
+
+        if amount == 0 {
+            return Err(ErrorCode::NoCertificatesFound.into());
+        }
+
         transfer_token(
             &state.key(),
             &AccountsTokenTransfer {

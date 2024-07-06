@@ -1,20 +1,14 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/fund_sender.json`.
- */
-export type FundSender = {
+{
   "address": "sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz",
   "metadata": {
-    "name": "fundSender",
+    "name": "fund_sender",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "registerState",
+      "name": "register_state",
       "discriminator": [
         137,
         35,
@@ -52,13 +46,13 @@ export type FundSender = {
               },
               {
                 "kind": "arg",
-                "path": "sunriseState"
+                "path": "sunrise_state"
               }
             ]
           }
         },
         {
-          "name": "inputAccount",
+          "name": "input_account",
           "pda": {
             "seeds": [
               {
@@ -87,27 +81,27 @@ export type FundSender = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "sunriseState",
+          "name": "sunrise_state",
           "type": "pubkey"
         },
         {
-          "name": "stateIn",
+          "name": "state_in",
           "type": {
             "defined": {
-              "name": "genericStateInput"
+              "name": "GenericStateInput"
             }
           }
         }
       ]
     },
     {
-      "name": "sendFund",
+      "name": "send_fund",
       "discriminator": [
         92,
         75,
@@ -128,7 +122,7 @@ export type FundSender = {
           "name": "state"
         },
         {
-          "name": "inputAccount",
+          "name": "input_account",
           "writable": true,
           "pda": {
             "seeds": [
@@ -158,11 +152,11 @@ export type FundSender = {
           }
         },
         {
-          "name": "destinationAccount",
+          "name": "destination_account",
           "writable": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -174,7 +168,7 @@ export type FundSender = {
       ]
     },
     {
-      "name": "storeCertificates",
+      "name": "store_certificates",
       "discriminator": [
         106,
         243,
@@ -195,7 +189,7 @@ export type FundSender = {
           "name": "state"
         },
         {
-          "name": "inputAccount",
+          "name": "input_account",
           "pda": {
             "seeds": [
               {
@@ -224,26 +218,26 @@ export type FundSender = {
           }
         },
         {
-          "name": "certificateMint"
+          "name": "certificate_mint"
         },
         {
-          "name": "inputTokenAccount",
+          "name": "input_token_account",
           "docs": [
             "A token account owned by the input_account"
           ],
           "writable": true
         },
         {
-          "name": "certificateVault"
+          "name": "certificate_vault"
         },
         {
-          "name": "certificateVaultAta",
+          "name": "certificate_vault_ata",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "certificateVault"
+                "path": "certificate_vault"
               },
               {
                 "kind": "const",
@@ -284,7 +278,7 @@ export type FundSender = {
               },
               {
                 "kind": "account",
-                "path": "certificateMint"
+                "path": "certificate_mint"
               }
             ],
             "program": {
@@ -327,22 +321,22 @@ export type FundSender = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
-          "name": "tokenProgram",
+          "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "associatedTokenProgram",
+          "name": "associated_token_program",
           "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         }
       ],
       "args": []
     },
     {
-      "name": "updateState",
+      "name": "update_state",
       "discriminator": [
         135,
         112,
@@ -364,16 +358,16 @@ export type FundSender = {
           "writable": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "stateIn",
+          "name": "state_in",
           "type": {
             "defined": {
-              "name": "genericStateInput"
+              "name": "GenericStateInput"
             }
           }
         }
@@ -382,7 +376,7 @@ export type FundSender = {
   ],
   "accounts": [
     {
-      "name": "state",
+      "name": "State",
       "discriminator": [
         216,
         146,
@@ -398,108 +392,108 @@ export type FundSender = {
   "errors": [
     {
       "code": 6000,
-      "name": "insufficientFundsForTransaction",
+      "name": "InsufficientFundsForTransaction",
       "msg": "Insufficient funds for transaction"
     },
     {
       "code": 6001,
-      "name": "incorrectOutputYieldAccount",
+      "name": "IncorrectOutputYieldAccount",
       "msg": "Incorrect output yield account"
     },
     {
       "code": 6002,
-      "name": "incorrectTokenAccountOwner",
+      "name": "IncorrectTokenAccountOwner",
       "msg": "Token account not owned by output yield account"
     },
     {
       "code": 6003,
-      "name": "incorrectDestinationAccount",
+      "name": "IncorrectDestinationAccount",
       "msg": "Incorrect destination account"
     },
     {
       "code": 6004,
-      "name": "incorrectHoldAccount",
+      "name": "IncorrectHoldAccount",
       "msg": "Incorrect hold account"
     },
     {
       "code": 6005,
-      "name": "unauthorized",
+      "name": "Unauthorized",
       "msg": "Incorrect update authority"
     },
     {
       "code": 6006,
-      "name": "noCertificatesFound",
+      "name": "NoCertificatesFound",
       "msg": "No certificates found"
     }
   ],
   "types": [
     {
-      "name": "genericStateInput",
+      "name": "GenericStateInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "destinationName",
+            "name": "destination_name",
             "type": "string"
           },
           {
-            "name": "updateAuthority",
+            "name": "update_authority",
             "type": "pubkey"
           },
           {
-            "name": "destinationAccount",
+            "name": "destination_account",
             "type": "pubkey"
           },
           {
-            "name": "certificateVault",
+            "name": "certificate_vault",
             "type": "pubkey"
           },
           {
-            "name": "spendThreshold",
+            "name": "spend_threshold",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "state",
+      "name": "State",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "sunriseState",
+            "name": "sunrise_state",
             "type": "pubkey"
           },
           {
-            "name": "updateAuthority",
+            "name": "update_authority",
             "type": "pubkey"
           },
           {
-            "name": "destinationName",
+            "name": "destination_name",
             "type": "string"
           },
           {
-            "name": "destinationAccount",
+            "name": "destination_account",
             "type": "pubkey"
           },
           {
-            "name": "certificateVault",
+            "name": "certificate_vault",
             "type": "pubkey"
           },
           {
-            "name": "spendThreshold",
+            "name": "spend_threshold",
             "type": "u64"
           },
           {
-            "name": "totalSpent",
+            "name": "total_spent",
             "type": "u64"
           },
           {
-            "name": "inputAccountBump",
+            "name": "input_account_bump",
             "type": "u8"
           }
         ]
       }
     }
   ]
-};
+}

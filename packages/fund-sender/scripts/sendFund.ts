@@ -1,6 +1,7 @@
 import { FundSenderClient } from "../client";
 import { logBalance } from "./lib/util";
 import { PublicKey } from "@solana/web3.js";
+import BN from "bn.js";
 
 // mainnet Sunrise
 const defaultSunriseStateAddress =
@@ -9,8 +10,9 @@ const sunriseStateAddress = new PublicKey(
   process.env.STATE_ADDRESS ?? defaultSunriseStateAddress
 );
 
-// USAGE: yarn ts-node packages/fund-sender/sendFund.ts destinationName
+// USAGE: yarn ts-node packages/fund-sender/sendFund.ts destinationName amount
 const destinationName = process.argv[2];
+const amount = parseInt(process.argv[3] ?? "0", 10);
 
 (async () => {
   const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
@@ -22,13 +24,12 @@ const destinationName = process.argv[2];
   const log = logBalance(client);
 
   console.log("state address", stateAddress.toBase58());
-  console.log("state account data", client.config);
   console.log("input address", client.getInputAccount().toBase58());
 
-  await log("input token", client.getInputAccount());
+  await log("input", client.getInputAccount());
 
   console.log("Sending fund...");
-  await client.sendFunds();
+  await client.sendFunds(new BN(amount));
 
-  await log("input token", client.getInputAccount());
+  await log("output", client.getInputAccount());
 })().catch(console.error);

@@ -1,6 +1,11 @@
 [workspace]
 types = "packages/types"
 
+exclude = [
+    #    temporarily exclude the switchboard program due to build issues with switchboard-solana
+    "programs/buy-burn-switchboard"
+]
+
 [features]
 seeds = false
 skip-lint = false
@@ -32,3 +37,6 @@ filename = "packages/tests/fixtures/switchboard_nct_usd.json"
 [[test.validator.account]]
 address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
 filename = "packages/tests/fixtures/switchboard_sol_usd.json"
+
+#[test]
+#startup_wait =

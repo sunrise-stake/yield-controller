@@ -1,20 +1,14 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/buy_burn_fixed.json`.
- */
-export type BuyBurnFixed = {
+{
   "address": "stcGmoLCBsr2KSu2vvcSuqMiEZx36F32ySUtCXjab5B",
   "metadata": {
-    "name": "buyBurnFixed",
+    "name": "buy_burn_fixed",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "allocateYield",
+      "name": "allocate_yield",
       "discriminator": [
         225,
         224,
@@ -50,25 +44,25 @@ export type BuyBurnFixed = {
           ]
         },
         {
-          "name": "holdingAccount",
+          "name": "holding_account",
           "writable": true,
           "relations": [
             "state"
           ]
         },
         {
-          "name": "holdingTokenAccount",
+          "name": "holding_token_account",
           "writable": true,
           "relations": [
             "state"
           ]
         },
         {
-          "name": "tokenProgram",
+          "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -77,14 +71,14 @@ export type BuyBurnFixed = {
           "name": "args",
           "type": {
             "defined": {
-              "name": "allocateYieldInput"
+              "name": "AllocateYieldInput"
             }
           }
         }
       ]
     },
     {
-      "name": "registerState",
+      "name": "register_state",
       "discriminator": [
         137,
         35,
@@ -102,7 +96,7 @@ export type BuyBurnFixed = {
           "signer": true
         },
         {
-          "name": "yieldAccount",
+          "name": "yield_account",
           "writable": true,
           "pda": {
             "seeds": [
@@ -127,7 +121,7 @@ export type BuyBurnFixed = {
           "name": "mint"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -136,14 +130,14 @@ export type BuyBurnFixed = {
           "name": "state",
           "type": {
             "defined": {
-              "name": "genericStateInput"
+              "name": "GenericStateInput"
             }
           }
         }
       ]
     },
     {
-      "name": "updatePrice",
+      "name": "update_price",
       "discriminator": [
         61,
         34,
@@ -173,7 +167,7 @@ export type BuyBurnFixed = {
       ]
     },
     {
-      "name": "updateState",
+      "name": "update_state",
       "discriminator": [
         135,
         112,
@@ -191,7 +185,7 @@ export type BuyBurnFixed = {
           "signer": true
         },
         {
-          "name": "yieldAccount",
+          "name": "yield_account",
           "writable": true,
           "pda": {
             "seeds": [
@@ -218,7 +212,7 @@ export type BuyBurnFixed = {
           "name": "state",
           "type": {
             "defined": {
-              "name": "genericStateInput"
+              "name": "GenericStateInput"
             }
           }
         }
@@ -227,7 +221,7 @@ export type BuyBurnFixed = {
   ],
   "accounts": [
     {
-      "name": "state",
+      "name": "State",
       "discriminator": [
         216,
         146,
@@ -243,44 +237,44 @@ export type BuyBurnFixed = {
   "errors": [
     {
       "code": 6000,
-      "name": "insufficientFundsForTransaction",
+      "name": "InsufficientFundsForTransaction",
       "msg": "insufficient funds for transaction"
     },
     {
       "code": 6001,
-      "name": "invalidTreasury",
+      "name": "InvalidTreasury",
       "msg": "invalid treasury account"
     },
     {
       "code": 6002,
-      "name": "invalidMint",
+      "name": "InvalidMint",
       "msg": "invalid mint"
     },
     {
       "code": 6003,
-      "name": "purchaseThresholdExceeded",
+      "name": "PurchaseThresholdExceeded",
       "msg": "purchase threshold exceeded"
     }
   ],
   "types": [
     {
-      "name": "allocateYieldInput",
+      "name": "AllocateYieldInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "solAmount",
+            "name": "sol_amount",
             "type": "u64"
           },
           {
-            "name": "tokenAmount",
+            "name": "token_amount",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "genericStateInput",
+      "name": "GenericStateInput",
       "type": {
         "kind": "struct",
         "fields": [
@@ -289,7 +283,7 @@ export type BuyBurnFixed = {
             "type": "pubkey"
           },
           {
-            "name": "updateAuthority",
+            "name": "update_authority",
             "type": "pubkey"
           },
           {
@@ -297,11 +291,11 @@ export type BuyBurnFixed = {
             "type": "pubkey"
           },
           {
-            "name": "holdingAccount",
+            "name": "holding_account",
             "type": "pubkey"
           },
           {
-            "name": "holdingTokenAccount",
+            "name": "holding_token_account",
             "type": "pubkey"
           },
           {
@@ -309,23 +303,23 @@ export type BuyBurnFixed = {
             "type": "u64"
           },
           {
-            "name": "purchaseThreshold",
+            "name": "purchase_threshold",
             "type": "u64"
           },
           {
-            "name": "purchaseProportion",
+            "name": "purchase_proportion",
             "type": "f32"
           }
         ]
       }
     },
     {
-      "name": "state",
+      "name": "State",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "updateAuthority",
+            "name": "update_authority",
             "type": "pubkey"
           },
           {
@@ -341,23 +335,23 @@ export type BuyBurnFixed = {
             "type": "u64"
           },
           {
-            "name": "purchaseThreshold",
+            "name": "purchase_threshold",
             "type": "u64"
           },
           {
-            "name": "purchaseProportion",
+            "name": "purchase_proportion",
             "type": "f32"
           },
           {
-            "name": "holdingAccount",
+            "name": "holding_account",
             "type": "pubkey"
           },
           {
-            "name": "holdingTokenAccount",
+            "name": "holding_token_account",
             "type": "pubkey"
           },
           {
-            "name": "totalSpent",
+            "name": "total_spent",
             "type": "u64"
           },
           {
@@ -368,4 +362,4 @@ export type BuyBurnFixed = {
       }
     }
   ]
-};
+}

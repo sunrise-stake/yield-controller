@@ -2,7 +2,9 @@ import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
 import BN from "bn.js";
-import { BuyBurnSwitchboard, IDL } from "./types/buy_and_burn";
+import { BuyBurnSwitchboard } from "../../../types/buy_burn_switchboard";
+// import IDL from "../../../idl/buy_burn_switchboard.json";
+
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { BuyBurnSwitchboardState } from "./types";
 
@@ -42,7 +44,7 @@ export class YieldControllerClient {
   state: BuyBurnSwitchboardState | undefined;
 
   constructor(readonly provider: AnchorProvider) {
-    this.program = new Program<BuyBurnSwitchboard>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<BuyBurnSwitchboard>(IDL, provider);
   }
 
   private async init(stateAddress: PublicKey): Promise<void> {

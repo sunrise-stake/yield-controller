@@ -19,4 +19,7 @@ pub enum ErrorCode {
 
     #[msg("Incorrect update authority")]
     Unauthorized,
+
+    #[msg("No certificates found")]
+    NoCertificatesFound,
 }

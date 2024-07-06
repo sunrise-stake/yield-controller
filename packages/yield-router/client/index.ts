@@ -1,13 +1,9 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
-import {
-  PublicKey,
-  SystemProgram,
-  Connection,
-  AccountMeta,
-} from "@solana/web3.js";
+import { PublicKey, Connection, AccountMeta } from "@solana/web3.js";
 import BN from "bn.js";
-import { YieldRouter, IDL } from "../../types/yield_router";
+import { YieldRouter } from "../../types/yield_router";
+import IDL from "../../idl/yield_router.json";
 
 export const PROGRAM_ID = new PublicKey(
   "syriqUnUPcFQjRSaxdFo2wPnXXPjbRsLmhiWUVoGdTo"
@@ -111,7 +107,7 @@ export class YieldRouterClient {
     readonly provider: AnchorProvider,
     readonly stateAddress: PublicKey
   ) {
-    this.program = new Program<YieldRouter>(IDL, PROGRAM_ID, provider);
+    this.program = new Program<YieldRouter>(IDL as YieldRouter, provider);
   }
 
   /**
@@ -190,10 +186,10 @@ export class YieldRouterClient {
    *
    *
    * @param sunriseState - Public key
-   * @param updateAuthorit - Public key
-   * @param outputYieldAccount - List of public keys
+   * @param updateAuthority
+   * @param outputYieldAccounts
    * @param spendProportions - List of numbers that add up to 100
-   * @param spendThreshol - Big number
+   * @param spendThreshold
    * @returns Initialised yield router client
    */
   public static async register(
@@ -206,18 +202,8 @@ export class YieldRouterClient {
     // find state address
     const stateAddress =
       YieldRouterClient.getStateAddressFromSunriseAddress(sunriseState);
-    const inputYieldAccount = getInputYieldAccountForState(stateAddress);
 
     const client = new YieldRouterClient(setUpAnchor(), stateAddress);
-
-    // accounts needed to register state
-    const accounts = {
-      payer: client.provider.wallet.publicKey,
-      state: stateAddress,
-      inputYieldAccount,
-      systemProgram: SystemProgram.programId,
-    };
-
     const args = {
       sunriseState,
       updateAuthority,
@@ -227,7 +213,9 @@ export class YieldRouterClient {
     };
     await client.program.methods
       .registerState(sunriseState, args)
-      .accounts(accounts)
+      .accounts({
+        payer: client.provider.wallet.publicKey,
+      })
       .rpc()
       .then(() => {
         confirm(client.provider.connection);
@@ -264,7 +252,6 @@ export class YieldRouterClient {
     const accounts = {
       payer: this.provider.wallet.publicKey,
       state: this.stateAddress,
-      systemProgram: SystemProgram.programId,
     };
 
     const args = {
@@ -339,15 +326,12 @@ export class YieldRouterClient {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
-    const inputYieldAccount = this.getInputYieldAccount();
 
     await this.program.methods
       .allocateYield(amount)
       .accounts({
         payer: this.provider.publicKey,
         state: this.stateAddress,
-        inputYieldAccount,
-        systemProgram: SystemProgram.programId,
       })
       .remainingAccounts(
         this.config.outputYieldAccounts.map(toWriteableAccountMeta)

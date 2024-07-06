@@ -21,7 +21,13 @@ const destinationName = process.argv[2];
   const log = logBalance(client);
 
   console.log("state address", stateAddress.toBase58());
-  console.log("state account data", client.config);
+  console.log("state account data", {
+    destinationName: client.config.destinationName,
+    updateAuthority: client.config.updateAuthority.toBase58(),
+    destinationAccount: client.config.destinationAccount.toBase58(),
+    certificateVault: client.config.certificateVault.toBase58(),
+    spendThreshold: client.config.spendThreshold.toNumber(),
+  });
   console.log("input address", client.getInputAccount().toBase58());
 
   await log("input token", client.getInputAccount());

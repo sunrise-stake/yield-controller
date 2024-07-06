@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // Set up anchor provider
-import "./lib/util";
 import { FundSenderClient } from "../client";
 import { logSplBalance } from "./lib/util";
 import { PublicKey } from "@solana/web3.js";
@@ -59,11 +58,7 @@ const destinationName = process.argv[2];
       true
     );
 
-    await client.storeCertificates(
-      inputTokenAccount.pubkey,
-      certificateVaultAta,
-      mint
-    );
+    await client.storeCertificates(inputTokenAccount.pubkey, mint);
 
     await log(
       "remaining input certificate token in account",

@@ -12,11 +12,19 @@ const sunriseStateAddress = new PublicKey(
 (async () => {
   const stateAddress =
     YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
+  console.log("state address", stateAddress.toBase58());
   const client = await YieldRouterClient.fetch(stateAddress);
   const log = logBalance(client);
 
   console.log("state address", stateAddress.toBase58());
-  console.log("state account data", client.config);
+  console.log("state account data", {
+    updateAuthority: client.config.updateAuthority.toBase58(),
+    outputYieldAccounts: client.config.outputYieldAccounts
+      .map((k) => k.toBase58())
+      .join(", "),
+    spendProportions: client.config.spendProportions,
+    spendThreshold: client.config.spendThreshold.toString(),
+  });
   console.log(
     "input yield token address",
     client.getInputYieldAccount().toBase58()
@@ -25,6 +33,9 @@ const sunriseStateAddress = new PublicKey(
   await log("input yield token", client.getInputYieldAccount());
 
   for (const outputYieldAccount of client.config.outputYieldAccounts) {
-    await log(`output yield token ${outputYieldAccount}`, outputYieldAccount);
+    await log(
+      `output yield address ${outputYieldAccount.toBase58()}`,
+      outputYieldAccount
+    );
   }
 })().catch(console.error);
