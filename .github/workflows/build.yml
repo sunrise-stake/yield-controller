@@ -4,11 +4,14 @@ on:
   pull_request:
 
 env:
-  solana_version: v1.16.14
+  solana_version: v1.18.17
   VERBOSE: 1
 
 jobs:
   install:
+    strategy:
+      matrix:
+        node: [ 20 ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -24,7 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: ${{ matrix.node }}
 
       - name: Cache node dependencies
         uses: actions/cache@v3
@@ -59,6 +62,9 @@ jobs:
           solana --version
 
   lint-program:
+    strategy:
+      matrix:
+        node: [ 20 ]
     needs: install
     runs-on: ubuntu-latest
 
@@ -72,6 +78,9 @@ jobs:
         run: cargo clippy -- --deny=warnings
 
   lint-client:
+    strategy:
+      matrix:
+        node: [ 20 ]
     needs: install
     runs-on: ubuntu-latest
     steps:
@@ -80,7 +89,7 @@ jobs:
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: ${{ matrix.node }}
 
       - name: Cache node dependencies
         uses: actions/cache@v3
@@ -97,6 +106,9 @@ jobs:
 
 
   test:
+    strategy:
+      matrix:
+        node: [ 20 ]
     needs: [lint-client, lint-program]
     runs-on: ubuntu-latest
 
@@ -106,7 +118,7 @@ jobs:
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: ${{ matrix.node }}
 
       - name: Cache node dependencies
         uses: actions/cache@v3
