@@ -107,6 +107,60 @@ export type FundSender = {
       ]
     },
     {
+      "name": "sendFromState",
+      "discriminator": [
+        119,
+        32,
+        214,
+        129,
+        74,
+        57,
+        186,
+        185
+      ],
+      "accounts": [
+        {
+          "name": "state",
+          "writable": true
+        },
+        {
+          "name": "inputAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  112,
+                  117,
+                  116,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "sendFund",
       "discriminator": [
         92,

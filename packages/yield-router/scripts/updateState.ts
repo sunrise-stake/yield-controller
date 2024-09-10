@@ -16,6 +16,12 @@ const sunriseStateAddress = new PublicKey(
 );
 
 (async () => {
+  const stateAddress =
+      YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
+  const client = await YieldRouterClient.fetch(stateAddress);
+
+  console.log("Updating yield router state:", stateAddress.toBase58());
+
   // Get new update authority
   let newUpdateAuthority: PublicKey | undefined;
 
@@ -83,10 +89,6 @@ const sunriseStateAddress = new PublicKey(
   }
 
   rl.close();
-
-  const stateAddress =
-    YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
-  const client = await YieldRouterClient.fetch(stateAddress);
 
   // Update output yield accounts and proportions
   if (sumProportions === 100 && answer.toLocaleLowerCase() === "y") {

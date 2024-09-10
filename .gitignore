@@ -8,3 +8,6 @@ test-ledger
 
 devnet.json
 yarn-error.log
+
+.env*
+!.env.example

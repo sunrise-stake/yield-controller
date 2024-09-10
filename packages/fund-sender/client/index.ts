@@ -373,6 +373,23 @@ export class FundSenderClient {
     return this;
   }
 
+  public async sendFromState(
+  ): Promise<FundSenderClient> {
+    if (!this.config) {
+      throw new Error("Client not initialized");
+    }
+
+    await this.program.methods
+      .sendFromState()
+      .accounts({
+        state: this.stateAddress,
+      })
+      .rpc()
+      .then(confirm(this.provider.connection));
+
+    return this
+  }
+
   /**
    * Sends specified amount of NFTs from input account to hold account.
    *

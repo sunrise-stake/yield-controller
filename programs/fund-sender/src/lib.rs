@@ -41,6 +41,20 @@ pub mod fund_sender {
         Ok(())
     }
 
+    pub fn send_from_state(
+        ctx: Context<SendFromState>,
+    ) -> Result<()> {
+        let state = &ctx.accounts.state;
+        let amount = state.get_lamports();
+
+        if amount > 0 {
+            **state.to_account_info().try_borrow_mut_lamports()? -= amount;
+            **ctx.accounts.input_account.try_borrow_mut_lamports()? += amount;
+        }
+
+        Ok(())
+    }
+
     pub fn send_fund<'info>(
         ctx: Context<'_, '_, '_, 'info, SendFund<'info>>,
         amount: u64,

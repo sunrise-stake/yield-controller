@@ -95,7 +95,7 @@ export interface YieldRouterConfig {
   spendThreshold: BN;
 }
 
-type InitialisedClient = YieldRouterClient & {
+export type InitialisedClient = YieldRouterClient & {
   config: YieldRouterConfig;
 };
 

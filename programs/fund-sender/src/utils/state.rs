@@ -95,6 +95,26 @@ pub struct SendFund<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// If someone sent funds to the state account, this instruction will send it to the input account
+#[derive(Accounts)]
+// #[instruction(sunrise_state: Pubkey, destination_name: String)]
+pub struct SendFromState<'info> {
+    #[account(
+        mut,
+        // seeds = [STATE, &destination_name.as_bytes(), sunrise_state.key().as_ref()],
+        // bump,
+    )]
+    pub state: Account<'info, State>,
+    #[account(
+        mut,
+        seeds = [INPUT_ACCOUNT, state.key().as_ref()],
+        bump = state.input_account_bump,
+    )]
+    /// CHECK: Must be correctly derived from the state
+    pub input_account: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 #[derive(Accounts)]
 pub struct StoreCertificates<'info> {
     // to send the received retired climate token to a hold account

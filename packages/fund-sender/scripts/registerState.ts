@@ -17,7 +17,7 @@ const sunriseTreasuryAddress = new PublicKey(
   process.env.TREASURY_ADDRESS ?? defaultSunriseTreasuryAddress
 );
 
-// USAGE: yarn ts-node packages/fund-sender/resgisterState.ts destinationName destinationAccount
+// USAGE: yarn ts-node packages/fund-sender/registerState.ts destinationName destinationAccount
 const destinationName = process.argv[2];
 const destinationAccount = new PublicKey(process.argv[3]);
 
