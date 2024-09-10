@@ -3,6 +3,7 @@ import readlineSync from 'readline-sync';
 import {showData} from "./util";
 import {submenuRouteToRecipient} from "./submenu/routeToRecipient";
 import {submenuAllocateYield} from "./submenu/allocateYield";
+import {submenuUpdateProportions} from "./submenu/updateProportions";
 
 export const showMenu = async () => {
     console.log(chalk.magentaBright('\nChoose an option:'));
@@ -28,16 +29,13 @@ export const showMenu = async () => {
             await submenuRouteToRecipient();
             break;
         case '4':
-            console.log(chalk.green('Updating proportions...'));
-            // Call your update proportions function here
+            await submenuUpdateProportions();
             break;
         case '5':
             console.log(chalk.green('Adding recipient...'));
-            // Call your add recipient function here
             break;
         case '6':
             console.log(chalk.green('Removing recipient...'));
-            // Call your remove recipient function here
             break;
         case '7':
             console.log(chalk.green('Exiting...'));

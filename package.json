@@ -14,7 +14,8 @@
     "program:build": "anchor build",
     "program:deploy": "anchor deploy",
     "getState:mainnet": "SOLANA_NETWORK=mainnet-beta bun packages/yield-router/scripts/getState.ts",
-    "route:mainnet": "SOLANA_NETWORK=mainnet-beta bun packages/yield-router/scripts/allocateYield.ts"
+    "route:mainnet": "SOLANA_NETWORK=mainnet-beta bun packages/yield-router/scripts/allocateYield.ts",
+    "manager": "bun run scripts/manager.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
