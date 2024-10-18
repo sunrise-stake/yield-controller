@@ -1,11 +1,11 @@
 #![allow(clippy::result_large_err)]
+use crate::utils::bubblegum::TRANSFER_DISCRIMINATOR;
 use crate::utils::errors::ErrorCode;
 use crate::utils::spend::*;
 use crate::utils::state::*;
-use crate::utils::bubblegum::TRANSFER_DISCRIMINATOR;
 use anchor_lang::prelude::*;
-mod utils;
 mod external_programs;
+mod utils;
 
 declare_id!("sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz");
 
@@ -43,9 +43,7 @@ pub mod fund_sender {
         Ok(())
     }
 
-    pub fn send_from_state(
-        ctx: Context<SendFromState>,
-    ) -> Result<()> {
+    pub fn send_from_state(ctx: Context<SendFromState>) -> Result<()> {
         let state = &ctx.accounts.state;
         let amount = state.get_lamports();
 
@@ -165,7 +163,11 @@ pub mod fund_sender {
 
         let state_bytes = state.key().to_bytes();
         let bump_bytes = &[state.input_account_bump];
-        let seeds = &[crate::utils::seeds::INPUT_ACCOUNT, &state_bytes[..], bump_bytes][..];
+        let seeds = &[
+            crate::utils::seeds::INPUT_ACCOUNT,
+            &state_bytes[..],
+            bump_bytes,
+        ][..];
         let signer_seeds = &[seeds];
 
         msg!("manual cpi call");
@@ -178,6 +180,6 @@ pub mod fund_sender {
             &account_infos[..],
             signer_seeds,
         )
-            .map_err(Into::into)
+        .map_err(Into::into)
     }
 }

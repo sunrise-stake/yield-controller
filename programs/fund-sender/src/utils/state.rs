@@ -1,10 +1,10 @@
+use crate::external_programs::mpl_bubblegum::MplBubblegum;
+use crate::external_programs::spl_account_compression::SplAccountCompression;
 use crate::utils::errors::ErrorCode;
 use crate::utils::seeds::{INPUT_ACCOUNT, STATE};
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::external_programs::mpl_bubblegum::MplBubblegum;
-use crate::external_programs::spl_account_compression::SplAccountCompression;
 /* This struct will be used for both registering and updating the state account */
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct GenericStateInput {
@@ -176,7 +176,6 @@ pub struct StoreCNFTCertificates<'info> {
     /// CHECK: must match the one stated in the state, but can be any account
     pub certificate_vault: UncheckedAccount<'info>,
 
-
     #[account(
         seeds = [merkle_tree.key().as_ref()],
         bump,
@@ -184,7 +183,7 @@ pub struct StoreCNFTCertificates<'info> {
     )]
     /// CHECK: This account is neither written to nor read from.
     /// The bubblegum program checks its type - we don't need to do so here
-    pub tree_authority: UncheckedAccount<'info>,//Account<'info, TreeConfig>,
+    pub tree_authority: UncheckedAccount<'info>, //Account<'info, TreeConfig>,
 
     #[account(mut)]
     /// CHECK: This account is modified in the downstream program
@@ -195,7 +194,7 @@ pub struct StoreCNFTCertificates<'info> {
     /// via CPI, to workaround the CPI size limit on Solana.
     /// The bubblegum program checks its type - we don't need to do so here
     /// While SplAccountCompression is using an older version of Anchor, we cannot get its ID here
-    pub log_wrapper: UncheckedAccount<'info>,//Program<'info, Noop>,
+    pub log_wrapper: UncheckedAccount<'info>, //Program<'info, Noop>,
     pub compression_program: Program<'info, SplAccountCompression>,
     pub bubblegum_program: Program<'info, MplBubblegum>,
 }
