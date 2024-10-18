@@ -37,6 +37,3 @@ filename = "packages/tests/fixtures/switchboard_nct_usd.json"
 [[test.validator.account]]
 address = "GvDMxPzN1sCj7L26YDK2HnMRXEQmQ2aemov8YBtPS7vR"
 filename = "packages/tests/fixtures/switchboard_sol_usd.json"
-
-#[test]
-#startup_wait =

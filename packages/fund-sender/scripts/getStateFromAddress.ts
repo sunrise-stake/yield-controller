@@ -1,6 +1,6 @@
 import { FundSenderClient } from "../client";
 import { logBalance } from "./lib/util";
-import {PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 // USAGE: yarn ts-node packages/fund-sender/getStateFromAddress.ts stateAddress
 const stateAddress = process.argv[2];

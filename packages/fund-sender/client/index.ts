@@ -1,12 +1,39 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
-import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
+import {
+  PublicKey,
+  SystemProgram,
+  Connection,
+  AccountMeta,
+  AddressLookupTableProgram,
+  TransactionMessage,
+  TransactionInstruction,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import BN from "bn.js";
 import { FundSender } from "../../types/fund_sender";
 import IDL from "../../idl/fund_sender.json";
+import base58 from "bs58";
+import {
+  AssetProof,
+  getAsset,
+  getAssetProof,
+  getAssetsByOwner,
+} from "./readAPI";
 
 export const PROGRAM_ID = new PublicKey(
   "sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz"
+);
+
+const SPL_NOOP_PROGRAM_ID = new PublicKey(
+  "noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV"
+);
+// Needed to set up the ALT only
+const BUBBLEGUM_PROGRAM_ID = new PublicKey(
+  "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+);
+const SPL_ACCOUNT_COMPRESSION_PROGRAM_ID = new PublicKey(
+  "cmtDvXumGCrqC1Age74AVPhSRVXJMd8PJS91L8KbNCK"
 );
 
 /**
@@ -56,6 +83,40 @@ const getInputAccountForState = (stateAddress: PublicKey): PublicKey => {
 
   return inputAccount;
 };
+
+const decodeBase58 = (base58Input: string): number[] => {
+  const buffer = base58.decode(base58Input);
+  return Array.from(buffer);
+};
+
+export const mapProof = (assetProof: AssetProof): AccountMeta[] => {
+  if (assetProof.proof === undefined || assetProof.proof.length === 0) {
+    throw new Error("Proof is empty");
+  }
+  return assetProof.proof.map((node) => ({
+    pubkey: new PublicKey(node),
+    isSigner: false,
+    isWritable: false,
+  }));
+};
+
+async function createV0Tx(
+  connection: Connection,
+  txInstructions: TransactionInstruction[],
+  payer: PublicKey,
+  addressLookupTableAddress?: PublicKey
+) {
+  const addressLookupTable = addressLookupTableAddress
+    ? (await connection.getAddressLookupTable(addressLookupTableAddress)).value
+    : undefined;
+  const latestBlockhash = await connection.getLatestBlockhash("confirmed");
+  const messageV0 = new TransactionMessage({
+    payerKey: payer,
+    recentBlockhash: latestBlockhash.blockhash,
+    instructions: txInstructions,
+  }).compileToV0Message(addressLookupTable ? [addressLookupTable] : []);
+  return new VersionedTransaction(messageV0);
+}
 
 export interface FundSenderConfig {
   destinationName: string;
@@ -373,8 +434,7 @@ export class FundSenderClient {
     return this;
   }
 
-  public async sendFromState(
-  ): Promise<FundSenderClient> {
+  public async sendFromState(): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
@@ -387,7 +447,7 @@ export class FundSenderClient {
       .rpc()
       .then(confirm(this.provider.connection));
 
-    return this
+    return this;
   }
 
   /**
@@ -418,5 +478,107 @@ export class FundSenderClient {
       .then(confirm(this.provider.connection));
 
     return this;
+  }
+
+  public async getCNFTCertificates() {
+    if (!this.config) throw new Error("Client not initialized");
+
+    const { items: assets } = await getAssetsByOwner(
+      this.getInputAccount().toBase58()
+    );
+
+    console.log(
+      "Found assets: ",
+      assets.map((asset) => asset.content.metadata.name)
+    );
+
+    return assets;
+  }
+
+  public async storeCNFTCertificate(
+    assetId: string,
+    addressLookupTable: PublicKey
+  ): Promise<FundSenderClient> {
+    if (!this.config) throw new Error("Client not initialized");
+
+    const asset = await getAsset(assetId);
+    const proof = await getAssetProof(assetId);
+    const proofPathAsAccounts = mapProof(proof);
+
+    const root = decodeBase58(proof.root);
+    const dataHash = decodeBase58(asset.compression.data_hash);
+    const creatorHash = decodeBase58(asset.compression.creator_hash);
+    const nonce = new anchor.BN(asset.compression.leaf_id);
+    const index = asset.compression.leaf_id;
+
+    const ix = await this.program.methods
+      .storeCnftCertificate(root, dataHash, creatorHash, nonce, index)
+      .accounts({
+        payer: this.provider.publicKey,
+        state: this.stateAddress,
+        certificateVault: this.config.certificateVault,
+        merkleTree: new PublicKey(proof.tree_id),
+        logWrapper: SPL_NOOP_PROGRAM_ID,
+      })
+      .remainingAccounts(proofPathAsAccounts)
+      .instruction();
+
+    const tx = await createV0Tx(
+      this.provider.connection,
+      [ix],
+      this.provider.publicKey,
+      addressLookupTable
+    ).then(async (tx) => this.provider.wallet.signTransaction(tx));
+
+    const txHash = await this.provider.sendAndConfirm(tx);
+    console.log("Stored CNFT certificate", txHash);
+    return this;
+  }
+
+  // transferring CNFT certificates creates a transaction that is too large (1243 > 1232)
+  // This function creates an AddressLookupTable for the FundSender instance,
+  // storing all consistent addresses used by the storeCnftCertificate instruction,
+  // so that it can be used in a versioned transaction to get around this limitation.
+  public async createALTForCNFTTransfer(): Promise<PublicKey> {
+    if (!this.config) throw new Error("Client not initialized");
+    const slot = await this.provider.connection.getSlot();
+    const addresses = [
+      this.stateAddress,
+      this.getInputAccount(),
+      this.config.certificateVault,
+      SPL_NOOP_PROGRAM_ID,
+      SystemProgram.programId,
+      BUBBLEGUM_PROGRAM_ID,
+      SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+    ];
+
+    const [lookupTableIx, lookupTableAddress] =
+      AddressLookupTableProgram.createLookupTable({
+        authority: this.provider.publicKey,
+        payer: this.provider.publicKey,
+        recentSlot: slot,
+      });
+
+    const addAddressesIx = AddressLookupTableProgram.extendLookupTable({
+      payer: this.provider.publicKey,
+      authority: this.provider.publicKey,
+      lookupTable: lookupTableAddress,
+      addresses,
+    });
+
+    const tx = await createV0Tx(
+      this.provider.connection,
+      [lookupTableIx, addAddressesIx],
+      this.provider.publicKey
+    ).then(async (tx) => this.provider.wallet.signTransaction(tx));
+
+    const txHash = await this.provider.sendAndConfirm(tx);
+    console.log(
+      "Created AddressLookupTable for CNFT transfer",
+      lookupTableAddress.toBase58(),
+      txHash
+    );
+
+    return lookupTableAddress;
   }
 }

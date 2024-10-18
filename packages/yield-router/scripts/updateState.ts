@@ -17,7 +17,7 @@ const sunriseStateAddress = new PublicKey(
 
 (async () => {
   const stateAddress =
-      YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
+    YieldRouterClient.getStateAddressFromSunriseAddress(sunriseStateAddress);
   const client = await YieldRouterClient.fetch(stateAddress);
 
   console.log("Updating yield router state:", stateAddress.toBase58());
