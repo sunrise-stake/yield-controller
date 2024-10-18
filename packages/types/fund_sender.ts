@@ -396,6 +396,140 @@ export type FundSender = {
       "args": []
     },
     {
+      "name": "storeCnftCertificate",
+      "discriminator": [
+        214,
+        223,
+        183,
+        200,
+        167,
+        76,
+        170,
+        252
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "state"
+        },
+        {
+          "name": "inputAccount",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  105,
+                  110,
+                  112,
+                  117,
+                  116,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "certificateVault"
+        },
+        {
+          "name": "treeAuthority",
+          "docs": [
+            "The bubblegum program checks its type - we don't need to do so here"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "merkleTree"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "bubblegumProgram"
+            }
+          }
+        },
+        {
+          "name": "merkleTree",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "logWrapper",
+          "docs": [
+            "via CPI, to workaround the CPI size limit on Solana.",
+            "The bubblegum program checks its type - we don't need to do so here",
+            "While SplAccountCompression is using an older version of Anchor, we cannot get its ID here"
+          ]
+        },
+        {
+          "name": "compressionProgram",
+          "address": "cmtDvXumGCrqC1Age74AVPhSRVXJMd8PJS91L8KbNCK"
+        },
+        {
+          "name": "bubblegumProgram",
+          "address": "BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY"
+        }
+      ],
+      "args": [
+        {
+          "name": "root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "dataHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "creatorHash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "index",
+          "type": "u32"
+        }
+      ]
+    },
+    {
       "name": "updateState",
       "discriminator": [
         135,

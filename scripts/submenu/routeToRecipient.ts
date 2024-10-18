@@ -3,20 +3,22 @@ import {fundSenderClients, fundSenderDestinations, getFundSenderAvailableAmount,
 import readlineSync from "readline-sync";
 import BN from "bn.js";
 
+const destinations = Object.keys(fundSenderDestinations);
+
 export const submenuRouteToRecipient = async () => {
     console.log(chalk.magentaBright('\nChoose a recipient:'));
-    fundSenderDestinations.forEach((destinationName, index) => {
+    destinations.forEach((destinationName, index) => {
         console.log(chalk.cyanBright(`${index + 1}) ${destinationName}`));
     });
-    console.log(chalk.cyanBright(`${fundSenderDestinations.length + 1}) Cancel`));
+    console.log(chalk.cyanBright(`${destinations.length + 1}) Cancel`));
 
-    const choice = readlineSync.keyIn(chalk.yellow('\nEnter your choice: '), { limit: `$<1-${fundSenderDestinations.length}>` });
+    const choice = readlineSync.keyIn(chalk.yellow('\nEnter your choice: '), { limit: `$<1-${destinations.length}>` });
 
-    if (choice === `${fundSenderDestinations.length + 1}`) {
+    if (choice === `${destinations.length + 1}`) {
         return;
     }
 
-    const destinationName = fundSenderDestinations[parseInt(choice) - 1];
+    const destinationName = destinations[parseInt(choice) - 1];
     const client = fundSenderClients.find(c => c.config.destinationName === destinationName);
 
     if (!client) throw new Error('Client not found - trigger a refresh');

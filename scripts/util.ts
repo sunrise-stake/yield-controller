@@ -6,8 +6,17 @@ import {FundSenderClient, FundSenderConfig} from "../packages/fund-sender/client
 import Table from "cli-table3";
 import readlineSync from "readline-sync";
 
-// TODO TEMP - derive
-export const fundSenderDestinations = ["ecotoken", "toucan", "loompact"]
+type FundSenderType = {
+    type: 'spl'
+} | {
+    type: 'cnft', lookupTable: PublicKey
+};
+
+export const fundSenderDestinations: Record<string, FundSenderType> = {
+    ecotoken: { type: 'cnft', lookupTable: new PublicKey('FmV5V5C3kd9X7bXgFCeFbfBGyt46eUMy6s2kb3rZPudm')},
+    toucan: { type: 'spl' },
+    loompact: { type: 'spl' }
+}
 
 export const defaultSunriseStateAddress =
     "43m66crxGfXSJpmx5wXRoFuHubhHA1GCvtHgmHW6cM1P";
@@ -59,7 +68,7 @@ export let fundSenderClients: (FundSenderClient & {
 })[];
 
 const getFundSenderClients = () => Promise.all(
-    fundSenderDestinations.map(async (destinationName) => {
+    Object.keys(fundSenderDestinations).map(async (destinationName) => {
         const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
             sunriseStateAddress,
             destinationName

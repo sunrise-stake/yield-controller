@@ -1,8 +1,7 @@
 import chalk from "chalk";
 import {
-    fundSenderClients,
-    fundSenderDestinations, getBalance,
-    getFundSenderAvailableAmount, getFundSenderData, printBalance,
+    getBalance,
+    getFundSenderData, printBalance,
     selectAmount,
     yieldRouterClient
 } from "../util";

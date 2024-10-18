@@ -1,13 +1,9 @@
 import chalk from "chalk";
 import {
-    fundSenderClients,
-    fundSenderDestinations,
-    getFundSenderAvailableAmount,
     getFundSenderData,
-    selectAmount, yieldRouterClient
+    yieldRouterClient
 } from "../util";
 import readlineSync from "readline-sync";
-import BN from "bn.js";
 
 export const submenuUpdateProportions = async () => {
     // ask for confirmation:

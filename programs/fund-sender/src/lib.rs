@@ -2,8 +2,10 @@
 use crate::utils::errors::ErrorCode;
 use crate::utils::spend::*;
 use crate::utils::state::*;
+use crate::utils::bubblegum::TRANSFER_DISCRIMINATOR;
 use anchor_lang::prelude::*;
 mod utils;
+mod external_programs;
 
 declare_id!("sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz");
 
@@ -113,5 +115,69 @@ pub mod fund_sender {
         )?;
 
         Ok(())
+    }
+
+    pub fn store_cnft_certificate<'info>(
+        ctx: Context<'_, '_, '_, 'info, StoreCNFTCertificates<'info>>,
+        root: [u8; 32],
+        data_hash: [u8; 32],
+        creator_hash: [u8; 32],
+        nonce: u64,
+        index: u32,
+    ) -> Result<()> {
+        let state = &mut ctx.accounts.state;
+
+        let mut accounts: Vec<solana_program::instruction::AccountMeta> = vec![
+            AccountMeta::new_readonly(ctx.accounts.tree_authority.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.input_account.key(), true),
+            AccountMeta::new_readonly(ctx.accounts.input_account.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.certificate_vault.key(), false),
+            AccountMeta::new(ctx.accounts.merkle_tree.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.log_wrapper.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.compression_program.key(), false),
+            AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+        ];
+
+        let mut data: Vec<u8> = vec![];
+        data.extend(TRANSFER_DISCRIMINATOR);
+        data.extend(root);
+        data.extend(data_hash);
+        data.extend(creator_hash);
+        data.extend(nonce.to_le_bytes());
+        data.extend(index.to_le_bytes());
+
+        let mut account_infos: Vec<AccountInfo> = vec![
+            ctx.accounts.tree_authority.to_account_info(),
+            ctx.accounts.input_account.to_account_info(),
+            ctx.accounts.input_account.to_account_info(),
+            ctx.accounts.certificate_vault.to_account_info(),
+            ctx.accounts.merkle_tree.to_account_info(),
+            ctx.accounts.log_wrapper.to_account_info(),
+            ctx.accounts.compression_program.to_account_info(),
+            ctx.accounts.system_program.to_account_info(),
+        ];
+
+        // add "accounts" (hashes) that make up the merkle proof
+        for acc in ctx.remaining_accounts.iter() {
+            accounts.push(AccountMeta::new_readonly(acc.key(), false));
+            account_infos.push(acc.to_account_info());
+        }
+
+        let state_bytes = state.key().to_bytes();
+        let bump_bytes = &[state.input_account_bump];
+        let seeds = &[crate::utils::seeds::INPUT_ACCOUNT, &state_bytes[..], bump_bytes][..];
+        let signer_seeds = &[seeds];
+
+        msg!("manual cpi call");
+        solana_program::program::invoke_signed(
+            &solana_program::instruction::Instruction {
+                program_id: ctx.accounts.bubblegum_program.key(),
+                accounts,
+                data,
+            },
+            &account_infos[..],
+            signer_seeds,
+        )
+            .map_err(Into::into)
     }
 }

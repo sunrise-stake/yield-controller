@@ -5,6 +5,7 @@ import {submenuRouteToRecipient} from "./submenu/routeToRecipient";
 import {submenuAllocateYield} from "./submenu/allocateYield";
 import {submenuUpdateProportions} from "./submenu/updateProportions";
 import {submenuUpdateDestinationAddress} from "./submenu/updateDestinationAddress";
+import {submenuStoreCertificates} from "./submenu/storeCertificates";
 
 export const showMenu = async () => {
     console.log(chalk.magentaBright('\nChoose an option:'));
@@ -13,9 +14,10 @@ export const showMenu = async () => {
     console.log(chalk.cyanBright('3) Route Funds to Recipient'));
     console.log(chalk.cyanBright('4) Update Proportions'));
     console.log(chalk.cyanBright('5) Update Recipient Address'));
-    console.log(chalk.cyanBright('6) Add Recipient'));
-    console.log(chalk.cyanBright('7) Remove Recipient'));
-    console.log(chalk.cyanBright('8) Quit'));
+    console.log(chalk.cyanBright('6) Store Certificates'));
+    console.log(chalk.cyanBright('7) Add Recipient'));
+    console.log(chalk.cyanBright('8) Remove Recipient'));
+    console.log(chalk.cyanBright('9) Quit'));
 
     const choice = readlineSync.keyIn(chalk.yellow('\nEnter your choice: '), { limit: '$<1-8>' });
 
@@ -34,16 +36,18 @@ export const showMenu = async () => {
             await submenuUpdateProportions();
             break;
         case '5':
-
             await submenuUpdateDestinationAddress();
             break;
         case '6':
-            console.log(chalk.green('Adding recipient...'));
+            await submenuStoreCertificates();
             break;
         case '7':
-            console.log(chalk.green('Removing recipient...'));
+            console.log(chalk.green('Adding recipient...'));
             break;
         case '8':
+            console.log(chalk.green('Removing recipient...'));
+            break;
+        case '9':
             console.log(chalk.green('Exiting...'));
             process.exit(0);
             break;

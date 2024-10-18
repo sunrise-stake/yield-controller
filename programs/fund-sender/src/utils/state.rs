@@ -3,7 +3,8 @@ use crate::utils::seeds::{INPUT_ACCOUNT, STATE};
 use anchor_lang::prelude::*;
 use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-
+use crate::external_programs::mpl_bubblegum::MplBubblegum;
+use crate::external_programs::spl_account_compression::SplAccountCompression;
 /* This struct will be used for both registering and updating the state account */
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct GenericStateInput {
@@ -115,6 +116,7 @@ pub struct SendFromState<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// An instruction to pass a retirement certificate NFT to the certificate vault
 #[derive(Accounts)]
 pub struct StoreCertificates<'info> {
     // to send the received retired climate token to a hold account
@@ -138,7 +140,7 @@ pub struct StoreCertificates<'info> {
     #[account(
         constraint = certificate_vault.key() == state.certificate_vault.key() @ ErrorCode::IncorrectHoldAccount,
     )]
-    /// CHECK: must match the one stated in the state, but can be any account type
+    /// CHECK: must match the one stated in the state, but can be any account
     pub certificate_vault: UncheckedAccount<'info>,
     #[account(
         init_if_needed,
@@ -151,4 +153,49 @@ pub struct StoreCertificates<'info> {
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
+}
+
+/// An instruction to pass a retirement certificate *Compressed* NFT to the certificate vault
+/// if the CNFT uses the Metaplex Bubblegum program
+#[derive(Accounts)]
+pub struct StoreCNFTCertificates<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub state: Account<'info, State>,
+
+    #[account(
+        seeds = [INPUT_ACCOUNT, state.key().as_ref()],
+        bump = state.input_account_bump,
+    )]
+    /// CHECK: Must be correctly derived from the state
+    pub input_account: UncheckedAccount<'info>,
+
+    #[account(
+        constraint = certificate_vault.key() == state.certificate_vault.key() @ ErrorCode::IncorrectHoldAccount,
+    )]
+    /// CHECK: must match the one stated in the state, but can be any account
+    pub certificate_vault: UncheckedAccount<'info>,
+
+
+    #[account(
+        seeds = [merkle_tree.key().as_ref()],
+        bump,
+        seeds::program = bubblegum_program.key()
+    )]
+    /// CHECK: This account is neither written to nor read from.
+    /// The bubblegum program checks its type - we don't need to do so here
+    pub tree_authority: UncheckedAccount<'info>,//Account<'info, TreeConfig>,
+
+    #[account(mut)]
+    /// CHECK: This account is modified in the downstream program
+    pub merkle_tree: UncheckedAccount<'info>,
+
+    pub system_program: Program<'info, System>,
+    /// CHECK: This program swallows logs when calling the account compression program
+    /// via CPI, to workaround the CPI size limit on Solana.
+    /// The bubblegum program checks its type - we don't need to do so here
+    /// While SplAccountCompression is using an older version of Anchor, we cannot get its ID here
+    pub log_wrapper: UncheckedAccount<'info>,//Program<'info, Noop>,
+    pub compression_program: Program<'info, SplAccountCompression>,
+    pub bubblegum_program: Program<'info, MplBubblegum>,
 }

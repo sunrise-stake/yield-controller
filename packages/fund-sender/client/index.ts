@@ -1,13 +1,27 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
-import { PublicKey, SystemProgram, Connection } from "@solana/web3.js";
+import {
+  PublicKey,
+  SystemProgram,
+  Connection,
+  AccountMeta,
+  AddressLookupTableProgram,
+  TransactionMessage, TransactionInstruction, VersionedTransaction, AddressLookupTableAccount
+} from "@solana/web3.js";
 import BN from "bn.js";
 import { FundSender } from "../../types/fund_sender";
 import IDL from "../../idl/fund_sender.json";
+import base58 from "bs58";
+import {AssetProof, getAsset, getAssetProof, getAssetsByOwner} from "./readAPI";
 
 export const PROGRAM_ID = new PublicKey(
-  "sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz"
+    "sfsH2CVS2SaXwnrGwgTVrG7ytZAxSCsTnW82BvjWTGz"
 );
+
+const SPL_NOOP_PROGRAM_ID = new PublicKey("noopb9bkMVfRPU8AsbpTUg8AQkHtKwMYZiFUjNRtMmV");
+// Needed to set up the ALT only
+const BUBBLEGUM_PROGRAM_ID = new PublicKey("BGUMAp9Gq7iTEuizy4pqaxsTyUCBK68MDfK752saRPUY");
+const SPL_ACCOUNT_COMPRESSION_PROGRAM_ID = new PublicKey("cmtDvXumGCrqC1Age74AVPhSRVXJMd8PJS91L8KbNCK")
 
 /**
  * Sets up an anchor provider read from the environment variable.
@@ -50,12 +64,44 @@ export const confirm = (connection: Connection) => async (txSig: string) => {
  */
 const getInputAccountForState = (stateAddress: PublicKey): PublicKey => {
   const [inputAccount] = PublicKey.findProgramAddressSync(
-    [Buffer.from("input_account"), stateAddress.toBuffer()],
-    PROGRAM_ID
+      [Buffer.from("input_account"), stateAddress.toBuffer()],
+      PROGRAM_ID
   );
 
   return inputAccount;
 };
+
+const decodeBase58 = (base58Input: string): number[] => {
+  const buffer = base58.decode(base58Input);
+  return Array.from(buffer);
+};
+
+export const mapProof = (assetProof: AssetProof): AccountMeta[] => {
+  if (!assetProof.proof || assetProof.proof.length === 0) {
+    throw new Error('Proof is empty');
+  }
+  return assetProof.proof.map((node) => ({
+    pubkey: new PublicKey(node),
+    isSigner: false,
+    isWritable: false,
+  }));
+};
+
+async function createV0Tx(
+    connection: Connection,
+    txInstructions: TransactionInstruction[],
+    payer: PublicKey,
+    addressLookupTableAddress?: PublicKey
+) {
+  const addressLookupTable = addressLookupTableAddress ? (await connection.getAddressLookupTable(addressLookupTableAddress)).value : undefined;
+  const latestBlockhash = await connection.getLatestBlockhash('confirmed');
+  const messageV0 = new TransactionMessage({
+    payerKey: payer,
+    recentBlockhash: latestBlockhash.blockhash,
+    instructions: txInstructions
+  }).compileToV0Message(addressLookupTable ? [addressLookupTable] : []);
+  return new VersionedTransaction(messageV0);
+}
 
 export interface FundSenderConfig {
   destinationName: string;
@@ -74,8 +120,8 @@ export class FundSenderClient {
   readonly program: Program<FundSender>;
 
   constructor(
-    readonly provider: AnchorProvider,
-    readonly stateAddress: PublicKey
+      readonly provider: AnchorProvider,
+      readonly stateAddress: PublicKey
   ) {
     this.program = new Program<FundSender>(IDL as FundSender, provider);
   }
@@ -106,16 +152,16 @@ export class FundSenderClient {
    *
    */
   public static getStateAddressFromSunriseAddress(
-    sunriseState: PublicKey,
-    destinationName: string
+      sunriseState: PublicKey,
+      destinationName: string
   ): PublicKey {
     const [state] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("state"),
-        Buffer.from(destinationName),
-        sunriseState.toBuffer(),
-      ],
-      PROGRAM_ID
+        [
+          Buffer.from("state"),
+          Buffer.from(destinationName),
+          sunriseState.toBuffer(),
+        ],
+        PROGRAM_ID
     );
 
     return state;
@@ -142,12 +188,12 @@ export class FundSenderClient {
    *
    */
   public static async fetch(
-    stateAddress: PublicKey,
-    provider?: AnchorProvider
+      stateAddress: PublicKey,
+      provider?: AnchorProvider
   ): Promise<InitialisedClient> {
     const client = new FundSenderClient(
-      provider ?? setUpAnchor(),
-      stateAddress
+        provider ?? setUpAnchor(),
+        stateAddress
     );
     await client.init();
 
@@ -171,17 +217,17 @@ export class FundSenderClient {
    * @returns Initialised fund sender client
    */
   public static async register(
-    sunriseState: PublicKey,
-    updateAuthority: PublicKey,
-    destinationName: string,
-    destinationAccount: PublicKey,
-    certificateVault: PublicKey,
-    spendThreshold: BN
+      sunriseState: PublicKey,
+      updateAuthority: PublicKey,
+      destinationName: string,
+      destinationAccount: PublicKey,
+      certificateVault: PublicKey,
+      spendThreshold: BN
   ): Promise<InitialisedClient> {
     // find state address
     const stateAddress = FundSenderClient.getStateAddressFromSunriseAddress(
-      sunriseState,
-      destinationName
+        sunriseState,
+        destinationName
     );
     console.log("state address", stateAddress.toBase58());
     const inputAccount = getInputAccountForState(stateAddress);
@@ -206,18 +252,18 @@ export class FundSenderClient {
     };
     console.log("Registering state");
     await client.program.methods
-      .registerState(sunriseState, args)
-      .accounts(accounts)
-      .rpc()
-      .then(() => {
-        confirm(client.provider.connection);
-      })
-      // Temporary - use this to get insight into failed transactions
-      // Can be removed after everything works, and re-added to debug as needed.
-      .catch((e) => {
-        console.log(e.logs);
-        throw e;
-      });
+        .registerState(sunriseState, args)
+        .accounts(accounts)
+        .rpc()
+        .then(() => {
+          confirm(client.provider.connection);
+        })
+        // Temporary - use this to get insight into failed transactions
+        // Can be removed after everything works, and re-added to debug as needed.
+        .catch((e) => {
+          console.log(e.logs);
+          throw e;
+        });
 
     // now that the state is registered on chain, we can hydrate the client instance with its data
     await client.init();
@@ -235,8 +281,8 @@ export class FundSenderClient {
    *
    */
   public async updateDestinationAccount(
-    destinationAccount: PublicKey,
-    spendThreshold: BN
+      destinationAccount: PublicKey,
+      spendThreshold: BN
   ): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
@@ -254,12 +300,12 @@ export class FundSenderClient {
       spendThreshold,
     };
     await this.program.methods
-      .updateState(args)
-      .accounts(accounts)
-      .rpc()
-      .then(() => {
-        confirm(this.provider.connection);
-      });
+        .updateState(args)
+        .accounts(accounts)
+        .rpc()
+        .then(() => {
+          confirm(this.provider.connection);
+        });
 
     await this.init();
 
@@ -275,7 +321,7 @@ export class FundSenderClient {
    *
    */
   public async updateCertificateVault(
-    certificateVault: PublicKey
+      certificateVault: PublicKey
   ): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
@@ -294,12 +340,12 @@ export class FundSenderClient {
       spendThreshold: this.config.spendThreshold,
     };
     await this.program.methods
-      .updateState(args)
-      .accounts(accounts)
-      .rpc()
-      .then(() => {
-        confirm(this.provider.connection);
-      });
+        .updateState(args)
+        .accounts(accounts)
+        .rpc()
+        .then(() => {
+          confirm(this.provider.connection);
+        });
 
     await this.init();
 
@@ -315,7 +361,7 @@ export class FundSenderClient {
    *
    */
   public async updateUpdateAuthority(
-    updateAuthority: PublicKey // the public key of the new update authority
+      updateAuthority: PublicKey // the public key of the new update authority
   ): Promise<FundSenderClient> {
     // Check if the client is initialized, config should be avaliable in such case
     if (!this.config) {
@@ -335,12 +381,12 @@ export class FundSenderClient {
     };
     // call the updateState method from the program with the new update authority address
     await this.program.methods
-      .updateState(args)
-      .accounts(accounts)
-      .rpc()
-      .then(() => {
-        confirm(this.provider.connection);
-      });
+        .updateState(args)
+        .accounts(accounts)
+        .rpc()
+        .then(() => {
+          confirm(this.provider.connection);
+        });
 
     // repopulating the config with new data
     await this.init();
@@ -361,14 +407,14 @@ export class FundSenderClient {
     }
 
     await this.program.methods
-      .sendFund(amount)
-      .accounts({
-        payer: this.provider.publicKey,
-        state: this.stateAddress,
-        destinationAccount: this.config.destinationAccount,
-      })
-      .rpc()
-      .then(confirm(this.provider.connection));
+        .sendFund(amount)
+        .accounts({
+          payer: this.provider.publicKey,
+          state: this.stateAddress,
+          destinationAccount: this.config.destinationAccount,
+        })
+        .rpc()
+        .then(confirm(this.provider.connection));
 
     return this;
   }
@@ -380,12 +426,12 @@ export class FundSenderClient {
     }
 
     await this.program.methods
-      .sendFromState()
-      .accounts({
-        state: this.stateAddress,
-      })
-      .rpc()
-      .then(confirm(this.provider.connection));
+        .sendFromState()
+        .accounts({
+          state: this.stateAddress,
+        })
+        .rpc()
+        .then(confirm(this.provider.connection));
 
     return this
   }
@@ -398,25 +444,111 @@ export class FundSenderClient {
    *
    */
   public async storeCertificates(
-    inputTokenAccount: PublicKey,
-    certificateMint: PublicKey
+      inputTokenAccount: PublicKey,
+      certificateMint: PublicKey
   ): Promise<FundSenderClient> {
     if (!this.config) {
       throw new Error("Client not initialized");
     }
 
     await this.program.methods
-      .storeCertificates()
-      .accounts({
-        payer: this.provider.publicKey,
-        state: this.stateAddress,
-        certificateMint,
-        inputTokenAccount,
-        certificateVault: this.config.certificateVault,
-      })
-      .rpc()
-      .then(confirm(this.provider.connection));
+        .storeCertificates()
+        .accounts({
+          payer: this.provider.publicKey,
+          state: this.stateAddress,
+          certificateMint,
+          inputTokenAccount,
+          certificateVault: this.config.certificateVault,
+        })
+        .rpc()
+        .then(confirm(this.provider.connection));
 
     return this;
+  }
+
+  public async getCNFTCertificates() {
+    if (!this.config) throw new Error("Client not initialized");
+
+    const { items: assets } = await getAssetsByOwner(this.getInputAccount().toBase58());
+
+    console.log("Found assets: ", assets.map((asset) => asset.content.metadata.name));
+
+    return assets;
+  }
+
+  public async storeCNFTCertificate(
+      assetId: string,
+      addressLookupTable: PublicKey
+  ): Promise<FundSenderClient> {
+    if (!this.config) throw new Error("Client not initialized");
+
+    const asset = await getAsset(assetId);
+    const proof = await getAssetProof(assetId);
+    const proofPathAsAccounts = mapProof(proof);
+
+    const root = decodeBase58(proof.root);
+    const dataHash = decodeBase58(asset.compression.data_hash);
+    const creatorHash = decodeBase58(asset.compression.creator_hash);
+    const nonce = new anchor.BN(asset.compression.leaf_id);
+    const index = asset.compression.leaf_id;
+
+    const ix = await this.program.methods
+        .storeCnftCertificate(root, dataHash, creatorHash, nonce, index)
+        .accounts({
+          payer: this.provider.publicKey,
+          state: this.stateAddress,
+          certificateVault: this.config.certificateVault,
+          merkleTree: new PublicKey(proof.tree_id),
+          logWrapper: SPL_NOOP_PROGRAM_ID
+        })
+        .remainingAccounts(proofPathAsAccounts)
+        .instruction();
+
+    const tx = await createV0Tx(this.provider.connection, [ix], this.provider.publicKey, addressLookupTable)
+        .then(tx => this.provider.wallet.signTransaction(tx));
+
+    const txHash = await this.provider.sendAndConfirm(tx);
+    console.log("Stored CNFT certificate", txHash);
+    return this;
+  }
+
+  // transferring CNFT certificates creates a transaction that is too large (1243 > 1232)
+  // This function creates an AddressLookupTable for the FundSender instance,
+  // storing all consistent addresses used by the storeCnftCertificate instruction,
+  // so that it can be used in a versioned transaction to get around this limitation.
+  public async createALTForCNFTTransfer(): Promise<PublicKey> {
+    if (!this.config) throw new Error("Client not initialized");
+    const slot = await this.provider.connection.getSlot();
+    const addresses = [
+        this.stateAddress,
+        this.getInputAccount(),
+        this.config.certificateVault,
+        SPL_NOOP_PROGRAM_ID,
+        SystemProgram.programId,
+        BUBBLEGUM_PROGRAM_ID,
+        SPL_ACCOUNT_COMPRESSION_PROGRAM_ID
+    ];
+
+    const [lookupTableIx, lookupTableAddress] =
+        AddressLookupTableProgram.createLookupTable({
+          authority: this.provider.publicKey,
+          payer: this.provider.publicKey,
+          recentSlot: slot,
+        });
+
+    const addAddressesIx = AddressLookupTableProgram.extendLookupTable({
+      payer: this.provider.publicKey,
+      authority: this.provider.publicKey,
+      lookupTable: lookupTableAddress,
+      addresses
+    });
+
+    const tx = await createV0Tx(this.provider.connection, [lookupTableIx, addAddressesIx], this.provider.publicKey)
+        .then(tx => this.provider.wallet.signTransaction(tx));
+
+    const txHash = await this.provider.sendAndConfirm(tx);
+    console.log("Created AddressLookupTable for CNFT transfer", lookupTableAddress.toBase58(), txHash);
+
+    return lookupTableAddress;
   }
 }
