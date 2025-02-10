@@ -96,6 +96,7 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          fail-on-cache-miss: true
 
       - name: Install dependencies
         run: yarn install
