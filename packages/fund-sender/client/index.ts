@@ -480,6 +480,17 @@ export class FundSenderClient {
     return this;
   }
 
+  public async closeCertificateAccount(
+      inputTokenAccount: PublicKey,
+  ): Promise<FundSenderClient> {
+    if (!this.config) {
+      throw new Error("Client not initialized");
+    }
+
+    console.log("TODO: Implement closeCertificateAccount");
+    return this;
+  }
+
   public async getCNFTCertificates() {
     if (!this.config) throw new Error("Client not initialized");
 

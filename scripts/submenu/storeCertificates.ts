@@ -12,12 +12,12 @@ const destinations = Object.keys(fundSenderDestinations);
 
 const processSPLCertificates = async (client: ConfiguredClient) => {
   const allInputTokenAccountsResponse =
-    await client.provider.connection.getParsedTokenAccountsByOwner(
-      client.getInputAccount(),
-      {
-        programId: TOKEN_PROGRAM_ID,
-      }
-    );
+      await client.provider.connection.getParsedTokenAccountsByOwner(
+          client.getInputAccount(),
+          {
+            programId: TOKEN_PROGRAM_ID,
+          }
+      );
 
   const allInputTokenAccounts = allInputTokenAccountsResponse.value;
 
@@ -26,16 +26,37 @@ const processSPLCertificates = async (client: ConfiguredClient) => {
     return;
   }
 
-  console.log(`Storing ${allInputTokenAccounts.length} certificates...`);
-  for (const inputTokenAccount of allInputTokenAccounts) {
+  // check for zero balance on any token accounts (these accounts can be closed)
+  const nonZeroBalanceAccounts = allInputTokenAccounts.filter(
+      (account) => account.account.data.parsed.info.tokenAmount.uiAmount > 0
+  );
+  console.log(`Skipping ${allInputTokenAccounts.length - nonZeroBalanceAccounts.length} accounts with zero balance`);
+
+  console.log(`Storing ${nonZeroBalanceAccounts.length} certificates...`);
+  for (const inputTokenAccount of nonZeroBalanceAccounts) {
     const mint = new PublicKey(inputTokenAccount.account.data.parsed.info.mint);
-    await client.storeCertificates(inputTokenAccount.pubkey, mint);
+    await client.storeCertificates(inputTokenAccount.pubkey, mint).catch((e) => {
+      console.error("Error storing certificate: ", inputTokenAccount.pubkey.toBase58(), e);
+      throw e;
+    });
+  }
+
+  // if there are any zero balance accounts, ask if we want to close them...
+  if (allInputTokenAccounts.length !== nonZeroBalanceAccounts.length) {
+    const confirm = readlineSync.question(chalk.yellow("Do you want to close the zero balance accounts? (y/n): "));
+    if (confirm === "y") {
+      console.log("Closing zero balance accounts...");
+      for (const inputTokenAccount of allInputTokenAccounts) {
+        if (nonZeroBalanceAccounts.includes(inputTokenAccount)) continue;
+        await client.closeCertificateAccount(inputTokenAccount.pubkey);
+      }
+    }
   }
 };
 
 const processCNFTCertificates = async (
-  client: ConfiguredClient,
-  destination: { lookupTable?: PublicKey }
+    client: ConfiguredClient,
+    destination: { lookupTable?: PublicKey }
 ) => {
   const assets = await client.getCNFTCertificates();
   console.log("number of CNFT certificates", assets.length);
@@ -50,8 +71,8 @@ const processCNFTCertificates = async (
     console.log("No CNFT address lookup table provided - creating...");
     cnftAddressLookupTable = await client.createALTForCNFTTransfer();
     console.log(
-      "Created CNFT address lookup table",
-      cnftAddressLookupTable.toBase58()
+        "Created CNFT address lookup table",
+        cnftAddressLookupTable.toBase58()
     );
   }
 
@@ -78,15 +99,15 @@ export const submenuStoreCertificates = async () => {
 
   const destinationName = destinations[parseInt(choice) - 1];
   const client = fundSenderClients.find(
-    (c) => c.config.destinationName === destinationName
+      (c) => c.config.destinationName === destinationName
   );
 
   if (!client) throw new Error("Client not found - trigger a refresh");
 
   if (fundSenderDestinations[destinationName].type === "cnft") {
     await processCNFTCertificates(
-      client,
-      fundSenderDestinations[destinationName] as { lookupTable: PublicKey }
+        client,
+        fundSenderDestinations[destinationName] as { lookupTable: PublicKey }
     );
   } else {
     await processSPLCertificates(client);
