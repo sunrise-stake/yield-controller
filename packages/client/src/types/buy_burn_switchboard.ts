@@ -59,6 +59,30 @@ export type BuyBurnSwitchboard = {
       ]
     },
     {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
+========
+      "name": "updatePrice",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "price",
+          "type": "f64"
+        }
+      ]
+    },
+    {
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
       "name": "allocateYield",
       "accounts": [
         {
@@ -118,6 +142,7 @@ export type BuyBurnSwitchboard = {
         }
       ],
       "args": []
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
     },
     {
       "name": "setTotalTokensPurchased",
@@ -139,6 +164,8 @@ export type BuyBurnSwitchboard = {
           "type": "u64"
         }
       ]
+========
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
     }
   ],
   "accounts": [
@@ -160,6 +187,7 @@ export type BuyBurnSwitchboard = {
             "type": "publicKey"
           },
           {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
             "name": "solUsdPriceFeed",
             "type": "publicKey"
           },
@@ -178,6 +206,10 @@ export type BuyBurnSwitchboard = {
           {
             "name": "feedStalenessThreshold",
             "type": "u64"
+========
+            "name": "price",
+            "type": "f64"
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
           },
           {
             "name": "purchaseThreshold",
@@ -188,6 +220,17 @@ export type BuyBurnSwitchboard = {
             "type": "f32"
           },
           {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
+========
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
             "name": "totalTokensPurchased",
             "type": "u64"
           },
@@ -234,6 +277,7 @@ export type BuyBurnSwitchboard = {
             "type": "publicKey"
           },
           {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
             "name": "solUsdPriceFeed",
             "type": "publicKey"
           },
@@ -244,6 +288,10 @@ export type BuyBurnSwitchboard = {
           {
             "name": "feedStalenessThreshold",
             "type": "u64"
+========
+            "name": "price",
+            "type": "f64"
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
           },
           {
             "name": "purchaseThreshold",
@@ -355,6 +403,30 @@ export const IDL: BuyBurnSwitchboard = {
       ]
     },
     {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
+========
+      "name": "updatePrice",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "price",
+          "type": "f64"
+        }
+      ]
+    },
+    {
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
       "name": "allocateYield",
       "accounts": [
         {
@@ -414,6 +486,7 @@ export const IDL: BuyBurnSwitchboard = {
         }
       ],
       "args": []
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
     },
     {
       "name": "setTotalTokensPurchased",
@@ -435,6 +508,8 @@ export const IDL: BuyBurnSwitchboard = {
           "type": "u64"
         }
       ]
+========
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
     }
   ],
   "accounts": [
@@ -456,6 +531,7 @@ export const IDL: BuyBurnSwitchboard = {
             "type": "publicKey"
           },
           {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
             "name": "solUsdPriceFeed",
             "type": "publicKey"
           },
@@ -474,6 +550,10 @@ export const IDL: BuyBurnSwitchboard = {
           {
             "name": "feedStalenessThreshold",
             "type": "u64"
+========
+            "name": "price",
+            "type": "f64"
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
           },
           {
             "name": "purchaseThreshold",
@@ -484,6 +564,17 @@ export const IDL: BuyBurnSwitchboard = {
             "type": "f32"
           },
           {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
+========
+            "name": "holdingAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "holdingTokenAccount",
+            "type": "publicKey"
+          },
+          {
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
             "name": "totalTokensPurchased",
             "type": "u64"
           },
@@ -530,6 +621,7 @@ export const IDL: BuyBurnSwitchboard = {
             "type": "publicKey"
           },
           {
+<<<<<<<< HEAD:packages/client/src/types/buy_burn_switchboard.ts
             "name": "solUsdPriceFeed",
             "type": "publicKey"
           },
@@ -540,6 +632,10 @@ export const IDL: BuyBurnSwitchboard = {
           {
             "name": "feedStalenessThreshold",
             "type": "u64"
+========
+            "name": "price",
+            "type": "f64"
+>>>>>>>> main:packages/buy-burn-fixed/client/src/types/treasury_controller.ts
           },
           {
             "name": "purchaseThreshold",
